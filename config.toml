@@ -1,0 +1,8 @@
+[api]
+port = "8080"
+
+[database]
+host = "localhost"
+user = "user_soldim_development"
+password = "pwd_soldim_development"
+name = "soldim_development"
