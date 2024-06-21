@@ -53,9 +53,9 @@ CREATE TABLE IF NOT EXISTS searches (
 );
 create unique index description_idx on searches (description);
 
--- Products
-DROP TABLE IF EXISTS "products";
-CREATE TABLE IF NOT EXISTS products (
+-- Searches_result
+DROP TABLE IF EXISTS "searches_result";
+CREATE TABLE IF NOT EXISTS searches_result (
   id          UUID PRIMARY KEY,
   image_url   varchar(255),
   description varchar(255),
@@ -64,12 +64,12 @@ CREATE TABLE IF NOT EXISTS products (
   promotion   boolean not null default false,
   link        varchar(255),
   search_id   UUID not null,
-  created_at    timestamp not null,
-  updated_at    timestamp not null
+  created_at  timestamp not null,
+  updated_at  timestamp not null
 );
 
 ALTER TABLE
-   "products"
+   "searches_result"
 ADD
    FOREIGN KEY ("search_id") REFERENCES "searches" ("id");
 

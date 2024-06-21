@@ -7,6 +7,7 @@ sql:
       - "internal/scripts/person.sql"
       - "internal/scripts/address.sql"
       - "internal/scripts/search.sql"
+      - "internal/scripts/searches_result.sql"
     gen:
       go:
         package: "db"
