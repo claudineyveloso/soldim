@@ -13,37 +13,37 @@ import (
 )
 
 type Handler struct {
-	searchStore types.SearchStore
+	searchresultStore types.SearchResultStore
 }
 
-func NewHandler(searchStore types.SearchStore) *Handler {
-	return &Handler{searchStore: searchStore}
+func NewHandler(searchresultStore types.SearchResultStore) *Handler {
+	return &Handler{searchresultStore: searchresultStore}
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/create_search_result", h.handleCreateSearch).Methods(http.MethodPost)
-	router.HandleFunc("/delete_search_result/{searchID}", h.handleDeleteSearch).Methods(http.MethodDelete)
+	router.HandleFunc("/create_search_result", h.handleCreateSearchResult).Methods(http.MethodPost)
+	router.HandleFunc("/delete_search_result/{searchID}", h.handleDeleteSearchResult).Methods(http.MethodDelete)
 }
 
-func (h *Handler) handleCreateSearch(w http.ResponseWriter, r *http.Request) {
-	var search types.SearchPayload
-	if err := utils.ParseJSON(r, &search); err != nil {
+func (h *Handler) handleCreateSearchResult(w http.ResponseWriter, r *http.Request) {
+	var search_result types.SearchResultPayload
+	if err := utils.ParseJSON(r, &search_result); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
-	if err := utils.Validate.Struct(search); err != nil {
+	if err := utils.Validate.Struct(search_result); err != nil {
 		errors := err.(validator.ValidationErrors)
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("Payload inválido: %v", errors))
 		return
 	}
-	err := h.searchStore.CreateSearch(search)
+	err := h.searchresultStore.CreateSearchResult(search_result)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	response := map[string]interface{}{
-		"data":    search,
+		"data":    search_result,
 		"message": "Registro criado com sucesso",
 		"status":  http.StatusOK,
 	}
@@ -59,52 +59,20 @@ func (h *Handler) handleCreateSearch(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(jsonResponse)
 }
 
-func (h *Handler) handleGetSearches(w http.ResponseWriter, r *http.Request) {
-	// bucketID := auth.GetUserIDFromContext(r.Context())
-	// fmt.Println("Valor de userIDffsadfsda", bucketID)
-	searches, err := h.searchStore.GetSearches()
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Erro ao obter o Bucket: %v", err), http.StatusInternalServerError)
-		return
-	}
-	utils.WriteJSON(w, http.StatusOK, searches)
-}
-
-func (h *Handler) handleGetSearch(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handleDeleteSearchResult(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	str, ok := vars["searchID"]
 	if !ok {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID da Busca ausente!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Resultado da Busca ausente!"))
 		return
 	}
 	parsedSearchesID, err := uuid.Parse(str)
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Busca inválido!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Resultado da Busca inválido!"))
 		return
 	}
 
-	search, err := h.searchStore.GetSearchByID(parsedSearchesID)
-	if err != nil {
-		utils.WriteError(w, http.StatusInternalServerError, err)
-		return
-	}
-	utils.WriteJSON(w, http.StatusOK, search)
-}
-
-func (h *Handler) handleDeleteSearch(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	str, ok := vars["searchID"]
-	if !ok {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Busca ausente!"))
-		return
-	}
-	parsedSearchesID, err := uuid.Parse(str)
-	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Busca inválido!"))
-		return
-	}
-
-	err = h.searchStore.DeleteSearch(parsedSearchesID)
+	err = h.searchresultStore.DeleteSearchResult(parsedSearchesID)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
