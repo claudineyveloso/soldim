@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"net/http"
 
+	generatetoken "github.com/claudineyveloso/soldim.git/internal/services/generate_token"
 	"github.com/claudineyveloso/soldim.git/internal/services/healthy"
+	"github.com/claudineyveloso/soldim.git/internal/services/product"
+	salechannel "github.com/claudineyveloso/soldim.git/internal/services/sale_channel"
 	"github.com/claudineyveloso/soldim.git/internal/services/search"
 	"github.com/claudineyveloso/soldim.git/internal/services/user"
 	"github.com/gorilla/handlers"
@@ -27,6 +30,9 @@ func NewAPIServer(addr string, db *sql.DB) *APIServer {
 func (s *APIServer) Run() error {
 	r := mux.NewRouter()
 	healthy.RegisterRoutes(r)
+	generatetoken.RegisterRoutes(r)
+	product.RegisterRoutes(r)
+	salechannel.RegisterRoutes(r)
 
 	userStore := user.NewStore(s.db)
 	userHandler := user.NewHandler(userStore)

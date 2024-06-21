@@ -3,6 +3,7 @@ package crawler
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"strings"
 	"time"
 
@@ -86,8 +87,10 @@ func CrawlGoogle(query string) []Produto {
 		}
 	})
 
+	// Codificar a query string para ser usada na URL
+	encodedQuery := url.QueryEscape(query)
 	// Iniciar a pesquisa no Google
-	startURL := fmt.Sprintf("https://www.google.com/search?q=%s", query)
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s", encodedQuery)
 	err := c.Visit(startURL)
 	if err != nil {
 		log.Fatalf("Falha ao iniciar a visita: %v", err)
@@ -96,17 +99,15 @@ func CrawlGoogle(query string) []Produto {
 	// Esperar até que todas as visitas sejam concluídas
 	c.Wait()
 	shoppingCollector.Wait()
-
-	// // Exibir os resultados coletados
+	// Exibir os resultados coletados
 	// fmt.Printf("Total de produtos encontrados: %d\n", produtoCount)
 	// for _, produto := range produtos {
-	// 	fmt.Printf("Nome: %s\n", produto.Nome)
-	// 	fmt.Printf("Valor: %s\n", produto.Valor)
-	// 	fmt.Printf("Fonte: %s\n", produto.Fonte)
-	// 	fmt.Printf("URL: %s\n", produto.URL)
-	// 	fmt.Printf("Imagem: %s\n", produto.Imagem)
-	// 	fmt.Println("-------------------------------")
-	// }
+	// fmt.Printf("Nome: %s\n", produto.Nome)
+	// fmt.Printf("Valor: %s\n", produto.Valor)
+	// fmt.Printf("Fonte: %s\n", produto.Fonte)
+	// fmt.Printf("URL: %s\n", produto.URL)
+	// fmt.Printf("Imagem: %s\n", produto.Imagem)
+	// fmt.Println("-------------------------------")
 
 	return produtos
 }
