@@ -14,7 +14,7 @@ func RegisterRoutes(router *mux.Router) {
 }
 
 func handleGetSaleChannel(w http.ResponseWriter, r *http.Request) {
-	bearerToken := "fe30f48f033b53f4fe262eb521e9554303e0235c"
+	bearerToken := "5904172ee8be9f4f4ee15910b49752ca19c4b04c"
 	channels, err := bling.GetSalesChannelsFromBling(bearerToken)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter canais de vendas: %v", err), http.StatusInternalServerError)

@@ -46,16 +46,17 @@ type Person struct {
 }
 
 type Product struct {
-	ID          uuid.UUID       `json:"id"`
-	ImageUrl    sql.NullString  `json:"image_url"`
-	Description sql.NullString  `json:"description"`
-	Source      sql.NullString  `json:"source"`
-	Price       sql.NullFloat64 `json:"price"`
-	Promotion   bool            `json:"promotion"`
-	Link        sql.NullString  `json:"link"`
-	SearchID    uuid.UUID       `json:"search_id"`
-	CreatedAt   time.Time       `json:"created_at"`
-	UpdatedAt   time.Time       `json:"updated_at"`
+	ID             int32     `json:"id"`
+	Nome           string    `json:"nome"`
+	Codigo         string    `json:"codigo"`
+	Preco          float64   `json:"preco"`
+	Tipo           string    `json:"tipo"`
+	Situacao       string    `json:"situacao"`
+	Formato        string    `json:"formato"`
+	Descricaocurta string    `json:"descricaocurta"`
+	Imagemurl      string    `json:"imagemurl"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type Search struct {
@@ -63,6 +64,30 @@ type Search struct {
 	Description string    `json:"description"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type SearchesResult struct {
+	ID          uuid.UUID `json:"id"`
+	ImageUrl    string    `json:"image_url"`
+	Description string    `json:"description"`
+	Source      string    `json:"source"`
+	Price       float64   `json:"price"`
+	Promotion   bool      `json:"promotion"`
+	Link        string    `json:"link"`
+	SearchID    uuid.UUID `json:"search_id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type Token struct {
+	ID           uuid.UUID `json:"id"`
+	AccessToken  string    `json:"access_token"`
+	ExpiresIn    int32     `json:"expires_in"`
+	TokenType    string    `json:"token_type"`
+	Scope        string    `json:"scope"`
+	RefreshToken string    `json:"refresh_token"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 type User struct {

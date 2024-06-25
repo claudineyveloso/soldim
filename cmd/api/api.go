@@ -8,8 +8,10 @@ import (
 	generatetoken "github.com/claudineyveloso/soldim.git/internal/services/generate_token"
 	"github.com/claudineyveloso/soldim.git/internal/services/healthy"
 	"github.com/claudineyveloso/soldim.git/internal/services/product"
+	refreshtoken "github.com/claudineyveloso/soldim.git/internal/services/refresh_token"
 	salechannel "github.com/claudineyveloso/soldim.git/internal/services/sale_channel"
 	"github.com/claudineyveloso/soldim.git/internal/services/search"
+	searchresult "github.com/claudineyveloso/soldim.git/internal/services/search_result"
 	"github.com/claudineyveloso/soldim.git/internal/services/user"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -31,6 +33,7 @@ func (s *APIServer) Run() error {
 	r := mux.NewRouter()
 	healthy.RegisterRoutes(r)
 	generatetoken.RegisterRoutes(r)
+	refreshtoken.RegisterRoutes(r)
 	product.RegisterRoutes(r)
 	salechannel.RegisterRoutes(r)
 
@@ -41,7 +44,11 @@ func (s *APIServer) Run() error {
 	searchStore := search.NewStore(s.db)
 	searchHandler := search.NewHandler(searchStore)
 	searchHandler.RegisterRoutes(r)
-	//
+
+	searchresultStore := searchresult.NewStore(s.db)
+	searchresultHandler := searchresult.NewHandler(searchresultStore)
+	searchresultHandler.RegisterRoutes(r)
+
 	// ownerStore := owner.NewStore(s.db)
 	// personStore := person.NewStore(s.db)
 	// addressStore := address.NewStore(s.db)

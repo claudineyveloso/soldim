@@ -57,12 +57,12 @@ create unique index description_idx on searches (description);
 DROP TABLE IF EXISTS "searches_result";
 CREATE TABLE IF NOT EXISTS searches_result (
   id          UUID PRIMARY KEY,
-  image_url   varchar(255),
-  description varchar(255),
-  source      varchar(100),
-  price       float,
+  image_url   varchar(255) not null,
+  description varchar(255) not null,
+  source      varchar(100) not null,
+  price       float not null,
   promotion   boolean not null default false,
-  link        varchar(255),
+  link        varchar(255) not null,
   search_id   UUID not null,
   created_at  timestamp not null,
   updated_at  timestamp not null
@@ -80,4 +80,29 @@ CREATE TABLE IF NOT EXISTS parameters (
   created_at          timestamp not null,
   updated_at          timestamp not null
 );
+DROP TABLE IF EXISTS "products";
+CREATE TABLE IF NOT EXISTS products (
+  id              integer PRIMARY KEY,
+  nome            varchar(255) not null,
+  codigo          varchar(100) not null default '',
+  preco           float not null default 0.00,
+  tipo            varchar(10) not null default '',
+  situacao        varchar(10) not null default '',
+  formato         varchar(10) not null default '',
+  descricaoCurta  varchar(10) not null default '',
+  imagemURL       varchar(10) not null default '',
+  created_at      timestamp not null,
+  updated_at      timestamp not null
+);
 
+DROP TABLE IF EXISTS "tokens";
+CREATE TABLE IF NOT EXISTS tokens (
+  id            UUID PRIMARY KEY,
+  access_token  varchar(255) not null,
+  expires_in    integer not null,
+  token_type    varchar(100) not null,
+  scope         varchar(255) not null,
+  refresh_token varchar(255) not null,
+  created_at    timestamp not null,
+  updated_at    timestamp not null
+);
