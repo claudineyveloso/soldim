@@ -18,7 +18,7 @@ func RegisterRoutes(router *mux.Router) {
 }
 
 func handleGetProduct(w http.ResponseWriter, r *http.Request) {
-	bearerToken := "3953ad4a8a061757f55b1af3dfd932ff118aac4a" // r.Header.Get("Authorization")
+	bearerToken := "b972ab158694623b177f2f3c9e5a496017e28416" // r.Header.Get("Authorization")
 
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
