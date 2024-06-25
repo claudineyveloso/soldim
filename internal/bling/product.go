@@ -5,17 +5,26 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/claudineyveloso/soldim.git/internal/types"
 )
 
 const limitePorPagina = 100
 
-func GetProductsFromBling(bearerToken string, page int, limit int) ([]types.Product, int, error) {
+func GetProductsFromBling(bearerToken string, page int, limit int, name string) ([]types.Product, int, error) {
 	client := &http.Client{}
 
-	// Construindo a URL com os parâmetros página e limite
-	url := fmt.Sprintf("https://bling.com.br/Api/v3/produtos?pagina=%d&limite=%d", page, limit)
+	// Construindo a URL com os parâmetros página, limite e nome (se fornecido)
+	baseURL := "https://bling.com.br/Api/v3/produtos"
+	params := url.Values{}
+	params.Add("pagina", fmt.Sprintf("%d", page))
+	params.Add("limite", fmt.Sprintf("%d", limit))
+	if name != "" {
+		params.Add("nome", name)
+	}
+
+	url := fmt.Sprintf("%s?%s", baseURL, params.Encode())
 	fmt.Printf("Enviando requisição para URL: %s\n", url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

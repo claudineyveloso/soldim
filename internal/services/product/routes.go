@@ -18,10 +18,12 @@ func RegisterRoutes(router *mux.Router) {
 }
 
 func handleGetProduct(w http.ResponseWriter, r *http.Request) {
-	bearerToken := "6b51cb869830a30d109b02f5158860c384548f2d" // r.Header.Get("Authorization")
+	bearerToken := "399e7a79230b1491672c67d4191b72a94268be24" // r.Header.Get("Authorization")
 
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
+	name := r.URL.Query().Get("name")
+
 	page, err := strconv.Atoi(pageStr)
 	if err != nil || page < 1 {
 		page = 1
@@ -31,9 +33,9 @@ func handleGetProduct(w http.ResponseWriter, r *http.Request) {
 		limit = limitePorPagina
 	}
 
-	fmt.Printf("Requesting page: %d with limit: %d\n", page, limit)
+	fmt.Printf("Requesting page: %d with limit: %d and name: %s\n", page, limit, name)
 
-	products, totalPages, err := bling.GetProductsFromBling(bearerToken, page, limit)
+	products, totalPages, err := bling.GetProductsFromBling(bearerToken, page, limit, name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
