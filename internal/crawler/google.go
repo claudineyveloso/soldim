@@ -1,113 +1,146 @@
 package crawler
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 
-	"github.com/gocolly/colly/v2"
+	"github.com/PuerkitoBio/goquery"
+	"github.com/chromedp/chromedp"
 )
 
 type Produto struct {
-	Nome   string
-	Valor  string
-	Fonte  string
-	URL    string
-	Imagem string
+	Description string `json:"description"`
+	Price       string `json:"price"`
+	Source      string `json:"source"`
+	Link        string `json:"link"`
+	ImageURL    string `json:"image_url"`
+	Promotion   bool   `json:"promotion"`
 }
 
-func CrawlGoogle(query string) []Produto {
+func CrawlGoogle(query string) ([]Produto, error) {
+	ctx, cancel := chromedp.NewContext(context.Background())
+	defer cancel()
+
 	var produtos []Produto
-	var produtoCount int
-
-	// Criar um novo coletor para a pesquisa no Google
-	c := colly.NewCollector(
-		colly.AllowedDomains("www.google.com"),
-		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, como Gecko) Chrome/91.0.4472.124 Safari/537.36"),
-	)
-
-	// Criar um coletor secundário para seguir o link de compras e lidar com a paginação
-	shoppingCollector := colly.NewCollector(
-		colly.AllowedDomains("www.google.com"),
-		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, como Gecko) Chrome/91.0.4472.124 Safari/537.36"),
-	)
-
-	// Manipulador para quando uma página HTML é visitada no Google
-	c.OnHTML("a", func(e *colly.HTMLElement) {
-		linkText := e.Text
-		linkHref := e.Attr("href")
-
-		// Verificar se o link é para a seção de compras
-		if strings.Contains(linkText, "Shopping") {
-			fullURL := "https://www.google.com" + linkHref
-			log.Printf("Seguindo o link de compras: %s\n", fullURL)
-			shoppingCollector.Visit(fullURL)
-		}
-	})
-
-	// Manipulador para quando uma página HTML é visitada na seção de compras
-	shoppingCollector.OnHTML("div.sh-dgr__content", func(e *colly.HTMLElement) {
-		nome := e.ChildText(".EI11Pd h3.tAxDx")
-		valor := e.ChildText(".a8Pemb")
-		fonte := e.ChildText(".aULzUe.IuHnof")
-		url := e.ChildAttr("a", "href")
-		imagem := e.ChildAttr(".ArOc1c img", "src")
-
-		produto := Produto{
-			Nome:   nome,
-			Valor:  valor,
-			Fonte:  fonte,
-			URL:    url,
-			Imagem: imagem,
-		}
-		produtos = append(produtos, produto)
-		produtoCount++
-		log.Printf("Produto encontrado: %+v\n", produto)
-	})
-
-	// Manipulador para quando uma requisição falha
-	c.OnError(func(_ *colly.Response, err error) {
-		log.Println("Algo deu errado:", err)
-	})
-
-	shoppingCollector.OnError(func(_ *colly.Response, err error) {
-		log.Println("Algo deu errado no coletor de compras:", err)
-	})
-
-	// Manipulador para lidar com a paginação
-	shoppingCollector.OnHTML("a#pnnext", func(e *colly.HTMLElement) {
-		linkHref := e.Attr("href")
-		if linkHref != "" {
-			fullURL := "https://www.google.com" + linkHref
-			time.Sleep(2 * time.Second) // Adicione um pequeno atraso para evitar problemas com rate limiting
-			log.Printf("Seguindo para a próxima página: %s\n", fullURL)
-			shoppingCollector.Visit(fullURL)
-		}
-	})
 
 	// Codificar a query string para ser usada na URL
 	encodedQuery := url.QueryEscape(query)
-	// Iniciar a pesquisa no Google
-	startURL := fmt.Sprintf("https://www.google.com/search?q=%s", encodedQuery)
-	err := c.Visit(startURL)
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
+	log.Printf("Iniciando visita: %s", startURL)
+
+	// Navegar até a URL inicial
+	err := chromedp.Run(ctx, chromedp.Navigate(startURL))
 	if err != nil {
-		log.Fatalf("Falha ao iniciar a visita: %v", err)
+		return nil, fmt.Errorf("falha ao iniciar a visita: %v", err)
 	}
 
-	// Esperar até que todas as visitas sejam concluídas
-	c.Wait()
-	shoppingCollector.Wait()
-	// Exibir os resultados coletados
-	// fmt.Printf("Total de produtos encontrados: %d\n", produtoCount)
-	// for _, produto := range produtos {
-	// fmt.Printf("Nome: %s\n", produto.Nome)
-	// fmt.Printf("Valor: %s\n", produto.Valor)
-	// fmt.Printf("Fonte: %s\n", produto.Fonte)
-	// fmt.Printf("URL: %s\n", produto.URL)
-	// fmt.Printf("Imagem: %s\n", produto.Imagem)
-	// fmt.Println("-------------------------------")
+	for {
+		// Esperar o carregamento da página
+		err = chromedp.Run(ctx, chromedp.WaitVisible(`div.sh-dgr__grid-result`))
+		if err != nil {
+			log.Printf("Erro ao esperar pela visibilidade dos resultados: %v", err)
+			break
+		}
 
-	return produtos
+		// Extrair o HTML da página
+		var htmlContent string
+		err = chromedp.Run(ctx, chromedp.OuterHTML(`html`, &htmlContent))
+		if err != nil {
+			return nil, fmt.Errorf("falha ao extrair HTML: %v", err)
+		}
+
+		// Parsear o HTML com goquery
+		doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+		if err != nil {
+			return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
+		}
+
+		// Extrair detalhes dos produtos
+		doc.Find("div.sh-dgr__grid-result").Each(func(index int, item *goquery.Selection) {
+			description := item.Find(".tAxDx").Text()
+			price := formatarPreco(item.Find(".a8Pemb").Text())
+			rawURL, _ := item.Find("a").Attr("href")
+			imageURL, _ := item.Find(".ArOc1c img").Attr("src")
+			promotionText := strings.TrimSpace(item.Find(".fAcMNb span.Ib8pOd").Text())
+
+			source := ""
+			item.Find(".aULzUe").Contents().Each(func(i int, s *goquery.Selection) {
+				if goquery.NodeName(s) != "style" {
+					source = strings.TrimSpace(s.Text())
+				}
+			})
+
+			// Processar a URL conforme a lógica solicitada
+			var link string
+			if strings.HasPrefix(rawURL, "/shopping/product") {
+				link = "https://www.google.com.br" + rawURL
+			} else if strings.HasPrefix(rawURL, "/url?url=") {
+				link = strings.TrimPrefix(rawURL, "/url?url=")
+			} else {
+				link = rawURL
+			}
+
+			// Verificar se o texto da promoção é "PROMOÇÃO"
+			promotion := promotionText == "PROMOÇÃO"
+
+			produto := Produto{
+				Description: strings.TrimSpace(description),
+				Price:       price,
+				Source:      source,
+				Link:        link,
+				ImageURL:    imageURL,
+				Promotion:   promotion,
+			}
+			produtos = append(produtos, produto)
+			log.Printf("Produto encontrado: %+v\n", produto)
+		})
+
+		// Verificar se há uma próxima página
+		var nextPageExists bool
+		err = chromedp.Run(ctx, chromedp.EvaluateAsDevTools(`document.querySelector('a#pnnext') !== null`, &nextPageExists))
+		if err != nil {
+			return nil, fmt.Errorf("falha ao verificar a próxima página: %v", err)
+		}
+
+		if !nextPageExists {
+			break
+		}
+
+		// Navegar para a próxima página
+		err = chromedp.Run(ctx, chromedp.Click(`a#pnnext`, chromedp.NodeVisible))
+		if err != nil {
+			return nil, fmt.Errorf("falha ao navegar para a próxima página: %v", err)
+		}
+
+		// Aguardar um tempo para evitar problemas com rate limiting
+		time.Sleep(2 * time.Second)
+	}
+
+	// Log dos produtos coletados
+	log.Printf("Total de produtos coletados: %d", len(produtos))
+	for _, produto := range produtos {
+		log.Printf("Produto: %+v", produto)
+	}
+
+	return produtos, nil
+}
+
+func formatarPreco(valor string) string {
+	// Remover R$ e espaço não quebrável
+	valor = strings.Replace(valor, "R$", "", -1)
+	valor = strings.Replace(valor, "\u00a0", "", -1)
+
+	// Substituir vírgula por ponto
+	valor = strings.Replace(valor, ",", ".", -1)
+
+	// Remover caracteres não numéricos, exceto ponto decimal
+	re := regexp.MustCompile(`[^\d.]`)
+	valor = re.ReplaceAllString(valor, "")
+
+	return valor
 }

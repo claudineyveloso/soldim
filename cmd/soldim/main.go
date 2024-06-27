@@ -39,42 +39,42 @@ func initStorage(db *sql.DB) {
 	log.Println("DB: Successfully connected!")
 }
 
-// query := "Capacete Protork"
-// produtos := crawler.CrawlGoogle(query)
-//
-// fmt.Printf("Total de produtos encontrados: %d\n", len(produtos))
-// for _, produto := range produtos {
-// 	fmt.Printf("Nome: %s\n", produto.Nome)
-// 	fmt.Printf("Valor: %s\n", produto.Valor)
-// 	fmt.Printf("Fonte: %s\n", produto.Fonte)
-// 	fmt.Printf("URL: %s\n", produto.URL)
-// 	fmt.Printf("Imagem: %s\n", produto.Imagem)
-// 	fmt.Println("-------------------------------")
+// package main
+
+// import (
+// 	"encoding/json"
+// 	"fmt"
+// 	"log"
+// 	"net/http"
+
+// 	"github.com/claudineyveloso/soldim.git/internal/crawler"
+// 	"github.com/gorilla/mux"
+// )
+
+// func main() {
+// 	r := mux.NewRouter()
+// 	r.HandleFunc("/crawl", handleCrawl).Methods("GET")
+
+// 	fmt.Println("Server started at :8080")
+// 	log.Fatal(http.ListenAndServe(":8080", r))
 // }
-//
-// fmt.Printf("Total de produtos encontrados: %d\n", len(produtos))
-// bearerToken := "cafdf8d595a1cd9524c8fc7dc1b1e19c676fc8da"
-// produtos, err := crawler.GetProductsFromBling(bearerToken)
-// if err != nil {
-// 	log.Fatalf("Erro ao obter produtos: %v", err)
-// }
-//
-// if len(produtos) == 0 {
-// 	log.Println("Nenhum produto encontrado.")
-// } else {
-// 	for _, produto := range produtos {
-// 		preco := fmt.Sprintf("%v", produto.Preco) // Converter interface{} para string
-//
-// 		fmt.Printf("ID: %d\n", produto.ID)
-// 		fmt.Printf("Nome: %s\n", produto.Nome)
-// 		fmt.Printf("Código: %s\n", produto.Codigo)
-// 		fmt.Printf("Preço: %s\n", preco)
-// 		fmt.Printf("Tipo: %s\n", produto.Tipo)
-// 		fmt.Printf("Situação: %s\n", produto.Situacao)
-// 		fmt.Printf("Formato: %s\n", produto.Formato)
-// 		fmt.Printf("Descrição Curta: %s\n", produto.DescricaoCurta)
-// 		fmt.Printf("Imagem URL: %s\n", produto.ImagemURL)
-// 		fmt.Println("------------------------------")
+
+// func handleCrawl(w http.ResponseWriter, r *http.Request) {
+// 	query := r.URL.Query().Get("query")
+// 	if query == "" {
+// 		http.Error(w, "query parameter is required", http.StatusBadRequest)
+// 		return
 // 	}
+
+// 	produtos, err := crawler.CrawlGoogle(query)
+// 	if err != nil {
+// 		http.Error(w, fmt.Sprintf("error crawling data: %v", err), http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	w.Header().Set("Content-Type", "application/json")
+// 	json.NewEncoder(w).Encode(produtos)
+
+// 	// Log the total number of products collected
+// 	log.Printf("Total de produtos coletados: %d", len(produtos))
 // }
-//}

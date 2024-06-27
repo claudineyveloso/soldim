@@ -62,28 +62,3 @@ func handleGetProduct(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("Retornando %d produtos e %d páginas\n", len(products), totalPages)
 }
-
-// func handleGetProductiii(w http.ResponseWriter, r *http.Request) {
-// 	bearerToken := "5d1874f7ee1c00d9f76bf980572c105b11b164bf"
-// 	pageStr := r.URL.Query().Get("page")
-// 	page, err := strconv.Atoi(pageStr)
-//
-// 	if err != nil || page < 1 {
-// 		page = 1
-// 	}
-//
-// 	products, totalPages, err := bling.GetProductsFromBling(bearerToken, page)
-// 	if err != nil {
-// 		http.Error(w, fmt.Sprintf("Erro ao obter produtos: %v", err), http.StatusInternalServerError)
-// 		return
-// 	}
-// 	response := struct {
-// 		Products   []Product `json:"products"`
-// 		TotalPages int       `json:"totalPages"`
-// 	}{
-// 		Products:   products,
-// 		TotalPages: totalPages,
-// 	}
-//
-// 	json.NewEncoder(w).Encode(response)
-// }
