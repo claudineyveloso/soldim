@@ -3,6 +3,7 @@ package product
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -15,10 +16,11 @@ const limitePorPagina = 100
 
 func RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/get_products", handleGetProduct).Methods(http.MethodGet)
+	router.HandleFunc("/update_product", handleUpdateProduct).Methods(http.MethodPut)
 }
 
 func handleGetProduct(w http.ResponseWriter, r *http.Request) {
-	bearerToken := "80a20e56416c06e40766d36fb15e5997762ee503" // r.Header.Get("Authorization")
+	bearerToken := "d7993e72b2ed85c034ff45380e5855258993d05e" // r.Header.Get("Authorization")
 
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
@@ -61,4 +63,77 @@ func handleGetProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Printf("Retornando %d produtos e %d páginas\n", len(products), totalPages)
+}
+
+func handleCreateProduct(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Decodifica o JSON do corpo da requisição para a estrutura Product
+	var newProduct types.Product
+	if err := json.NewDecoder(r.Body).Decode(&newProduct); err != nil {
+		http.Error(w, "Erro ao decodificar JSON", http.StatusBadRequest)
+		return
+	}
+
+	// Fecha o corpo da requisição após o processamento
+	defer r.Body.Close()
+
+	bearerToken := "d7993e72b2ed85c034ff45380e5855258993d05e"
+
+	// Chama a função para criar o produto no Bling
+	err := bling.CreateProductInBling(bearerToken, newProduct)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erro ao criar produto: %v", err), http.StatusInternalServerError)
+		log.Fatalf("Erro ao criar produto: %v", err)
+		return
+	}
+
+	// Responde com sucesso
+	w.WriteHeader(http.StatusCreated)
+	fmt.Fprintf(w, "Produto criado com sucesso!")
+}
+
+func handleUpdateProduct(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Extrai o productID dos parâmetros da URL
+	productIDStr := r.URL.Query().Get("productID")
+	if productIDStr == "" {
+		http.Error(w, "productID é necessário", http.StatusBadRequest)
+		return
+	}
+	productID, err := strconv.ParseInt(productIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "productID inválido", http.StatusBadRequest)
+		return
+	}
+
+	// Decodifica o JSON do corpo da requisição para a estrutura Product
+	var updatedProduct types.Product
+	if err := json.NewDecoder(r.Body).Decode(&updatedProduct); err != nil {
+		http.Error(w, "Erro ao decodificar JSON", http.StatusBadRequest)
+		return
+	}
+
+	// Fecha o corpo da requisição após o processamento
+	defer r.Body.Close()
+
+	bearerToken := "d7993e72b2ed85c034ff45380e5855258993d05e"
+	// Chama a função para atualizar o produto no Bling
+	err = bling.UpdateProductInBling(bearerToken, productID, updatedProduct)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erro ao atualizar produto: %v", err), http.StatusInternalServerError)
+		log.Fatalf("Erro ao atualizar produto: %v", err)
+		return
+	}
+
+	// Responde com sucesso
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Produto atualizado com sucesso!")
 }

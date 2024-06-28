@@ -1,6 +1,7 @@
 package bling
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -84,4 +85,72 @@ func GetProductsFromBling(bearerToken string, page int, limit int, name string) 
 	fmt.Printf("Total de páginas calculado: %d\n", totalPages)
 
 	return produtos, totalPages, nil
+}
+
+func CreateProductInBling(bearerToken string, product types.Product) error {
+	client := &http.Client{}
+
+	// Construindo a URL para a criação de produtos
+	url := "https://bling.com.br/Api/v3/produtos"
+
+	// Serializando o produto para JSON
+	productData, err := json.Marshal(product)
+	if err != nil {
+		return fmt.Errorf("erro ao serializar produto: %v", err)
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(productData))
+	if err != nil {
+		return fmt.Errorf("erro ao criar requisição: %v", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+bearerToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("erro ao enviar requisição: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		return fmt.Errorf("falha na requisição: %s", bodyString)
+	}
+
+	return nil
+}
+
+func UpdateProductInBling(bearerToken string, productID int64, product types.Product) error {
+	client := &http.Client{}
+
+	// Construindo a URL para a atualização de produtos
+	url := fmt.Sprintf("https://bling.com.br/Api/v3/produtos/%d", productID)
+
+	// Serializando o produto para JSON
+	productData, err := json.Marshal(product)
+	if err != nil {
+		return fmt.Errorf("erro ao serializar produto: %v", err)
+	}
+
+	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(productData))
+	if err != nil {
+		return fmt.Errorf("erro ao criar requisição: %v", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+bearerToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("erro ao enviar requisição: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		return fmt.Errorf("falha na requisição: %s", bodyString)
+	}
+
+	return nil
 }
