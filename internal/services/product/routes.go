@@ -16,11 +16,12 @@ const limitePorPagina = 100
 
 func RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/get_products", handleGetProduct).Methods(http.MethodGet)
+	router.HandleFunc("/create_product", handleCreateProduct).Methods(http.MethodPost)
 	router.HandleFunc("/update_product", handleUpdateProduct).Methods(http.MethodPut)
 }
 
 func handleGetProduct(w http.ResponseWriter, r *http.Request) {
-	bearerToken := "d7993e72b2ed85c034ff45380e5855258993d05e" // r.Header.Get("Authorization")
+	bearerToken := "6323e72b73d2e8a80130315d6108343ab4fddcec" // r.Header.Get("Authorization")
 
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
@@ -81,8 +82,7 @@ func handleCreateProduct(w http.ResponseWriter, r *http.Request) {
 	// Fecha o corpo da requisição após o processamento
 	defer r.Body.Close()
 
-	bearerToken := "d7993e72b2ed85c034ff45380e5855258993d05e"
-
+	bearerToken := "6323e72b73d2e8a80130315d6108343ab4fddcec" // r.Header.Get("Authorization")
 	// Chama a função para criar o produto no Bling
 	err := bling.CreateProductInBling(bearerToken, newProduct)
 	if err != nil {
@@ -124,7 +124,8 @@ func handleUpdateProduct(w http.ResponseWriter, r *http.Request) {
 	// Fecha o corpo da requisição após o processamento
 	defer r.Body.Close()
 
-	bearerToken := "d7993e72b2ed85c034ff45380e5855258993d05e"
+	bearerToken := "6323e72b73d2e8a80130315d6108343ab4fddcec" // r.Header.Get("Authorization")
+
 	// Chama a função para atualizar o produto no Bling
 	err = bling.UpdateProductInBling(bearerToken, productID, updatedProduct)
 	if err != nil {
