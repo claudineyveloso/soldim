@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,12 +15,12 @@ import (
 )
 
 type Produto struct {
-	Description string `json:"description"`
-	Price       string `json:"price"`
-	Source      string `json:"source"`
-	Link        string `json:"link"`
-	ImageURL    string `json:"image_url"`
-	Promotion   bool   `json:"promotion"`
+	Description string  `json:"description"`
+	Price       float64 `json:"price"`
+	Source      string  `json:"source"`
+	Link        string  `json:"link"`
+	ImageURL    string  `json:"image_url"`
+	Promotion   bool    `json:"promotion"`
 }
 
 func CrawlGoogle(query string) ([]Produto, error) {
@@ -63,7 +64,16 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		// Extrair detalhes dos produtos
 		doc.Find("div.sh-dgr__grid-result").Each(func(index int, item *goquery.Selection) {
 			description := item.Find(".tAxDx").Text()
-			price := formatarPreco(item.Find(".a8Pemb").Text())
+			priceText := item.Find(".a8Pemb").Text()
+			log.Printf("Raw price text: %s", priceText)
+
+			price, err := formatarPreco(priceText)
+			if err != nil {
+				log.Printf("Erro ao formatar o preço: %v", err)
+				price = 0.0
+			}
+			log.Printf("Formatted price: %f", price)
+
 			rawURL, _ := item.Find("a").Attr("href")
 			imageURL, _ := item.Find(".ArOc1c img").Attr("src")
 			promotionText := strings.TrimSpace(item.Find(".fAcMNb span.Ib8pOd").Text())
@@ -130,17 +140,27 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	return produtos, nil
 }
 
-func formatarPreco(valor string) string {
+func formatarPreco(valor string) (float64, error) {
 	// Remover R$ e espaço não quebrável
+	log.Printf("Raw valor: %s", valor)
 	valor = strings.Replace(valor, "R$", "", -1)
 	valor = strings.Replace(valor, "\u00a0", "", -1)
+	log.Printf("Valor after removing R$ and non-breaking space: %s", valor)
 
 	// Substituir vírgula por ponto
-	valor = strings.Replace(valor, ",", ".", -1)
+	valor = strings.Replace(valor, ".", "", -1)  // Remove thousands separator
+	valor = strings.Replace(valor, ",", ".", -1) // Replace decimal comma with dot
+	log.Printf("Valor after replacing comma with dot: %s", valor)
 
 	// Remover caracteres não numéricos, exceto ponto decimal
 	re := regexp.MustCompile(`[^\d.]`)
 	valor = re.ReplaceAllString(valor, "")
+	log.Printf("Valor after removing non-numeric characters: %s", valor)
 
-	return valor
+	// Converter para float64
+	preco, err := strconv.ParseFloat(valor, 64)
+	if err != nil {
+		log.Printf("Error parsing float: %v", err)
+	}
+	return preco, err
 }

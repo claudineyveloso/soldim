@@ -48,6 +48,23 @@ func (s *Store) CreateSearchResult(searchresult types.SearchResultPayload) error
 	return nil
 }
 
+func (s *Store) GetSearchesResult() ([]*types.SearchResult, error) {
+	queries := db.New(s.db)
+	ctx := context.Background()
+
+	dbSearches, err := queries.GetSearchesResult(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var searches []*types.SearchResult
+	for _, dbSearch := range dbSearches {
+		search := convertDBSearchResultToSearchResult(dbSearch)
+		searches = append(searches, search)
+	}
+	return searches, nil
+}
+
 func (s *Store) DeleteSearchResult(searchID uuid.UUID) error {
 	queries := db.New(s.db)
 	ctx := context.Background()
@@ -56,4 +73,20 @@ func (s *Store) DeleteSearchResult(searchID uuid.UUID) error {
 		return err
 	}
 	return nil
+}
+
+func convertDBSearchResultToSearchResult(dbSearchResult db.SearchesResult) *types.SearchResult {
+	searchresult := &types.SearchResult{
+		ID:          dbSearchResult.ID,
+		ImageURL:    dbSearchResult.ImageUrl,
+		Description: dbSearchResult.Description,
+		Source:      dbSearchResult.Source,
+		Price:       dbSearchResult.Price,
+		Promotion:   dbSearchResult.Promotion,
+		Link:        dbSearchResult.Link,
+		SearchID:    dbSearchResult.SearchID,
+		CreatedAt:   dbSearchResult.CreatedAt,
+		UpdatedAt:   dbSearchResult.UpdatedAt,
+	}
+	return searchresult
 }

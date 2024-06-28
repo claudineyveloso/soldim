@@ -42,10 +42,11 @@ func (s *APIServer) Run() error {
 	userHandler.RegisterRoutes(r)
 	//
 	searchStore := search.NewStore(s.db)
-	searchHandler := search.NewHandler(searchStore)
+	searchresultStore := searchresult.NewStore(s.db)
+	searchHandler := search.NewHandler(searchStore, searchresultStore)
 	searchHandler.RegisterRoutes(r)
 
-	searchresultStore := searchresult.NewStore(s.db)
+	// searchresultStore := searchresult.NewStore(s.db)
 	searchresultHandler := searchresult.NewHandler(searchresultStore)
 	searchresultHandler.RegisterRoutes(r)
 

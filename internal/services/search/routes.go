@@ -3,8 +3,10 @@ package search
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
+	"github.com/claudineyveloso/soldim.git/internal/crawler"
 	"github.com/claudineyveloso/soldim.git/internal/types"
 	"github.com/claudineyveloso/soldim.git/internal/utils"
 	"github.com/go-playground/validator"
@@ -13,11 +15,12 @@ import (
 )
 
 type Handler struct {
-	searchStore types.SearchStore
+	searchStore       types.SearchStore
+	searchResultStore types.SearchResultStore
 }
 
-func NewHandler(searchStore types.SearchStore) *Handler {
-	return &Handler{searchStore: searchStore}
+func NewHandler(searchStore types.SearchStore, searchResultStore types.SearchResultStore) *Handler {
+	return &Handler{searchStore: searchStore, searchResultStore: searchResultStore}
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
@@ -38,10 +41,32 @@ func (h *Handler) handleCreateSearch(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("Payload inválido: %v", errors))
 		return
 	}
-	err := h.searchStore.CreateSearch(search)
+
+	createSearch, err := h.searchStore.CreateSearch(search)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
+	}
+
+	products, err := crawler.CrawlGoogle(search.Description)
+	if err != nil {
+		log.Fatalf("Erro ao coletar produtos: %v", err)
+	}
+
+	for _, product := range products {
+		searchResult := types.SearchResultPayload{
+			ID:          uuid.New(),
+			SearchID:    createSearch,
+			ImageURL:    product.ImageURL,
+			Description: product.Description,
+			Source:      product.Source,
+			Price:       product.Price,
+			Link:        product.Link,
+		}
+		if err := h.searchResultStore.CreateSearchResult(searchResult); err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, err)
+			return
+		}
 	}
 
 	response := map[string]interface{}{

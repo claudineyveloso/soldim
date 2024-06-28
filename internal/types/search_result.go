@@ -8,7 +8,7 @@ import (
 
 type SearchResult struct {
 	ID          uuid.UUID `json:"id"`
-	ImageURL    string    `json:"image_ulr"`
+	ImageURL    string    `json:"image_url"`
 	Description string    `json:"description"`
 	Source      string    `json:"source"`
 	Price       float64   `json:"price"`
@@ -21,7 +21,7 @@ type SearchResult struct {
 
 type SearchResultPayload struct {
 	ID          uuid.UUID `json:"id"`
-	ImageURL    string    `json:"image_ulr"`
+	ImageURL    string    `json:"image_url"`
 	Description string    `json:"description"`
 	Source      string    `json:"source"`
 	Price       float64   `json:"price"`
@@ -34,5 +34,6 @@ type SearchResultPayload struct {
 
 type SearchResultStore interface {
 	CreateSearchResult(SearchResultPayload) error
+	GetSearchesResult() ([]*SearchResult, error)
 	DeleteSearchResult(id uuid.UUID) error
 }

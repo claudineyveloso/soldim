@@ -57,12 +57,12 @@ create unique index description_idx on searches (description);
 DROP TABLE IF EXISTS "searches_result";
 CREATE TABLE IF NOT EXISTS searches_result (
   id          UUID PRIMARY KEY,
-  image_url   varchar(255) not null,
+  image_url   varchar not null,
   description varchar(255) not null,
   source      varchar(100) not null,
   price       float not null,
   promotion   boolean not null default false,
-  link        varchar(255) not null,
+  link        varchar not null,
   search_id   UUID not null,
   created_at  timestamp not null,
   updated_at  timestamp not null

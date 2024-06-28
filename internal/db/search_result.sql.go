@@ -55,3 +55,42 @@ func (q *Queries) DeleteSearchResult(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, deleteSearchResult, id)
 	return err
 }
+
+const getSearchesResult = `-- name: GetSearchesResult :many
+SELECT id, image_url, description, source, price, promotion, link, search_id, created_at, updated_at
+FROM searches_result ORDER BY created_at DESC
+`
+
+func (q *Queries) GetSearchesResult(ctx context.Context) ([]SearchesResult, error) {
+	rows, err := q.db.QueryContext(ctx, getSearchesResult)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SearchesResult
+	for rows.Next() {
+		var i SearchesResult
+		if err := rows.Scan(
+			&i.ID,
+			&i.ImageUrl,
+			&i.Description,
+			&i.Source,
+			&i.Price,
+			&i.Promotion,
+			&i.Link,
+			&i.SearchID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

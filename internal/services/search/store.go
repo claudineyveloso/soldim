@@ -19,7 +19,7 @@ func NewStore(db *sql.DB) *Store {
 	return &Store{db: db}
 }
 
-func (s *Store) CreateSearch(search types.SearchPayload) error {
+func (s *Store) CreateSearch(search types.SearchPayload) (uuid.UUID, error) {
 	queries := db.New(s.db)
 	ctx := context.Background()
 
@@ -38,9 +38,9 @@ func (s *Store) CreateSearch(search types.SearchPayload) error {
 	if err := queries.CreateSearch(ctx, createSearchParams); err != nil {
 		// http.Error(_, "Erro ao criar usuário", http.StatusInternalServerError)
 		fmt.Println("Erro ao criar uma Busca:", err)
-		return err
+		return uuid.UUID{}, err
 	}
-	return nil
+	return search.ID, nil
 }
 
 func (s *Store) GetSearches() ([]*types.Search, error) {

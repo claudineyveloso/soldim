@@ -21,8 +21,20 @@ func NewHandler(searchresultStore types.SearchResultStore) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
+	router.HandleFunc("/get_searches_result", h.handleGetSearchesResult).Methods(http.MethodGet)
 	router.HandleFunc("/create_search_result", h.handleCreateSearchResult).Methods(http.MethodPost)
 	router.HandleFunc("/delete_search_result/{searchID}", h.handleDeleteSearchResult).Methods(http.MethodDelete)
+}
+
+func (h *Handler) handleGetSearchesResult(w http.ResponseWriter, r *http.Request) {
+	// bucketID := auth.GetUserIDFromContext(r.Context())
+	// fmt.Println("Valor de userIDffsadfsda", bucketID)
+	searchesResult, err := h.searchresultStore.GetSearchesResult()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erro ao obter o Resultado da Busca: %v", err), http.StatusInternalServerError)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, searchesResult)
 }
 
 func (h *Handler) handleCreateSearchResult(w http.ResponseWriter, r *http.Request) {
