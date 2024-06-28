@@ -154,3 +154,92 @@ func UpdateProductInBling(bearerToken string, productID int64, product types.Pro
 
 	return nil
 }
+
+func DeleteProductInBling(bearerToken string, productID int64) error {
+	client := &http.Client{}
+
+	// Construindo a URL para a exclusão de produtos
+	url := fmt.Sprintf("https://bling.com.br/Api/v3/produtos/%d", productID)
+	fmt.Printf("URL de requisição: %s\n", url) // Adicionando log para imprimir a URL
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return fmt.Errorf("erro ao criar requisição: %v", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+bearerToken)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("erro ao enviar requisição: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		return fmt.Errorf("falha na requisição: %s", bodyString)
+	}
+
+	return nil
+}
+
+func GetProductIDInBling(bearerToken string, productID int64) (*types.Product, error) {
+	client := &http.Client{}
+
+	url := fmt.Sprintf("https://bling.com.br/Api/v3/produtos/%d", productID)
+	fmt.Printf("URL de requisição: %s\n", url) // Adicionando log para imprimir a URL
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao criar requisição: %v", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+bearerToken)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao enviar requisição: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		return nil, fmt.Errorf("falha na requisição: %s", bodyString)
+	}
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao ler resposta: %v", err)
+	}
+
+	var responseData struct {
+		Data struct {
+			ID             int64       `json:"id"`
+			Nome           string      `json:"nome"`
+			Codigo         string      `json:"codigo"`
+			Preco          interface{} `json:"preco"`
+			ImagemURL      string      `json:"imagemURL"`
+			Tipo           string      `json:"tipo"`
+			Situacao       string      `json:"situacao"`
+			Formato        string      `json:"formato"`
+			DescricaoCurta string      `json:"descricaoCurta"`
+		} `json:"data"`
+	}
+
+	if err := json.Unmarshal(bodyBytes, &responseData); err != nil {
+		return nil, fmt.Errorf("erro ao decodificar resposta: %v", err)
+	}
+
+	product := &types.Product{
+		ID:             responseData.Data.ID,
+		Nome:           responseData.Data.Nome,
+		Codigo:         responseData.Data.Codigo,
+		Preco:          responseData.Data.Preco,
+		ImagemURL:      responseData.Data.ImagemURL,
+		Tipo:           responseData.Data.Tipo,
+		Situacao:       responseData.Data.Situacao,
+		Formato:        responseData.Data.Formato,
+		DescricaoCurta: responseData.Data.DescricaoCurta,
+	}
+
+	return product, nil
+}

@@ -18,6 +18,8 @@ func RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/get_products", handleGetProduct).Methods(http.MethodGet)
 	router.HandleFunc("/create_product", handleCreateProduct).Methods(http.MethodPost)
 	router.HandleFunc("/update_product", handleUpdateProduct).Methods(http.MethodPut)
+	router.HandleFunc("/delete_product", handleDeleteProduct).Methods(http.MethodDelete)
+	router.HandleFunc("/get_product_id", handleGetProductId).Methods(http.MethodGet)
 }
 
 func handleGetProduct(w http.ResponseWriter, r *http.Request) {
@@ -137,4 +139,75 @@ func handleUpdateProduct(w http.ResponseWriter, r *http.Request) {
 	// Responde com sucesso
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "Produto atualizado com sucesso!")
+}
+
+func handleDeleteProduct(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Extrai o productID dos parâmetros da URL
+	productIDStr := r.URL.Query().Get("productID")
+	if productIDStr == "" {
+		http.Error(w, "productID é necessário", http.StatusBadRequest)
+		return
+	}
+	productID, err := strconv.ParseInt(productIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "productID inválido", http.StatusBadRequest)
+		return
+	}
+
+	bearerToken := "6323e72b73d2e8a80130315d6108343ab4fddcec" // r.Header.Get("Authorization")
+
+	// Chama a função para deletar o produto no Bling
+	err = bling.DeleteProductInBling(bearerToken, productID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erro ao deletar produto: %v", err), http.StatusInternalServerError)
+		log.Fatalf("Erro ao deletar produto: %v", err)
+		return
+	}
+
+	// Responde com sucesso
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Produto deletado com sucesso!")
+}
+
+func handleGetProductId(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Extrai o productID dos parâmetros da URL
+	productIDStr := r.URL.Query().Get("productID")
+	if productIDStr == "" {
+		http.Error(w, "productID é necessário", http.StatusBadRequest)
+		return
+	}
+	productID, err := strconv.ParseInt(productIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "productID inválido", http.StatusBadRequest)
+		return
+	}
+
+	bearerToken := "6323e72b73d2e8a80130315d6108343ab4fddcec" // r.Header.Get("Authorization")
+
+	// Chama a função para obter os detalhes do produto no Bling
+	product, err := bling.GetProductIDInBling(bearerToken, productID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erro ao obter detalhes do produto: %v", err), http.StatusInternalServerError)
+		log.Fatalf("Erro ao obter detalhes do produto: %v", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(product)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprintf(w, "Detalhes do produto obtidos com sucesso!")
 }
