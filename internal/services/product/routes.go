@@ -23,7 +23,7 @@ func RegisterRoutes(router *mux.Router) {
 }
 
 func handleGetProduct(w http.ResponseWriter, r *http.Request) {
-	bearerToken := "06664ca9c6f781635b31bd2e911526e3715f1f17" // r.Header.Get("Authorization")
+	bearerToken := "661446043d11447c46076ef18a1a4d81b16090dd" // r.Header.Get("Authorization")
 
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
@@ -84,7 +84,8 @@ func handleCreateProduct(w http.ResponseWriter, r *http.Request) {
 	// Fecha o corpo da requisição após o processamento
 	defer r.Body.Close()
 
-	bearerToken := "06664ca9c6f781635b31bd2e911526e3715f1f17" // r.Header.Get("Authorization")
+	bearerToken := "661446043d11447c46076ef18a1a4d81b16090dd" // r.Header.Get("Authorization")
+
 	// Chama a função para criar o produto no Bling
 	err := bling.CreateProductInBling(bearerToken, newProduct)
 	if err != nil {
@@ -126,7 +127,8 @@ func handleUpdateProduct(w http.ResponseWriter, r *http.Request) {
 	// Fecha o corpo da requisição após o processamento
 	defer r.Body.Close()
 
-	bearerToken := "06664ca9c6f781635b31bd2e911526e3715f1f17" // r.Header.Get("Authorization")
+	bearerToken := "661446043d11447c46076ef18a1a4d81b16090dd" // r.Header.Get("Authorization")
+
 	// Chama a função para atualizar o produto no Bling
 	err = bling.UpdateProductInBling(bearerToken, productID, updatedProduct)
 	if err != nil {
@@ -158,7 +160,8 @@ func handleDeleteProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bearerToken := "06664ca9c6f781635b31bd2e911526e3715f1f17" // r.Header.Get("Authorization")
+	bearerToken := "661446043d11447c46076ef18a1a4d81b16090dd" // r.Header.Get("Authorization")
+
 	// Chama a função para deletar o produto no Bling
 	err = bling.DeleteProductInBling(bearerToken, productID)
 	if err != nil {
@@ -190,7 +193,7 @@ func handleGetProductId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bearerToken := "06664ca9c6f781635b31bd2e911526e3715f1f17" // r.Header.Get("Authorization")
+	bearerToken := "661446043d11447c46076ef18a1a4d81b16090dd" // r.Header.Get("Authorization")
 	// Chama a função para obter os detalhes do produto no Bling
 	product, err := bling.GetProductIDInBling(bearerToken, productID)
 	if err != nil {
