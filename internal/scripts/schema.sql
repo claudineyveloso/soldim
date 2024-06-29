@@ -73,6 +73,26 @@ ALTER TABLE
 ADD
    FOREIGN KEY ("search_id") REFERENCES "searches" ("id");
 
+ -- Drafts
+DROP TABLE IF EXISTS "drafts";
+CREATE TABLE IF NOT EXISTS drafts (
+  id          UUID PRIMARY KEY,
+  image_url   varchar not null,
+  description varchar(255) not null,
+  source      varchar(100) not null,
+  price       float not null,
+  promotion   boolean not null default false,
+  link        varchar not null,
+  search_id   UUID not null,
+  created_at  timestamp not null,
+  updated_at  timestamp not null
+);
+
+ALTER TABLE
+   "drafts"
+ADD
+   FOREIGN KEY ("search_id") REFERENCES "searches" ("id"); 
+
 DROP TABLE IF EXISTS "parameters";
 CREATE TABLE IF NOT EXISTS parameters (
   id                  UUID PRIMARY KEY,
