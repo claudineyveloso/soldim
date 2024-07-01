@@ -10,6 +10,7 @@ sql:
       - "internal/scripts/search_result.sql"
       - "internal/scripts/product.sql"
       - "internal/scripts/token.sql"
+      - "internal/scripts/draft.sql"
     gen:
       go:
         package: "db"
