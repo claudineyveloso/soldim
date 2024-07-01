@@ -12,6 +12,7 @@ import (
 	salechannel "github.com/claudineyveloso/soldim.git/internal/services/sale_channel"
 	"github.com/claudineyveloso/soldim.git/internal/services/search"
 	searchresult "github.com/claudineyveloso/soldim.git/internal/services/search_result"
+	"github.com/claudineyveloso/soldim.git/internal/services/token"
 	"github.com/claudineyveloso/soldim.git/internal/services/user"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -40,7 +41,7 @@ func (s *APIServer) Run() error {
 	userStore := user.NewStore(s.db)
 	userHandler := user.NewHandler(userStore)
 	userHandler.RegisterRoutes(r)
-	//
+
 	searchStore := search.NewStore(s.db)
 	searchresultStore := searchresult.NewStore(s.db)
 	searchHandler := search.NewHandler(searchStore, searchresultStore)
@@ -50,34 +51,10 @@ func (s *APIServer) Run() error {
 	searchresultHandler := searchresult.NewHandler(searchresultStore)
 	searchresultHandler.RegisterRoutes(r)
 
-	// ownerStore := owner.NewStore(s.db)
-	// personStore := person.NewStore(s.db)
-	// addressStore := address.NewStore(s.db)
-	// ownerHandler := owner.NewHandler(ownerStore, personStore, addressStore)
-	// ownerHandler.RegisterRoutes(r)
-	//
-	// customerStore := customer.NewStore(s.db)
-	// personStore = person.NewStore(s.db)
-	// addressStore = address.NewStore(s.db)
-	// customerHandler := customer.NewHandler(customerStore, personStore, addressStore)
-	// customerHandler.RegisterRoutes(r)
-	//
-	// typeServiceStore := typeservice.NewStore(s.db)
-	// typeServiceHandler := typeservice.NewHandler(typeServiceStore)
-	// typeServiceHandler.RegisterRoutes(r)
-	//
-	// intervalStore := interval.NewStore(s.db)
-	// intervalHandler := interval.NewHandler(intervalStore)
-	// intervalHandler.RegisterRoutes(r)
-	//
-	// attendanceStore := attendance.NewStore(s.db)
-	// attendanceHandler := attendance.NewHandler(attendanceStore)
-	// attendanceHandler.RegisterRoutes(r)
-	//
-	// insuranceStore := insurance.NewStore(s.db)
-	// insuranceHandler := insurance.NewHandler(insuranceStore)
-	// insuranceHandler.RegisterRoutes(r)
-	//
+	tokenStore := token.NewStore(s.db)
+	tokenHandler := token.NewHandler(tokenStore)
+	tokenHandler.RegisterRoutes(r)
+
 	fmt.Println("Server started on http://localhost:8080")
 	// return http.ListenAndServe("localhost:8080", r)
 	return http.ListenAndServe("localhost:8080",

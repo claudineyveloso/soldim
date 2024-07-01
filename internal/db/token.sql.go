@@ -7,14 +7,13 @@ package db
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 )
 
 const createToken = `-- name: CreateToken :exec
-INSERT INTO tokens ( ID, access_token, expires_in, token_type, scope, refresh_token, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO tokens ( ID, access_token, expires_in, token_type, scope, refresh_token)
+VALUES ($1, $2, $3, $4, $5, $6)
 `
 
 type CreateTokenParams struct {
@@ -24,8 +23,6 @@ type CreateTokenParams struct {
 	TokenType    string    `json:"token_type"`
 	Scope        string    `json:"scope"`
 	RefreshToken string    `json:"refresh_token"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 func (q *Queries) CreateToken(ctx context.Context, arg CreateTokenParams) error {
@@ -36,14 +33,62 @@ func (q *Queries) CreateToken(ctx context.Context, arg CreateTokenParams) error 
 		arg.TokenType,
 		arg.Scope,
 		arg.RefreshToken,
-		arg.CreatedAt,
-		arg.UpdatedAt,
 	)
 	return err
 }
 
+const deleteToken = `-- name: DeleteToken :exec
+DELETE FROM 
+tokens WHERE id = $1
+`
+
+func (q *Queries) DeleteToken(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteToken, id)
+	return err
+}
+
+const getToken = `-- name: GetToken :many
+SELECT id, access_token, expires_in, token_type, scope, refresh_token
+FROM tokens
+`
+
+func (q *Queries) GetToken(ctx context.Context) ([]Token, error) {
+	rows, err := q.db.QueryContext(ctx, getToken)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Token
+	for rows.Next() {
+		var i Token
+		if err := rows.Scan(
+			&i.ID,
+			&i.AccessToken,
+			&i.ExpiresIn,
+			&i.TokenType,
+			&i.Scope,
+			&i.RefreshToken,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateToken = `-- name: UpdateToken :exec
-UPDATE tokens SET access_token = $2, expires_in = $3, token_type = $4, scope = $5, refresh_token = $6, updated_at = $7 WHERE tokens.id = $1
+UPDATE tokens SET access_token = $2, 
+  expires_in = $3, 
+  token_type = $4, 
+  scope = $5, 
+  refresh_token = $6 
+WHERE tokens.id = $1
 `
 
 type UpdateTokenParams struct {
@@ -53,7 +98,6 @@ type UpdateTokenParams struct {
 	TokenType    string    `json:"token_type"`
 	Scope        string    `json:"scope"`
 	RefreshToken string    `json:"refresh_token"`
-	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 func (q *Queries) UpdateToken(ctx context.Context, arg UpdateTokenParams) error {
@@ -64,7 +108,6 @@ func (q *Queries) UpdateToken(ctx context.Context, arg UpdateTokenParams) error 
 		arg.TokenType,
 		arg.Scope,
 		arg.RefreshToken,
-		arg.UpdatedAt,
 	)
 	return err
 }

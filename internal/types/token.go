@@ -30,5 +30,7 @@ type TokenPayload struct {
 
 type TokenStore interface {
 	CreateToken(TokenPayload) error
+	GetToken() ([]*Token, error)
 	UpdateToken(TokenPayload) error
+	DeleteToken(id uuid.UUID) error
 }

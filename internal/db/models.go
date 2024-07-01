@@ -25,6 +25,19 @@ type Address struct {
 	UpdatedAt       time.Time      `json:"updated_at"`
 }
 
+type Draft struct {
+	ID          uuid.UUID `json:"id"`
+	ImageUrl    string    `json:"image_url"`
+	Description string    `json:"description"`
+	Source      string    `json:"source"`
+	Price       float64   `json:"price"`
+	Promotion   bool      `json:"promotion"`
+	Link        string    `json:"link"`
+	SearchID    uuid.UUID `json:"search_id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
 type Parameter struct {
 	ID                 uuid.UUID `json:"id"`
 	DiscountPercentage int32     `json:"discount_percentage"`
@@ -86,8 +99,6 @@ type Token struct {
 	TokenType    string    `json:"token_type"`
 	Scope        string    `json:"scope"`
 	RefreshToken string    `json:"refresh_token"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 type User struct {

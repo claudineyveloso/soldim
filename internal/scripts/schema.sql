@@ -121,8 +121,6 @@ CREATE TABLE IF NOT EXISTS tokens (
   access_token  varchar(255) not null,
   expires_in    integer not null,
   token_type    varchar(100) not null,
-  scope         varchar(255) not null,
-  refresh_token varchar(255) not null,
-  created_at    timestamp not null,
-  updated_at    timestamp not null
+  scope         varchar not null,
+  refresh_token varchar(255) not null
 );
