@@ -23,7 +23,7 @@ func RegisterRoutes(router *mux.Router) {
 }
 
 func handleGetProduct(w http.ResponseWriter, r *http.Request) {
-	bearerToken := "2f1bf860f6c12bcb5abbd1f7b36d64e3152b6829" // r.Header.Get("Authorization")
+	bearerToken := "25cfbdc036d36979cfecde53a8516ae7af9ca271" // r.Header.Get("Authorization")
 
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
@@ -90,7 +90,7 @@ func handleCreateProduct(w http.ResponseWriter, r *http.Request) {
 	// Fecha o corpo da requisição após o processamento
 	defer r.Body.Close()
 
-	bearerToken := "2f1bf860f6c12bcb5abbd1f7b36d64e3152b6829" // r.Header.Get("Authorization")
+	bearerToken := "25cfbdc036d36979cfecde53a8516ae7af9ca271" // r.Header.Get("Authorization")
 	// Chama a função para criar o produto no Bling
 	err := bling.CreateProductInBling(bearerToken, newProduct)
 	if err != nil {
@@ -164,7 +164,7 @@ func handleDeleteProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bearerToken := "2f1bf860f6c12bcb5abbd1f7b36d64e3152b6829" // r.Header.Get("Authorization")
+	bearerToken := "25cfbdc036d36979cfecde53a8516ae7af9ca271" // r.Header.Get("Authorization")
 	// Chama a função para deletar o produto no Bling
 	err = bling.DeleteProductInBling(bearerToken, productID)
 	if err != nil {
@@ -196,7 +196,7 @@ func handleGetProductId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bearerToken := "2f1bf860f6c12bcb5abbd1f7b36d64e3152b6829" // r.Header.Get("Authorization")
+	bearerToken := "25cfbdc036d36979cfecde53a8516ae7af9ca271" // r.Header.Get("Authorization")
 	// Chama a função para obter os detalhes do produto no Bling
 	product, err := bling.GetProductIDInBling(bearerToken, productID)
 	if err != nil {
