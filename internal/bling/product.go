@@ -13,6 +13,163 @@ import (
 
 const limitePorPagina = 100
 
+// func GetProductStock(bearerToken string, productCode string) (int, int, error) {
+// 	if productCode == "" {
+// 		return 0, 0, fmt.Errorf("código do produto está vazio")
+// 	}
+//
+// 	client := &http.Client{}
+// 	baseURL := "https://bling.com.br/Api/v3/estoques/saldos"
+// 	params := url.Values{}
+// 	params.Add("codigo", productCode)
+//
+// 	url := fmt.Sprintf("%s?%s", baseURL, params.Encode())
+// 	req, err := http.NewRequest("GET", url, nil)
+// 	if err != nil {
+// 		return 0, 0, fmt.Errorf("erro ao criar requisição: %v", err)
+// 	}
+// 	req.Header.Set("Authorization", "Bearer "+bearerToken)
+//
+// 	resp, err := client.Do(req)
+// 	if err != nil {
+// 		return 0, 0, fmt.Errorf("erro ao enviar requisição: %v", err)
+// 	}
+// 	defer resp.Body.Close()
+//
+// 	if resp.StatusCode != http.StatusOK {
+// 		bodyBytes, _ := io.ReadAll(resp.Body)
+// 		bodyString := string(bodyBytes)
+// 		return 0, 0, fmt.Errorf("falha na requisição: %s", bodyString)
+// 	}
+//
+// 	bodyBytes, err := io.ReadAll(resp.Body)
+// 	if err != nil {
+// 		return 0, 0, fmt.Errorf("erro ao ler resposta: %v", err)
+// 	}
+//
+// 	var responseData types.StockResponse
+// 	if err := json.Unmarshal(bodyBytes, &responseData); err != nil {
+// 		return 0, 0, fmt.Errorf("erro ao decodificar resposta: %v", err)
+// 	}
+//
+// 	if len(responseData.Data) == 0 {
+// 		return 0, 0, fmt.Errorf("nenhum dado de estoque encontrado para o produto %s", productCode)
+// 	}
+//
+// 	return responseData.Data[0].SaldoFisicoTotal, responseData.Data[0].SaldoVirtualTotal, nil
+// }
+//
+// func processStockRequests(bearerToken string, productCodes []string, results chan<- types.Product, wg *sync.WaitGroup) {
+// 	defer wg.Done()
+//
+// 	limiter := time.Tick(100 * time.Millisecond) // Limita a uma requisição a cada 100ms
+//
+// 	for _, code := range productCodes {
+// 		<-limiter // Espera o próximo tick do limitador
+// 		fmt.Printf("Buscando estoque para o produto %s\n", code)
+// 		saldoFisico, saldoVirtual, err := GetProductStock(bearerToken, code)
+// 		if err != nil {
+// 			fmt.Printf("Erro ao buscar estoque para o produto %s: %v\n", code, err)
+// 			continue
+// 		}
+// 		results <- types.Product{Codigo: code, SaldoFisicoTotal: saldoFisico, SaldoVirtualTotal: saldoVirtual}
+// 	}
+// }
+//
+// func GetProductsFromBling(bearerToken string, page int, limit int, name string, criterio int) ([]types.Product, int, error) {
+// 	client := &http.Client{}
+//
+// 	baseURL := "https://bling.com.br/Api/v3/produtos"
+// 	params := url.Values{}
+// 	params.Add("pagina", fmt.Sprintf("%d", page))
+// 	params.Add("limite", fmt.Sprintf("%d", limit))
+// 	if name != "" {
+// 		params.Add("nome", name)
+// 	}
+// 	params.Add("criterio", fmt.Sprintf("%d", criterio))
+//
+// 	url := fmt.Sprintf("%s?%s", baseURL, params.Encode())
+// 	fmt.Printf("Enviando requisição para URL: %s\n", url)
+// 	req, err := http.NewRequest("GET", url, nil)
+// 	if err != nil {
+// 		return nil, 0, fmt.Errorf("erro ao criar requisição: %v", err)
+// 	}
+// 	req.Header.Set("Authorization", "Bearer "+bearerToken)
+//
+// 	resp, err := client.Do(req)
+// 	if err != nil {
+// 		return nil, 0, fmt.Errorf("erro ao enviar requisição: %v", err)
+// 	}
+// 	defer resp.Body.Close()
+//
+// 	if resp.StatusCode != http.StatusOK {
+// 		bodyBytes, _ := io.ReadAll(resp.Body)
+// 		bodyString := string(bodyBytes)
+// 		return nil, 0, fmt.Errorf("falha na requisição: %s", bodyString)
+// 	}
+//
+// 	bodyBytes, err := io.ReadAll(resp.Body)
+// 	if err != nil {
+// 		return nil, 0, fmt.Errorf("erro ao ler resposta: %v", err)
+// 	}
+//
+// 	fmt.Printf("Resposta da API: %s\n", string(bodyBytes))
+//
+// 	var responseData struct {
+// 		Data  []types.Product `json:"data"`
+// 		Total int             `json:"total"`
+// 		Limit int             `json:"limit"`
+// 		Page  int             `json:"pagina"`
+// 	}
+//
+// 	if err := json.Unmarshal(bodyBytes, &responseData); err != nil {
+// 		return nil, 0, fmt.Errorf("erro ao decodificar resposta: %v", err)
+// 	}
+//
+// 	fmt.Printf("Dados deserializados: %+v\n", responseData)
+//
+// 	produtos := responseData.Data
+//
+// 	fmt.Printf("Número de produtos deserializados: %d\n", len(produtos))
+//
+// 	totalPages := 0
+// 	if responseData.Total > 0 && responseData.Limit > 0 {
+// 		totalPages = (responseData.Total + responseData.Limit - 1) / responseData.Limit
+// 	} else if len(produtos) == limit {
+// 		totalPages = page + 1
+// 	}
+//
+// 	fmt.Printf("Total de páginas calculado: %d\n", totalPages)
+//
+// 	productCodes := make([]string, len(produtos))
+// 	for i, produto := range produtos {
+// 		productCodes[i] = produto.Codigo
+// 	}
+//
+// 	results := make(chan types.Product, len(produtos))
+// 	var wg sync.WaitGroup
+//
+// 	wg.Add(1)
+// 	go processStockRequests(bearerToken, productCodes, results, &wg)
+//
+// 	go func() {
+// 		wg.Wait()
+// 		close(results)
+// 	}()
+//
+// 	for product := range results {
+// 		for i := range produtos {
+// 			if produtos[i].Codigo == product.Codigo {
+// 				produtos[i].SaldoFisicoTotal = product.SaldoFisicoTotal
+// 				produtos[i].SaldoVirtualTotal = product.SaldoVirtualTotal
+// 				break
+// 			}
+// 		}
+// 	}
+//
+// 	return produtos, totalPages, nil
+// }
+
 func GetProductsFromBling(bearerToken string, page int, limit int, name string, criterio int) ([]types.Product, int, error) {
 	client := &http.Client{}
 

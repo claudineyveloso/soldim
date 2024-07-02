@@ -6,6 +6,11 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
 SELECT *
 FROM searches_result ORDER BY created_at DESC;
 
+-- name: GetSearchResult :one
+SELECT *
+FROM searches_result
+WHERE searches_result.id = $1;
+
 -- name: DeleteSearchResult :exec
 DELETE FROM searches_result
 WHERE searches_result.id = $1;

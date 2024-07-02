@@ -22,6 +22,7 @@ func NewHandler(searchresultStore types.SearchResultStore) *Handler {
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/get_searches_result", h.handleGetSearchesResult).Methods(http.MethodGet)
+	router.HandleFunc("/get_search_result/{searchResultID}", h.handleGetSearchResult).Methods(http.MethodGet)
 	router.HandleFunc("/create_search_result", h.handleCreateSearchResult).Methods(http.MethodPost)
 	router.HandleFunc("/delete_search_result/{searchID}", h.handleDeleteSearchResult).Methods(http.MethodDelete)
 }
@@ -35,6 +36,27 @@ func (h *Handler) handleGetSearchesResult(w http.ResponseWriter, r *http.Request
 		return
 	}
 	utils.WriteJSON(w, http.StatusOK, searchesResult)
+}
+
+func (h *Handler) handleGetSearchResult(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	str, ok := vars["searchResultID"]
+	if !ok {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Resultado da Busca ausente!"))
+		return
+	}
+	parsedSearchResultID, err := uuid.Parse(str)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Resultado da Busca inválido!"))
+		return
+	}
+
+	searchResult, err := h.searchresultStore.GetSearchResultByID(parsedSearchResultID)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, searchResult)
 }
 
 func (h *Handler) handleCreateSearchResult(w http.ResponseWriter, r *http.Request) {

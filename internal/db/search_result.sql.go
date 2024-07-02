@@ -56,6 +56,30 @@ func (q *Queries) DeleteSearchResult(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const getSearchResult = `-- name: GetSearchResult :one
+SELECT id, image_url, description, source, price, promotion, link, search_id, created_at, updated_at
+FROM searches_result
+WHERE searches_result.id = $1
+`
+
+func (q *Queries) GetSearchResult(ctx context.Context, id uuid.UUID) (SearchesResult, error) {
+	row := q.db.QueryRowContext(ctx, getSearchResult, id)
+	var i SearchesResult
+	err := row.Scan(
+		&i.ID,
+		&i.ImageUrl,
+		&i.Description,
+		&i.Source,
+		&i.Price,
+		&i.Promotion,
+		&i.Link,
+		&i.SearchID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getSearchesResult = `-- name: GetSearchesResult :many
 SELECT id, image_url, description, source, price, promotion, link, search_id, created_at, updated_at
 FROM searches_result ORDER BY created_at DESC

@@ -35,5 +35,6 @@ type SearchResultPayload struct {
 type SearchResultStore interface {
 	CreateSearchResult(SearchResultPayload) error
 	GetSearchesResult() ([]*SearchResult, error)
+	GetSearchResultByID(id uuid.UUID) (*SearchResult, error)
 	DeleteSearchResult(id uuid.UUID) error
 }
