@@ -48,7 +48,7 @@ func (s *Store) CreateDraft(draft types.DraftPayload) error {
 	return nil
 }
 
-func (s *Store) GetDraft() ([]*types.Draft, error) {
+func (s *Store) GetDrafts() ([]*types.Draft, error) {
 	queries := db.New(s.db)
 	ctx := context.Background()
 
@@ -102,10 +102,10 @@ func (s *Store) GetDraftByID(draftID uuid.UUID) (*types.Draft, error) {
 	return bucket, nil
 }
 
-func (s *Store) DeleteSearchResult(searchID uuid.UUID) error {
+func (s *Store) DeleteDraft(draftID uuid.UUID) error {
 	queries := db.New(s.db)
 	ctx := context.Background()
-	err := queries.DeleteSearchResult(ctx, searchID)
+	err := queries.DeleteDraft(ctx, draftID)
 	if err != nil {
 		return err
 	}

@@ -23,6 +23,8 @@ func NewHandler(draftStore types.DraftStore) *Handler {
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/create_draft", h.handleCreateDraft).Methods(http.MethodPost)
 	router.HandleFunc("/get_drafts", h.handleGetDrafts).Methods(http.MethodGet)
+	router.HandleFunc("/get_draft/{draftID}", h.handleGetDraft).Methods(http.MethodGet)
+	router.HandleFunc("/update_draft", h.handleUpdateDraft).Methods(http.MethodPut)
 	router.HandleFunc("/delete_draft/{draftID}", h.handleDeleteDraft).Methods(http.MethodDelete)
 }
 
@@ -99,6 +101,61 @@ func (h *Handler) handleDeleteDraft(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(jsonResponse)
+}
+
+func (h *Handler) handleGetDraft(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	str, ok := vars["draftID"]
+	if !ok {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Rascunho ausente!"))
+		return
+	}
+	parsedDraftsID, err := uuid.Parse(str)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Rascunho inválido!"))
+		return
+	}
+
+	bucket, err := h.draftStore.GetDraftByID(parsedDraftsID)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, bucket)
+}
+
+func (h *Handler) handleUpdateDraft(w http.ResponseWriter, r *http.Request) {
+	var draft types.DraftPayload
+	if err := utils.ParseJSON(r, &draft); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+	if err := utils.Validate.Struct(draft); err != nil {
+		errors := err.(validator.ValidationErrors)
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("Payload inválido: %v", errors))
+		return
+	}
+	err := h.draftStore.UpdateDraft(draft)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	response := map[string]interface{}{
+		"data":    draft,
+		"message": "Registro alterado com sucesso",
+		"status":  http.StatusOK,
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(jsonResponse)

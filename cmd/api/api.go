@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/claudineyveloso/soldim.git/internal/services/draft"
 	generatetoken "github.com/claudineyveloso/soldim.git/internal/services/generate_token"
 	"github.com/claudineyveloso/soldim.git/internal/services/healthy"
 	"github.com/claudineyveloso/soldim.git/internal/services/product"
@@ -47,8 +48,8 @@ func (s *APIServer) Run() error {
 	searchHandler := search.NewHandler(searchStore, searchresultStore)
 	searchHandler.RegisterRoutes(r)
 
-	draftStore := search.NewStore(s.db)
-	draftHandler := search.NewHandler(draftStore, searchresultStore)
+	draftStore := draft.NewStore(s.db)
+	draftHandler := draft.NewHandler(draftStore)
 	draftHandler.RegisterRoutes(r)
 
 	// searchresultStore := searchresult.NewStore(s.db)
