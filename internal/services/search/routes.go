@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/claudineyveloso/soldim.git/internal/crawler"
 	"github.com/claudineyveloso/soldim.git/internal/types"
@@ -17,10 +18,11 @@ import (
 type Handler struct {
 	searchStore       types.SearchStore
 	searchResultStore types.SearchResultStore
+	draftStore        types.DraftStore
 }
 
-func NewHandler(searchStore types.SearchStore, searchResultStore types.SearchResultStore) *Handler {
-	return &Handler{searchStore: searchStore, searchResultStore: searchResultStore}
+func NewHandler(searchStore types.SearchStore, searchResultStore types.SearchResultStore, draftStore types.DraftStore) *Handler {
+	return &Handler{searchStore: searchStore, searchResultStore: searchResultStore, draftStore: draftStore}
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
@@ -53,6 +55,9 @@ func (h *Handler) handleCreateSearch(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("Erro ao coletar produtos: %v", err)
 	}
 
+	var productWithLowestPrice types.SearchResultPayload
+	firstProduct := true
+
 	for _, product := range products {
 		searchResult := types.SearchResultPayload{
 			ID:          uuid.New(),
@@ -67,6 +72,29 @@ func (h *Handler) handleCreateSearch(w http.ResponseWriter, r *http.Request) {
 			utils.WriteError(w, http.StatusInternalServerError, err)
 			return
 		}
+
+		if firstProduct || product.Price < productWithLowestPrice.Price {
+			productWithLowestPrice = searchResult
+			firstProduct = false
+		}
+	}
+
+	// Gravar o produto com o menor preço na tabela de draft
+	draft := types.DraftPayload{
+		ID:          uuid.New(),
+		ImageURL:    productWithLowestPrice.ImageURL,
+		Description: productWithLowestPrice.Description,
+		Source:      productWithLowestPrice.Source,
+		Price:       productWithLowestPrice.Price,
+		Link:        productWithLowestPrice.Link,
+		SearchID:    productWithLowestPrice.SearchID,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+
+	if err := h.draftStore.CreateDraft(draft); err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
 	}
 
 	response := map[string]interface{}{

@@ -24,7 +24,10 @@ type Produto struct {
 }
 
 func CrawlGoogle(query string) ([]Produto, error) {
-	ctx, cancel := chromedp.NewContext(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+
+	ctx, cancel = chromedp.NewContext(ctx)
 	defer cancel()
 
 	var produtos []Produto
@@ -41,8 +44,8 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	}
 
 	for {
-		// Esperar o carregamento da página
-		err = chromedp.Run(ctx, chromedp.WaitVisible(`div.sh-dgr__grid-result`))
+		// Esperar o carregamento da página com timeout específico
+		err = chromedp.Run(ctx, chromedp.WaitVisible(`div.sh-dgr__grid-result`, chromedp.ByQuery))
 		if err != nil {
 			log.Printf("Erro ao esperar pela visibilidade dos resultados: %v", err)
 			break
@@ -50,7 +53,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 		// Extrair o HTML da página
 		var htmlContent string
-		err = chromedp.Run(ctx, chromedp.OuterHTML(`html`, &htmlContent))
+		err = chromedp.Run(ctx, chromedp.OuterHTML(`html`, &htmlContent, chromedp.ByQuery))
 		if err != nil {
 			return nil, fmt.Errorf("falha ao extrair HTML: %v", err)
 		}
@@ -110,7 +113,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 			log.Printf("Produto encontrado: %+v\n", produto)
 		})
 
-		// Verificar se há uma próxima página
+		// Verificar se há uma próxima página com timeout específico
 		var nextPageExists bool
 		err = chromedp.Run(ctx, chromedp.EvaluateAsDevTools(`document.querySelector('a#pnnext') !== null`, &nextPageExists))
 		if err != nil {
@@ -122,13 +125,13 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		}
 
 		// Navegar para a próxima página
-		err = chromedp.Run(ctx, chromedp.Click(`a#pnnext`, chromedp.NodeVisible))
+		err = chromedp.Run(ctx, chromedp.Click(`a#pnnext`, chromedp.ByQuery, chromedp.NodeVisible))
 		if err != nil {
 			return nil, fmt.Errorf("falha ao navegar para a próxima página: %v", err)
 		}
 
 		// Aguardar um tempo para evitar problemas com rate limiting
-		time.Sleep(2 * time.Second)
+		time.Sleep(3 * time.Second)
 	}
 
 	// Log dos produtos coletados

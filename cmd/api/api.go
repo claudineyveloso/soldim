@@ -45,10 +45,10 @@ func (s *APIServer) Run() error {
 
 	searchStore := search.NewStore(s.db)
 	searchresultStore := searchresult.NewStore(s.db)
-	searchHandler := search.NewHandler(searchStore, searchresultStore)
+	draftStore := draft.NewStore(s.db)
+	searchHandler := search.NewHandler(searchStore, searchresultStore, draftStore)
 	searchHandler.RegisterRoutes(r)
 
-	draftStore := draft.NewStore(s.db)
 	draftHandler := draft.NewHandler(draftStore)
 	draftHandler.RegisterRoutes(r)
 
