@@ -15,6 +15,7 @@ import (
 	searchresult "github.com/claudineyveloso/soldim.git/internal/services/search_result"
 	"github.com/claudineyveloso/soldim.git/internal/services/token"
 	"github.com/claudineyveloso/soldim.git/internal/services/user"
+	"github.com/claudineyveloso/soldim.git/internal/services/webhook"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
@@ -34,6 +35,7 @@ func NewAPIServer(addr string, db *sql.DB) *APIServer {
 func (s *APIServer) Run() error {
 	r := mux.NewRouter()
 	healthy.RegisterRoutes(r)
+	webhook.RegisterRoutes(r)
 	generatetoken.RegisterRoutes(r)
 	refreshtoken.RegisterRoutes(r)
 	product.RegisterRoutes(r)

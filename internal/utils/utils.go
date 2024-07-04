@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -98,4 +99,20 @@ func GetValidString(value interface{}) string {
 		return nullStr.String
 	}
 	return ""
+}
+
+// CalculateRelevanceScore calcula a pontuação de relevância de uma descrição de produto com base na consulta de pesquisa.
+func CalculateRelevanceScore(query, description string) int {
+	queryWords := strings.Fields(strings.ToLower(query))
+	descriptionWords := strings.Fields(strings.ToLower(description))
+
+	score := 0
+	for _, queryWord := range queryWords {
+		for _, descWord := range descriptionWords {
+			if queryWord == descWord {
+				score++
+			}
+		}
+	}
+	return score
 }
