@@ -9,6 +9,7 @@ type Product struct {
 	Tipo              string      `json:"tipo"`
 	Situacao          string      `json:"situacao"`
 	Formato           string      `json:"formato"`
+	Unidade           string      `json:"unidade"`
 	DescricaoCurta    string      `json:"descricaoCurta"`
 	SaldoFisicoTotal  int         `json:"saldoFisicoTotal"`
 	SaldoVirtualTotal int         `json:"saldoVirtualTotal"`

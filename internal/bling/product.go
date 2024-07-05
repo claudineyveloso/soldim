@@ -379,6 +379,7 @@ func GetProductIDInBling(bearerToken string, productID int64) (*types.Product, e
 			Tipo           string      `json:"tipo"`
 			Situacao       string      `json:"situacao"`
 			Formato        string      `json:"formato"`
+			Unidade        string      `json:"unidade"`
 			DescricaoCurta string      `json:"descricaoCurta"`
 		} `json:"data"`
 	}
@@ -396,6 +397,7 @@ func GetProductIDInBling(bearerToken string, productID int64) (*types.Product, e
 		Tipo:           responseData.Data.Tipo,
 		Situacao:       responseData.Data.Situacao,
 		Formato:        responseData.Data.Formato,
+		Unidade:        responseData.Data.Unidade,
 		DescricaoCurta: responseData.Data.DescricaoCurta,
 	}
 
