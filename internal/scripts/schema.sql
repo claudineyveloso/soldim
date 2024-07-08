@@ -101,17 +101,21 @@ CREATE TABLE IF NOT EXISTS parameters (
 );
 DROP TABLE IF EXISTS "products";
 CREATE TABLE IF NOT EXISTS products (
-  id              integer PRIMARY KEY,
-  nome            varchar(255) not null,
-  codigo          varchar(100) not null default '',
-  preco           float not null default 0.00,
-  tipo            varchar(10) not null default '',
-  situacao        varchar(10) not null default '',
-  formato         varchar(10) not null default '',
-  descricaoCurta  varchar(10) not null default '',
-  imagemURL       varchar(10) not null default '',
-  created_at      timestamp not null,
-  updated_at      timestamp not null
+  id                bigint PRIMARY KEY,
+  nome              varchar(255) not null,
+  codigo            varchar(100) not null default '',
+  preco             float not null default 0.00,
+  tipo              varchar(10) not null default '',
+  situacao          varchar(10) not null default '',
+  formato           varchar(10) not null default '',
+  descricao_curta   varchar(10) not null default '',
+  imagem_url        varchar(10) not null default '',
+  unidade           varchar(10) not null default '',
+  condicao          integer not null default 0,
+  data_validade     date not null default '2000-01-01',
+  gtin              varchar(100) not null default '',
+  created_at        timestamp not null,
+  updated_at        timestamp not null
 );
 
 DROP TABLE IF EXISTS "tokens";

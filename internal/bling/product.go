@@ -371,16 +371,16 @@ func GetProductIDInBling(bearerToken string, productID int64) (*types.Product, e
 
 	var responseData struct {
 		Data struct {
-			ID             int64       `json:"id"`
-			Nome           string      `json:"nome"`
-			Codigo         string      `json:"codigo"`
-			Preco          interface{} `json:"preco"`
-			ImagemURL      string      `json:"imagemURL"`
-			Tipo           string      `json:"tipo"`
-			Situacao       string      `json:"situacao"`
-			Formato        string      `json:"formato"`
-			Unidade        string      `json:"unidade"`
-			DescricaoCurta string      `json:"descricaoCurta"`
+			ID             int64   `json:"id"`
+			Nome           string  `json:"nome"`
+			Codigo         string  `json:"codigo"`
+			Preco          float64 `json:"preco"`
+			ImagemURL      string  `json:"imagemURL"`
+			Tipo           string  `json:"tipo"`
+			Situacao       string  `json:"situacao"`
+			Formato        string  `json:"formato"`
+			Unidade        string  `json:"unidade"`
+			DescricaoCurta string  `json:"descricaoCurta"`
 		} `json:"data"`
 	}
 
@@ -393,7 +393,7 @@ func GetProductIDInBling(bearerToken string, productID int64) (*types.Product, e
 		Nome:           responseData.Data.Nome,
 		Codigo:         responseData.Data.Codigo,
 		Preco:          responseData.Data.Preco,
-		ImagemURL:      responseData.Data.ImagemURL,
+		ImagemUrl:      responseData.Data.ImagemURL,
 		Tipo:           responseData.Data.Tipo,
 		Situacao:       responseData.Data.Situacao,
 		Formato:        responseData.Data.Formato,

@@ -11,20 +11,24 @@ import (
 )
 
 const createProduct = `-- name: CreateProduct :exec
-INSERT INTO products ( ID, nome, codigo, preco, tipo, situacao, formato, descricaoCurta, imagemURL, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+INSERT INTO products ( ID, nome, codigo, preco, tipo, situacao, formato, descricao_curta, unidade, condicao, gtin, imagem_url, data_validade, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
 `
 
 type CreateProductParams struct {
-	ID             int32     `json:"id"`
+	ID             int64     `json:"id"`
 	Nome           string    `json:"nome"`
 	Codigo         string    `json:"codigo"`
 	Preco          float64   `json:"preco"`
 	Tipo           string    `json:"tipo"`
 	Situacao       string    `json:"situacao"`
 	Formato        string    `json:"formato"`
-	Descricaocurta string    `json:"descricaocurta"`
-	Imagemurl      string    `json:"imagemurl"`
+	DescricaoCurta string    `json:"descricao_curta"`
+	Unidade        string    `json:"unidade"`
+	Condicao       int32     `json:"condicao"`
+	Gtin           string    `json:"gtin"`
+	ImagemUrl      string    `json:"imagem_url"`
+	DataValidade   time.Time `json:"data_validade"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
 }
@@ -38,21 +42,35 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) er
 		arg.Tipo,
 		arg.Situacao,
 		arg.Formato,
-		arg.Descricaocurta,
-		arg.Imagemurl,
+		arg.DescricaoCurta,
+		arg.Unidade,
+		arg.Condicao,
+		arg.Gtin,
+		arg.ImagemUrl,
+		arg.DataValidade,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
 	return err
 }
 
+const deleteProduct = `-- name: DeleteProduct :exec
+DELETE FROM products
+WHERE products.id = $1
+`
+
+func (q *Queries) DeleteProduct(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteProduct, id)
+	return err
+}
+
 const getProduct = `-- name: GetProduct :one
-SELECT id, nome, codigo, preco, tipo, situacao, formato, descricaocurta, imagemurl, created_at, updated_at
+SELECT id, nome, codigo, preco, tipo, situacao, formato, descricao_curta, imagem_url, unidade, condicao, data_validade, gtin, created_at, updated_at
 FROM products
 WHERE products.id = $1
 `
 
-func (q *Queries) GetProduct(ctx context.Context, id int32) (Product, error) {
+func (q *Queries) GetProduct(ctx context.Context, id int64) (Product, error) {
 	row := q.db.QueryRowContext(ctx, getProduct, id)
 	var i Product
 	err := row.Scan(
@@ -63,8 +81,12 @@ func (q *Queries) GetProduct(ctx context.Context, id int32) (Product, error) {
 		&i.Tipo,
 		&i.Situacao,
 		&i.Formato,
-		&i.Descricaocurta,
-		&i.Imagemurl,
+		&i.DescricaoCurta,
+		&i.ImagemUrl,
+		&i.Unidade,
+		&i.Condicao,
+		&i.DataValidade,
+		&i.Gtin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -72,7 +94,7 @@ func (q *Queries) GetProduct(ctx context.Context, id int32) (Product, error) {
 }
 
 const getProductByName = `-- name: GetProductByName :one
-SELECT id, nome, codigo, preco, tipo, situacao, formato, descricaocurta, imagemurl, created_at, updated_at
+SELECT id, nome, codigo, preco, tipo, situacao, formato, descricao_curta, imagem_url, unidade, condicao, data_validade, gtin, created_at, updated_at
 FROM products
 WHERE products.nome = $1
 `
@@ -88,8 +110,12 @@ func (q *Queries) GetProductByName(ctx context.Context, nome string) (Product, e
 		&i.Tipo,
 		&i.Situacao,
 		&i.Formato,
-		&i.Descricaocurta,
-		&i.Imagemurl,
+		&i.DescricaoCurta,
+		&i.ImagemUrl,
+		&i.Unidade,
+		&i.Condicao,
+		&i.DataValidade,
+		&i.Gtin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -97,7 +123,7 @@ func (q *Queries) GetProductByName(ctx context.Context, nome string) (Product, e
 }
 
 const getProducts = `-- name: GetProducts :many
-SELECT id, nome, codigo, preco, tipo, situacao, formato, descricaocurta, imagemurl, created_at, updated_at
+SELECT id, nome, codigo, preco, tipo, situacao, formato, descricao_curta, imagem_url, unidade, condicao, data_validade, gtin, created_at, updated_at
 FROM products
 `
 
@@ -118,8 +144,12 @@ func (q *Queries) GetProducts(ctx context.Context) ([]Product, error) {
 			&i.Tipo,
 			&i.Situacao,
 			&i.Formato,
-			&i.Descricaocurta,
-			&i.Imagemurl,
+			&i.DescricaoCurta,
+			&i.ImagemUrl,
+			&i.Unidade,
+			&i.Condicao,
+			&i.DataValidade,
+			&i.Gtin,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -134,4 +164,58 @@ func (q *Queries) GetProducts(ctx context.Context) ([]Product, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateProduct = `-- name: UpdateProduct :exec
+UPDATE products SET nome = $2, 
+  codigo = $3,
+  preco = $4,
+  tipo  = $5,
+  situacao = $6,
+  formato = $7,
+  descricao_curta = $8,
+  unidade = $9,
+  condicao = $10,
+  gtin = $11,
+  imagem_url = $12,
+  data_validade = $13,
+  updated_at = $14
+WHERE products.id = $1
+`
+
+type UpdateProductParams struct {
+	ID             int64     `json:"id"`
+	Nome           string    `json:"nome"`
+	Codigo         string    `json:"codigo"`
+	Preco          float64   `json:"preco"`
+	Tipo           string    `json:"tipo"`
+	Situacao       string    `json:"situacao"`
+	Formato        string    `json:"formato"`
+	DescricaoCurta string    `json:"descricao_curta"`
+	Unidade        string    `json:"unidade"`
+	Condicao       int32     `json:"condicao"`
+	Gtin           string    `json:"gtin"`
+	ImagemUrl      string    `json:"imagem_url"`
+	DataValidade   time.Time `json:"data_validade"`
+	UpdatedAt      time.Time `json:"updated_at"`
+}
+
+func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) error {
+	_, err := q.db.ExecContext(ctx, updateProduct,
+		arg.ID,
+		arg.Nome,
+		arg.Codigo,
+		arg.Preco,
+		arg.Tipo,
+		arg.Situacao,
+		arg.Formato,
+		arg.DescricaoCurta,
+		arg.Unidade,
+		arg.Condicao,
+		arg.Gtin,
+		arg.ImagemUrl,
+		arg.DataValidade,
+		arg.UpdatedAt,
+	)
+	return err
 }

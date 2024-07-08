@@ -59,15 +59,19 @@ type Person struct {
 }
 
 type Product struct {
-	ID             int32     `json:"id"`
+	ID             int64     `json:"id"`
 	Nome           string    `json:"nome"`
 	Codigo         string    `json:"codigo"`
 	Preco          float64   `json:"preco"`
 	Tipo           string    `json:"tipo"`
 	Situacao       string    `json:"situacao"`
 	Formato        string    `json:"formato"`
-	Descricaocurta string    `json:"descricaocurta"`
-	Imagemurl      string    `json:"imagemurl"`
+	DescricaoCurta string    `json:"descricao_curta"`
+	ImagemUrl      string    `json:"imagem_url"`
+	Unidade        string    `json:"unidade"`
+	Condicao       int32     `json:"condicao"`
+	DataValidade   time.Time `json:"data_validade"`
+	Gtin           string    `json:"gtin"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
 }

@@ -6,14 +6,14 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/claudineyveloso/soldim.git/internal/services/product"
+	productbling "github.com/claudineyveloso/soldim.git/internal/services/product_bling"
 	"github.com/claudineyveloso/soldim.git/internal/types"
 	"github.com/gorilla/mux"
 )
 
 func RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/webhook/bling", handleBlingWebhook).Methods(http.MethodPost)
-	product.RegisterRoutes(router)
+	productbling.RegisterRoutes(router)
 }
 
 func handleBlingWebhook(w http.ResponseWriter, r *http.Request) {

@@ -97,9 +97,9 @@ func (s *Store) GetDraftByID(draftID uuid.UUID) (*types.Draft, error) {
 	if err != nil {
 		return nil, err
 	}
-	bucket := convertDBDraftToDraft(dbDraft)
+	draft := convertDBDraftToDraft(dbDraft)
 
-	return bucket, nil
+	return draft, nil
 }
 
 func (s *Store) DeleteDraft(draftID uuid.UUID) error {

@@ -9,6 +9,7 @@ import (
 	generatetoken "github.com/claudineyveloso/soldim.git/internal/services/generate_token"
 	"github.com/claudineyveloso/soldim.git/internal/services/healthy"
 	"github.com/claudineyveloso/soldim.git/internal/services/product"
+	productbling "github.com/claudineyveloso/soldim.git/internal/services/product_bling"
 	refreshtoken "github.com/claudineyveloso/soldim.git/internal/services/refresh_token"
 	salechannel "github.com/claudineyveloso/soldim.git/internal/services/sale_channel"
 	"github.com/claudineyveloso/soldim.git/internal/services/search"
@@ -38,7 +39,7 @@ func (s *APIServer) Run() error {
 	webhook.RegisterRoutes(r)
 	generatetoken.RegisterRoutes(r)
 	refreshtoken.RegisterRoutes(r)
-	product.RegisterRoutes(r)
+	productbling.RegisterRoutes(r)
 	salechannel.RegisterRoutes(r)
 
 	userStore := user.NewStore(s.db)
@@ -61,6 +62,10 @@ func (s *APIServer) Run() error {
 	tokenStore := token.NewStore(s.db)
 	tokenHandler := token.NewHandler(tokenStore)
 	tokenHandler.RegisterRoutes(r)
+
+	productStore := product.NewStore(s.db)
+	productHandler := product.NewHandler(productStore)
+	productHandler.RegisterRoutes(r)
 
 	fmt.Println("Server started on http://localhost:8080")
 	// return http.ListenAndServe("localhost:8080", r)
