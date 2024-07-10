@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/claudineyveloso/soldim.git/internal/types"
 )
@@ -340,7 +341,44 @@ func DeleteProductInBling(bearerToken string, productID int64) error {
 	return nil
 }
 
-func GetProductIDInBling(bearerToken string, productID int64) (*types.Product, error) {
+func GetProductIDInBling(bearerToken string, productID int64) (types.Product, error) {
+	var product types.Product
+
+	url := fmt.Sprintf("https://bling.com.br/Api/v3/produtos/%d", productID)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return product, fmt.Errorf("error creating request: %v", err)
+	}
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", bearerToken))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return product, fmt.Errorf("error sending request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return product, fmt.Errorf("failed to get product from Bling. Status: %v", resp.Status)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return product, fmt.Errorf("error reading response body: %v", err)
+	}
+
+	var blingResponse struct {
+		Data types.Product `json:"data"`
+	}
+	err = json.Unmarshal(body, &blingResponse)
+	if err != nil {
+		return product, fmt.Errorf("error unmarshalling Bling product: %v", err)
+	}
+
+	return blingResponse.Data, nil
+}
+
+func GetProductIDInBling_old(bearerToken string, productID int64) (*types.Product, error) {
 	client := &http.Client{}
 
 	url := fmt.Sprintf("https://bling.com.br/Api/v3/produtos/%d", productID)
@@ -371,16 +409,17 @@ func GetProductIDInBling(bearerToken string, productID int64) (*types.Product, e
 
 	var responseData struct {
 		Data struct {
-			ID             int64   `json:"id"`
-			Nome           string  `json:"nome"`
-			Codigo         string  `json:"codigo"`
-			Preco          float64 `json:"preco"`
-			ImagemURL      string  `json:"imagemURL"`
-			Tipo           string  `json:"tipo"`
-			Situacao       string  `json:"situacao"`
-			Formato        string  `json:"formato"`
-			Unidade        string  `json:"unidade"`
-			DescricaoCurta string  `json:"descricaoCurta"`
+			ID             int64     `json:"id"`
+			Idprodutopai   int64     `json:"id_produto_pai"`
+			Nome           string    `json:"nome"`
+			Codigo         string    `json:"codigo"`
+			Preco          float64   `json:"preco"`
+			ImagemURL      string    `json:"imagemURL"`
+			Tipo           string    `json:"tipo"`
+			Situacao       string    `json:"situacao"`
+			DescricaoCurta string    `json:"descricaoCurta"`
+			CreatedAt      time.Time `json:"created_at"`
+			UpdatedAt      time.Time `json:"updated_at"`
 		} `json:"data"`
 	}
 
@@ -390,15 +429,16 @@ func GetProductIDInBling(bearerToken string, productID int64) (*types.Product, e
 
 	product := &types.Product{
 		ID:             responseData.Data.ID,
+		Idprodutopai:   responseData.Data.Idprodutopai,
 		Nome:           responseData.Data.Nome,
 		Codigo:         responseData.Data.Codigo,
 		Preco:          responseData.Data.Preco,
 		ImagemUrl:      responseData.Data.ImagemURL,
 		Tipo:           responseData.Data.Tipo,
 		Situacao:       responseData.Data.Situacao,
-		Formato:        responseData.Data.Formato,
-		Unidade:        responseData.Data.Unidade,
 		DescricaoCurta: responseData.Data.DescricaoCurta,
+		CreatedAt:      responseData.Data.CreatedAt,
+		UpdatedAt:      responseData.Data.UpdatedAt,
 	}
 
 	return product, nil

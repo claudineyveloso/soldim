@@ -101,22 +101,110 @@ CREATE TABLE IF NOT EXISTS parameters (
 );
 DROP TABLE IF EXISTS "products";
 CREATE TABLE IF NOT EXISTS products (
+  id                          bigint PRIMARY KEY,
+  idProdutoPai                bigint not null default 0,
+  nome                        varchar(255) not null,
+  codigo                      varchar(100) not null default '',
+  preco                       float not null default 0.00,
+  tipo                        varchar(10) not null default '',
+  situacao                    varchar(10) not null default '',
+  formato                     varchar(10) not null default '',
+  descricao_curta             varchar not null default '',
+  imagem_url                  varchar not null default '',
+  dataValidade                date not null default '2000-01-01',
+  unidade                     varchar(10) not null default '',
+  pesoLiquido                 float not null default 0,
+  pesoBruto                   float not null default 0,
+  volumes                     int not null default 0,
+  itensPorCaixa               int not null default 0,
+  gtin                        varchar(100) not null default '',
+  gtinEmbalagem               varchar(100) not null default '',
+  tipoProducao                varchar(10) not null default '',
+  condicao                    int not null default 0,
+  freteGratis                 boolean not null default false,
+  marca                       varchar(10) not null default '',
+  descricaoComplementar       varchar not null default '',
+  linkExterno                 varchar not null default '',
+  observacoes                 varchar not null default '',
+  descricaoEmbalagemDiscreta  varchar not null default '',
+  created_at                  timestamp not null,
+  updated_at                  timestamp not null
+);
+
+
+DROP TABLE IF EXISTS "sales_channel";
+CREATE TABLE sales_channel (
+  id            int PRIMARY KEY,
+  descricao     varchar not null,
+  tipo          varchar(100) not null,
+  situacao      int not null default 0,
+  created_at    timestamp not null,
+  updated_at    timestamp not null
+);
+
+
+DROP TABLE IF EXISTS "suppliers";
+CREATE TABLE IF NOT EXISTS suppliers (
+  id            bigint PRIMARY KEY,
+  descricao     varchar(255) not null,
+  codigo        varchar(255) not null,
+  precoCusto    varchar(20) not null,
+  precoCompra   varchar(20) not null,
+  padrão        boolean not null default false,
+  product_id    bigint not null,
+  created_at    timestamp not null,
+  updated_at    timestamp not null
+);
+ALTER TABLE
+  "suppliers"
+ADD
+   FOREIGN KEY ("product_id") REFERENCES "products" ("id"); 
+
+DROP TABLE IF EXISTS "deposits";
+CREATE TABLE IF NOT EXISTS deposits (
+  id            bigint PRIMARY KEY,
+  descricao     varchar(255) not null,
+  situacao      int not null default 0,
+  padrao        boolean not null default false,
+  desconsiderarSaldo boolean not null default false,
+  created_at    timestamp not null,
+  updated_at    timestamp not null
+);
+
+DROP TABLE IF EXISTS "deposit_products";
+CREATE TABLE IF NOT EXISTS deposit_products (
+  id            bigint PRIMARY KEY,
+  deposit_id    bigint not null,
+  product_id    bigint not null,
+  saldoFisico   int not null default 0,
+  saldoVirtual  int not null default 0,
+  created_at    timestamp not null,
+  updated_at    timestamp not null
+);
+
+ALTER TABLE
+  "deposit_products"
+ADD
+    FOREIGN KEY ("deposit_id") REFERENCES "deposits" ("id"); 
+
+ALTER TABLE
+  "deposit_products"
+ADD
+   FOREIGN KEY ("product_id") REFERENCES "products" ("id"); 
+
+DROP TABLE IF EXISTS "stocks";
+CREATE TABLE IF NOT EXISTS stocks (
   id                bigint PRIMARY KEY,
-  nome              varchar(255) not null,
-  codigo            varchar(100) not null default '',
-  preco             float not null default 0.00,
-  tipo              varchar(10) not null default '',
-  situacao          varchar(10) not null default '',
-  formato           varchar(10) not null default '',
-  descricao_curta   varchar(10) not null default '',
-  imagem_url        varchar(10) not null default '',
-  unidade           varchar(10) not null default '',
-  condicao          integer not null default 0,
-  data_validade     date not null default '2000-01-01',
-  gtin              varchar(100) not null default '',
+  product_id        bigint not null,
+  saldoFisicoTotal  int not null default 0,
+  saldoVirtualTotal int not null default 0,
   created_at        timestamp not null,
   updated_at        timestamp not null
 );
+ALTER TABLE
+  "stocks"
+ADD
+  FOREIGN KEY ("product_id") REFERENCES "products" ("id"); 
 
 DROP TABLE IF EXISTS "tokens";
 CREATE TABLE IF NOT EXISTS tokens (

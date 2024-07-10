@@ -25,6 +25,26 @@ type Address struct {
 	UpdatedAt       time.Time      `json:"updated_at"`
 }
 
+type Deposit struct {
+	ID                 int64     `json:"id"`
+	Descricao          string    `json:"descricao"`
+	Situacao           int32     `json:"situacao"`
+	Padrao             bool      `json:"padrao"`
+	Desconsiderarsaldo bool      `json:"desconsiderarsaldo"`
+	CreatedAt          time.Time `json:"created_at"`
+	UpdatedAt          time.Time `json:"updated_at"`
+}
+
+type DepositProduct struct {
+	ID           int64     `json:"id"`
+	DepositID    int64     `json:"deposit_id"`
+	ProductID    int64     `json:"product_id"`
+	Saldofisico  int32     `json:"saldofisico"`
+	Saldovirtual int32     `json:"saldovirtual"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+}
+
 type Draft struct {
 	ID          uuid.UUID `json:"id"`
 	ImageUrl    string    `json:"image_url"`
@@ -59,21 +79,43 @@ type Person struct {
 }
 
 type Product struct {
-	ID             int64     `json:"id"`
-	Nome           string    `json:"nome"`
-	Codigo         string    `json:"codigo"`
-	Preco          float64   `json:"preco"`
-	Tipo           string    `json:"tipo"`
-	Situacao       string    `json:"situacao"`
-	Formato        string    `json:"formato"`
-	DescricaoCurta string    `json:"descricao_curta"`
-	ImagemUrl      string    `json:"imagem_url"`
-	Unidade        string    `json:"unidade"`
-	Condicao       int32     `json:"condicao"`
-	DataValidade   time.Time `json:"data_validade"`
-	Gtin           string    `json:"gtin"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	ID                         int64     `json:"id"`
+	Idprodutopai               int64     `json:"idprodutopai"`
+	Nome                       string    `json:"nome"`
+	Codigo                     string    `json:"codigo"`
+	Preco                      float64   `json:"preco"`
+	Tipo                       string    `json:"tipo"`
+	Situacao                   string    `json:"situacao"`
+	Formato                    string    `json:"formato"`
+	DescricaoCurta             string    `json:"descricao_curta"`
+	ImagemUrl                  string    `json:"imagem_url"`
+	Datavalidade               time.Time `json:"datavalidade"`
+	Unidade                    string    `json:"unidade"`
+	Pesoliquido                float64   `json:"pesoliquido"`
+	Pesobruto                  float64   `json:"pesobruto"`
+	Volumes                    int32     `json:"volumes"`
+	Itensporcaixa              int32     `json:"itensporcaixa"`
+	Gtin                       string    `json:"gtin"`
+	Gtinembalagem              string    `json:"gtinembalagem"`
+	Tipoproducao               string    `json:"tipoproducao"`
+	Condicao                   int32     `json:"condicao"`
+	Fretegratis                bool      `json:"fretegratis"`
+	Marca                      string    `json:"marca"`
+	Descricaocomplementar      string    `json:"descricaocomplementar"`
+	Linkexterno                string    `json:"linkexterno"`
+	Observacoes                string    `json:"observacoes"`
+	Descricaoembalagemdiscreta string    `json:"descricaoembalagemdiscreta"`
+	CreatedAt                  time.Time `json:"created_at"`
+	UpdatedAt                  time.Time `json:"updated_at"`
+}
+
+type SalesChannel struct {
+	ID        int32     `json:"id"`
+	Descricao string    `json:"descricao"`
+	Tipo      string    `json:"tipo"`
+	Situacao  int32     `json:"situacao"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Search struct {
@@ -92,6 +134,27 @@ type SearchesResult struct {
 	Promotion   bool      `json:"promotion"`
 	Link        string    `json:"link"`
 	SearchID    uuid.UUID `json:"search_id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type Stock struct {
+	ID                int64     `json:"id"`
+	ProductID         int64     `json:"product_id"`
+	Saldofisicototal  int32     `json:"saldofisicototal"`
+	Saldovirtualtotal int32     `json:"saldovirtualtotal"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
+}
+
+type Supplier struct {
+	ID          int64     `json:"id"`
+	Descricao   string    `json:"descricao"`
+	Codigo      string    `json:"codigo"`
+	Precocusto  string    `json:"precocusto"`
+	Precocompra string    `json:"precocompra"`
+	Padrão      bool      `json:"padrão"`
+	ProductID   int64     `json:"product_id"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }

@@ -5,23 +5,34 @@ import (
 )
 
 type Product struct {
-	ID                int64     `json:"id"`
-	Nome              string    `json:"nome"`
-	Codigo            string    `json:"codigo"`
-	Preco             float64   `json:"preco"`
-	ImagemUrl         string    `json:"imagem_url"`
-	Tipo              string    `json:"tipo"`
-	Situacao          string    `json:"situacao"`
-	Formato           string    `json:"formato"`
-	DataValidade      time.Time `json:"data_validade"`
-	Unidade           string    `json:"unidade"`
-	Condicao          int32     `json:"condicao"`
-	Gtin              string    `json:"gtin"`
-	DescricaoCurta    string    `json:"descricao_curta"`
-	SaldoFisicoTotal  int       `json:"saldo_fisico_total"`
-	SaldoVirtualTotal int       `json:"saldo_virtual_total"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
+	ID                         int64     `json:"id"`
+	Idprodutopai               int64     `json:"id_produto_pai"`
+	Nome                       string    `json:"nome"`
+	Codigo                     string    `json:"codigo"`
+	Preco                      float64   `json:"preco"`
+	ImagemUrl                  string    `json:"imagem_url"`
+	Tipo                       string    `json:"tipo"`
+	Situacao                   string    `json:"situacao"`
+	Formato                    string    `json:"formato"`
+	DescricaoCurta             string    `json:"descricao_curta"`
+	Datavalidade               time.Time `json:"data_validade"`
+	Unidade                    string    `json:"unidade"`
+	Pesoliquido                float64   `json:"peso_liquido"`
+	Pesobruto                  float64   `json:"peso_bruto"`
+	Volumes                    int32     `json:"volumes"`
+	Itensporcaixa              int32     `json:"itens_por_caixa"`
+	Gtin                       string    `json:"gtin"`
+	Gtinembalagem              string    `json:"gtin_embalagem"`
+	Tipoproducao               string    `json:"tipo_producao"`
+	Condicao                   int32     `json:"condicao"`
+	Fretegratis                bool      `json:"frete_gratis"`
+	Marca                      string    `json:"marca"`
+	Descricaocomplementar      string    `json:"descricao_complementar"`
+	Linkexterno                string    `json:"link_externo"`
+	Observacoes                string    `json:"observacoes"`
+	Descricaoembalagemdiscreta string    `json:"descricao_embalagem_discreta"`
+	CreatedAt                  time.Time `json:"created_at"`
+	UpdatedAt                  time.Time `json:"updated_at"`
 }
 
 type ProductWrapper struct {
@@ -29,23 +40,34 @@ type ProductWrapper struct {
 }
 
 type ProductPayload struct {
-	ID                int64     `json:"id"`
-	Nome              string    `json:"nome"`
-	Codigo            string    `json:"codigo"`
-	Preco             float64   `json:"preco"`
-	ImagemUrl         string    `json:"imagem_url"`
-	Tipo              string    `json:"tipo"`
-	Situacao          string    `json:"situacao"`
-	Formato           string    `json:"formato"`
-	DataValidade      time.Time `json:"data_validade"`
-	Unidade           string    `json:"unidade"`
-	Condicao          int32     `json:"condicao"`
-	Gtin              string    `json:"gtin"`
-	DescricaoCurta    string    `json:"descricao_curta"`
-	SaldoFisicoTotal  int       `json:"saldo_fisico_total"`
-	SaldoVirtualTotal int       `json:"saldo_virtual_total"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
+	ID                         int64     `json:"id"`
+	Idprodutopai               int64     `json:"id_produto_pai"`
+	Nome                       string    `json:"nome"`
+	Codigo                     string    `json:"codigo"`
+	Preco                      float64   `json:"preco"`
+	ImagemUrl                  string    `json:"imagem_url"`
+	Tipo                       string    `json:"tipo"`
+	Situacao                   string    `json:"situacao"`
+	Formato                    string    `json:"formato"`
+	DescricaoCurta             string    `json:"descricao_curta"`
+	Datavalidade               time.Time `json:"data_validade"`
+	Unidade                    string    `json:"unidade"`
+	Pesoliquido                float64   `json:"peso_liquido"`
+	Pesobruto                  float64   `json:"peso_bruto"`
+	Volumes                    int32     `json:"volumes"`
+	Itensporcaixa              int32     `json:"itens_por_caixa"`
+	Gtin                       string    `json:"gtin"`
+	Gtinembalagem              string    `json:"gtin_embalagem"`
+	Tipoproducao               string    `json:"tipo_producao"`
+	Condicao                   int32     `json:"condicao"`
+	Fretegratis                bool      `json:"frete_gratis"`
+	Marca                      string    `json:"marca"`
+	Descricaocomplementar      string    `json:"descricao_complementar"`
+	Linkexterno                string    `json:"link_externo"`
+	Observacoes                string    `json:"observacoes"`
+	Descricaoembalagemdiscreta string    `json:"descricao_embalagem_discreta"`
+	CreatedAt                  time.Time `json:"created_at"`
+	UpdatedAt                  time.Time `json:"updated_at"`
 }
 
 type StockResponse struct {

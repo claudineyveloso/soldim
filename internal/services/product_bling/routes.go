@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -16,7 +17,7 @@ import (
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "ee64313a3d11b68c0b9c40d903a88ef697303f7e" // r.Header.Get("Authorization")
+	bearerToken     = "57de6b80f69dfe1a6e5c4be307de21d2664f4762" // r.Header.Get("Authorization")
 )
 
 func RegisterRoutes(router *mux.Router) {
@@ -32,8 +33,7 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
 	name := r.URL.Query().Get("name")
-	criterioStr := r.URL.Query().Get("criterio")
-
+	criterioStr := "5"
 	page, err := strconv.Atoi(pageStr)
 	if err != nil || page < 1 {
 		page = 1
@@ -50,31 +50,133 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("Requesting page: %d with limit: %d and name: %s\n", page, limit, name)
 
-	// Inicializar totalPages na primeira chamada
-	products, totalPages, err := bling.GetProductsFromBling(bearerToken, page, limit, name, criterio)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	fmt.Printf("Processing page: %d with %d products\n", page, len(products))
-	// Processar os produtos da primeira página
-	processProducts(products)
-
-	// Loop para processar as páginas restantes
-	for intPage := page + 1; intPage <= totalPages; intPage++ {
-		products, _, err := bling.GetProductsFromBling(bearerToken, page, limit, name, criterio)
+	for {
+		products, totalPages, err := bling.GetProductsFromBling(bearerToken, page, limit, name, criterio)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		fmt.Printf("Processing page: %d with %d products\n", intPage, len(products))
+		fmt.Printf("Processing page: %d with %d products\n", page, len(products))
 		processProducts(products)
+
+		if page >= totalPages {
+			break
+		}
+
+		page++
+	}
+
+	resp, err := http.Get("http://localhost:8080/get_products")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var products []types.Product
+	err = json.Unmarshal(body, &products)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	for _, product := range products {
+		// Substituímos a linha para chamar o endpoint local
+		url := fmt.Sprintf("http://localhost:8080/get_product_id_bling?productID=%d", product.ID)
+		resp, err := http.Get(url)
+		if err != nil {
+			fmt.Printf("Error getting product from Bling: %v\n", err)
+			continue
+		}
+		defer resp.Body.Close()
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			fmt.Printf("Error reading response body: %v\n", err)
+			continue
+		}
+
+		var blingProduct types.Product
+		err = json.Unmarshal(body, &blingProduct)
+		if err != nil {
+			fmt.Printf("Error unmarshalling product: %v\n", err)
+			continue
+		}
+
+		fmt.Printf("Updating product with ID: %d\n", blingProduct.ID)
+
+		// Mapear BlingProduct para a estrutura necessária
+		updateProduct := types.Product{
+			ID:                         blingProduct.ID,
+			Nome:                       blingProduct.Nome,
+			Codigo:                     blingProduct.Codigo,
+			Preco:                      blingProduct.Preco,
+			Tipo:                       blingProduct.Tipo,
+			Situacao:                   blingProduct.Situacao,
+			Formato:                    blingProduct.Formato,
+			DescricaoCurta:             blingProduct.DescricaoCurta,
+			Datavalidade:               blingProduct.Datavalidade,
+			Unidade:                    blingProduct.Unidade,
+			Pesoliquido:                blingProduct.Pesoliquido,
+			Pesobruto:                  blingProduct.Pesobruto,
+			Volumes:                    blingProduct.Volumes,
+			Itensporcaixa:              blingProduct.Itensporcaixa,
+			Gtin:                       blingProduct.Gtin,
+			Gtinembalagem:              blingProduct.Gtinembalagem,
+			Tipoproducao:               blingProduct.Tipoproducao,
+			Condicao:                   blingProduct.Condicao,
+			Fretegratis:                blingProduct.Fretegratis,
+			Marca:                      blingProduct.Marca,
+			Descricaocomplementar:      blingProduct.Descricaocomplementar,
+			Linkexterno:                blingProduct.Linkexterno,
+			Observacoes:                blingProduct.Observacoes,
+			Descricaoembalagemdiscreta: blingProduct.Descricaoembalagemdiscreta,
+		}
+
+		// Atualize o produto em localhost com os dados obtidos do Bling
+		updateURL := fmt.Sprintf("http://localhost:8080/update_product?productID=%d", updateProduct.ID)
+		productJSON, err := json.Marshal(updateProduct)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error marshalling updated product: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Printf("Product JSON: %s\n", string(productJSON)) // Adicionando log do JSON do produto
+
+		req, err := http.NewRequest("PUT", updateURL, bytes.NewBuffer(productJSON))
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error creating update request: %v", err), http.StatusInternalServerError)
+			return
+		}
+		req.Header.Set("Content-Type", "application/json")
+
+		client := &http.Client{}
+		resp, err = client.Do(req)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error sending update request: %v", err), http.StatusInternalServerError)
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			body, _ := io.ReadAll(resp.Body)
+			fmt.Printf("Failed to update product. Status: %v, Response: %s\n", resp.Status, string(body)) // Adicionando log da resposta de erro
+			http.Error(w, fmt.Sprintf("Failed to update product. Status: %v", resp.Status), http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Printf("Product updated successfully: %v\n", updateProduct)
 	}
 
 	response := map[string]interface{}{
-		"message": "Registros importados com sucesso",
+		"message": "Registros importados e atualizados com sucesso",
 		"status":  http.StatusOK,
 	}
 	jsonResponse, err := json.Marshal(response)

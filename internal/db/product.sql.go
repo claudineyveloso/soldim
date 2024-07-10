@@ -11,31 +11,45 @@ import (
 )
 
 const createProduct = `-- name: CreateProduct :exec
-INSERT INTO products ( ID, nome, codigo, preco, tipo, situacao, formato, descricao_curta, unidade, condicao, gtin, imagem_url, data_validade, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+INSERT INTO products (ID, idProdutoPai, nome, codigo, preco, tipo, situacao, formato, descricao_curta, imagem_url, dataValidade, unidade, pesoLiquido, pesoBruto, volumes, itensPorCaixa, gtin, gtinEmbalagem, tipoProducao, condicao, freteGratis, marca, descricaoComplementar, linkExterno, observacoes, descricaoEmbalagemDiscreta, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28)
 `
 
 type CreateProductParams struct {
-	ID             int64     `json:"id"`
-	Nome           string    `json:"nome"`
-	Codigo         string    `json:"codigo"`
-	Preco          float64   `json:"preco"`
-	Tipo           string    `json:"tipo"`
-	Situacao       string    `json:"situacao"`
-	Formato        string    `json:"formato"`
-	DescricaoCurta string    `json:"descricao_curta"`
-	Unidade        string    `json:"unidade"`
-	Condicao       int32     `json:"condicao"`
-	Gtin           string    `json:"gtin"`
-	ImagemUrl      string    `json:"imagem_url"`
-	DataValidade   time.Time `json:"data_validade"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	ID                         int64     `json:"id"`
+	Idprodutopai               int64     `json:"idprodutopai"`
+	Nome                       string    `json:"nome"`
+	Codigo                     string    `json:"codigo"`
+	Preco                      float64   `json:"preco"`
+	Tipo                       string    `json:"tipo"`
+	Situacao                   string    `json:"situacao"`
+	Formato                    string    `json:"formato"`
+	DescricaoCurta             string    `json:"descricao_curta"`
+	ImagemUrl                  string    `json:"imagem_url"`
+	Datavalidade               time.Time `json:"datavalidade"`
+	Unidade                    string    `json:"unidade"`
+	Pesoliquido                float64   `json:"pesoliquido"`
+	Pesobruto                  float64   `json:"pesobruto"`
+	Volumes                    int32     `json:"volumes"`
+	Itensporcaixa              int32     `json:"itensporcaixa"`
+	Gtin                       string    `json:"gtin"`
+	Gtinembalagem              string    `json:"gtinembalagem"`
+	Tipoproducao               string    `json:"tipoproducao"`
+	Condicao                   int32     `json:"condicao"`
+	Fretegratis                bool      `json:"fretegratis"`
+	Marca                      string    `json:"marca"`
+	Descricaocomplementar      string    `json:"descricaocomplementar"`
+	Linkexterno                string    `json:"linkexterno"`
+	Observacoes                string    `json:"observacoes"`
+	Descricaoembalagemdiscreta string    `json:"descricaoembalagemdiscreta"`
+	CreatedAt                  time.Time `json:"created_at"`
+	UpdatedAt                  time.Time `json:"updated_at"`
 }
 
 func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) error {
 	_, err := q.db.ExecContext(ctx, createProduct,
 		arg.ID,
+		arg.Idprodutopai,
 		arg.Nome,
 		arg.Codigo,
 		arg.Preco,
@@ -43,11 +57,23 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) er
 		arg.Situacao,
 		arg.Formato,
 		arg.DescricaoCurta,
-		arg.Unidade,
-		arg.Condicao,
-		arg.Gtin,
 		arg.ImagemUrl,
-		arg.DataValidade,
+		arg.Datavalidade,
+		arg.Unidade,
+		arg.Pesoliquido,
+		arg.Pesobruto,
+		arg.Volumes,
+		arg.Itensporcaixa,
+		arg.Gtin,
+		arg.Gtinembalagem,
+		arg.Tipoproducao,
+		arg.Condicao,
+		arg.Fretegratis,
+		arg.Marca,
+		arg.Descricaocomplementar,
+		arg.Linkexterno,
+		arg.Observacoes,
+		arg.Descricaoembalagemdiscreta,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
@@ -65,7 +91,7 @@ func (q *Queries) DeleteProduct(ctx context.Context, id int64) error {
 }
 
 const getProduct = `-- name: GetProduct :one
-SELECT id, nome, codigo, preco, tipo, situacao, formato, descricao_curta, imagem_url, unidade, condicao, data_validade, gtin, created_at, updated_at
+SELECT id, idprodutopai, nome, codigo, preco, tipo, situacao, formato, descricao_curta, imagem_url, datavalidade, unidade, pesoliquido, pesobruto, volumes, itensporcaixa, gtin, gtinembalagem, tipoproducao, condicao, fretegratis, marca, descricaocomplementar, linkexterno, observacoes, descricaoembalagemdiscreta, created_at, updated_at
 FROM products
 WHERE products.id = $1
 `
@@ -75,6 +101,7 @@ func (q *Queries) GetProduct(ctx context.Context, id int64) (Product, error) {
 	var i Product
 	err := row.Scan(
 		&i.ID,
+		&i.Idprodutopai,
 		&i.Nome,
 		&i.Codigo,
 		&i.Preco,
@@ -83,10 +110,22 @@ func (q *Queries) GetProduct(ctx context.Context, id int64) (Product, error) {
 		&i.Formato,
 		&i.DescricaoCurta,
 		&i.ImagemUrl,
+		&i.Datavalidade,
 		&i.Unidade,
-		&i.Condicao,
-		&i.DataValidade,
+		&i.Pesoliquido,
+		&i.Pesobruto,
+		&i.Volumes,
+		&i.Itensporcaixa,
 		&i.Gtin,
+		&i.Gtinembalagem,
+		&i.Tipoproducao,
+		&i.Condicao,
+		&i.Fretegratis,
+		&i.Marca,
+		&i.Descricaocomplementar,
+		&i.Linkexterno,
+		&i.Observacoes,
+		&i.Descricaoembalagemdiscreta,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -94,7 +133,7 @@ func (q *Queries) GetProduct(ctx context.Context, id int64) (Product, error) {
 }
 
 const getProductByName = `-- name: GetProductByName :one
-SELECT id, nome, codigo, preco, tipo, situacao, formato, descricao_curta, imagem_url, unidade, condicao, data_validade, gtin, created_at, updated_at
+SELECT id, idprodutopai, nome, codigo, preco, tipo, situacao, formato, descricao_curta, imagem_url, datavalidade, unidade, pesoliquido, pesobruto, volumes, itensporcaixa, gtin, gtinembalagem, tipoproducao, condicao, fretegratis, marca, descricaocomplementar, linkexterno, observacoes, descricaoembalagemdiscreta, created_at, updated_at
 FROM products
 WHERE products.nome = $1
 `
@@ -104,6 +143,7 @@ func (q *Queries) GetProductByName(ctx context.Context, nome string) (Product, e
 	var i Product
 	err := row.Scan(
 		&i.ID,
+		&i.Idprodutopai,
 		&i.Nome,
 		&i.Codigo,
 		&i.Preco,
@@ -112,10 +152,22 @@ func (q *Queries) GetProductByName(ctx context.Context, nome string) (Product, e
 		&i.Formato,
 		&i.DescricaoCurta,
 		&i.ImagemUrl,
+		&i.Datavalidade,
 		&i.Unidade,
-		&i.Condicao,
-		&i.DataValidade,
+		&i.Pesoliquido,
+		&i.Pesobruto,
+		&i.Volumes,
+		&i.Itensporcaixa,
 		&i.Gtin,
+		&i.Gtinembalagem,
+		&i.Tipoproducao,
+		&i.Condicao,
+		&i.Fretegratis,
+		&i.Marca,
+		&i.Descricaocomplementar,
+		&i.Linkexterno,
+		&i.Observacoes,
+		&i.Descricaoembalagemdiscreta,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -123,7 +175,7 @@ func (q *Queries) GetProductByName(ctx context.Context, nome string) (Product, e
 }
 
 const getProducts = `-- name: GetProducts :many
-SELECT id, nome, codigo, preco, tipo, situacao, formato, descricao_curta, imagem_url, unidade, condicao, data_validade, gtin, created_at, updated_at
+SELECT id, idprodutopai, nome, codigo, preco, tipo, situacao, formato, descricao_curta, imagem_url, datavalidade, unidade, pesoliquido, pesobruto, volumes, itensporcaixa, gtin, gtinembalagem, tipoproducao, condicao, fretegratis, marca, descricaocomplementar, linkexterno, observacoes, descricaoembalagemdiscreta, created_at, updated_at
 FROM products
 `
 
@@ -138,6 +190,7 @@ func (q *Queries) GetProducts(ctx context.Context) ([]Product, error) {
 		var i Product
 		if err := rows.Scan(
 			&i.ID,
+			&i.Idprodutopai,
 			&i.Nome,
 			&i.Codigo,
 			&i.Preco,
@@ -146,10 +199,22 @@ func (q *Queries) GetProducts(ctx context.Context) ([]Product, error) {
 			&i.Formato,
 			&i.DescricaoCurta,
 			&i.ImagemUrl,
+			&i.Datavalidade,
 			&i.Unidade,
-			&i.Condicao,
-			&i.DataValidade,
+			&i.Pesoliquido,
+			&i.Pesobruto,
+			&i.Volumes,
+			&i.Itensporcaixa,
 			&i.Gtin,
+			&i.Gtinembalagem,
+			&i.Tipoproducao,
+			&i.Condicao,
+			&i.Fretegratis,
+			&i.Marca,
+			&i.Descricaocomplementar,
+			&i.Linkexterno,
+			&i.Observacoes,
+			&i.Descricaoembalagemdiscreta,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -167,42 +232,69 @@ func (q *Queries) GetProducts(ctx context.Context) ([]Product, error) {
 }
 
 const updateProduct = `-- name: UpdateProduct :exec
-UPDATE products SET nome = $2, 
-  codigo = $3,
-  preco = $4,
-  tipo  = $5,
-  situacao = $6,
-  formato = $7,
-  descricao_curta = $8,
-  unidade = $9,
-  condicao = $10,
-  gtin = $11,
-  imagem_url = $12,
-  data_validade = $13,
-  updated_at = $14
+UPDATE products SET idProdutoPai = $2, 
+  nome = $3, 
+  codigo = $4,
+  preco = $5,
+  tipo  = $6,
+  situacao = $7,
+  formato = $8,
+  descricao_curta = $9,
+  imagem_url = $10,
+  dataValidade = $11,
+  unidade = $12,
+  pesoLiquido = $13,
+  pesoBruto = $14,
+  volumes = $15,
+  itensPorCaixa = $16,
+  gtin = $17,
+  gtinEmbalagem = $18,
+  tipoProducao = $19,
+  condicao = $20,
+  freteGratis = $21,
+  marca = $22,
+  descricaoComplementar = $23,
+  linkExterno = $24,
+  observacoes = $25,
+  descricaoEmbalagemDiscreta = $26,
+  updated_at = $27
 WHERE products.id = $1
 `
 
 type UpdateProductParams struct {
-	ID             int64     `json:"id"`
-	Nome           string    `json:"nome"`
-	Codigo         string    `json:"codigo"`
-	Preco          float64   `json:"preco"`
-	Tipo           string    `json:"tipo"`
-	Situacao       string    `json:"situacao"`
-	Formato        string    `json:"formato"`
-	DescricaoCurta string    `json:"descricao_curta"`
-	Unidade        string    `json:"unidade"`
-	Condicao       int32     `json:"condicao"`
-	Gtin           string    `json:"gtin"`
-	ImagemUrl      string    `json:"imagem_url"`
-	DataValidade   time.Time `json:"data_validade"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	ID                         int64     `json:"id"`
+	Idprodutopai               int64     `json:"idprodutopai"`
+	Nome                       string    `json:"nome"`
+	Codigo                     string    `json:"codigo"`
+	Preco                      float64   `json:"preco"`
+	Tipo                       string    `json:"tipo"`
+	Situacao                   string    `json:"situacao"`
+	Formato                    string    `json:"formato"`
+	DescricaoCurta             string    `json:"descricao_curta"`
+	ImagemUrl                  string    `json:"imagem_url"`
+	Datavalidade               time.Time `json:"datavalidade"`
+	Unidade                    string    `json:"unidade"`
+	Pesoliquido                float64   `json:"pesoliquido"`
+	Pesobruto                  float64   `json:"pesobruto"`
+	Volumes                    int32     `json:"volumes"`
+	Itensporcaixa              int32     `json:"itensporcaixa"`
+	Gtin                       string    `json:"gtin"`
+	Gtinembalagem              string    `json:"gtinembalagem"`
+	Tipoproducao               string    `json:"tipoproducao"`
+	Condicao                   int32     `json:"condicao"`
+	Fretegratis                bool      `json:"fretegratis"`
+	Marca                      string    `json:"marca"`
+	Descricaocomplementar      string    `json:"descricaocomplementar"`
+	Linkexterno                string    `json:"linkexterno"`
+	Observacoes                string    `json:"observacoes"`
+	Descricaoembalagemdiscreta string    `json:"descricaoembalagemdiscreta"`
+	UpdatedAt                  time.Time `json:"updated_at"`
 }
 
 func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) error {
 	_, err := q.db.ExecContext(ctx, updateProduct,
 		arg.ID,
+		arg.Idprodutopai,
 		arg.Nome,
 		arg.Codigo,
 		arg.Preco,
@@ -210,11 +302,23 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) er
 		arg.Situacao,
 		arg.Formato,
 		arg.DescricaoCurta,
-		arg.Unidade,
-		arg.Condicao,
-		arg.Gtin,
 		arg.ImagemUrl,
-		arg.DataValidade,
+		arg.Datavalidade,
+		arg.Unidade,
+		arg.Pesoliquido,
+		arg.Pesobruto,
+		arg.Volumes,
+		arg.Itensporcaixa,
+		arg.Gtin,
+		arg.Gtinembalagem,
+		arg.Tipoproducao,
+		arg.Condicao,
+		arg.Fretegratis,
+		arg.Marca,
+		arg.Descricaocomplementar,
+		arg.Linkexterno,
+		arg.Observacoes,
+		arg.Descricaoembalagemdiscreta,
 		arg.UpdatedAt,
 	)
 	return err

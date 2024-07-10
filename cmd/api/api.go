@@ -11,7 +11,8 @@ import (
 	"github.com/claudineyveloso/soldim.git/internal/services/product"
 	productbling "github.com/claudineyveloso/soldim.git/internal/services/product_bling"
 	refreshtoken "github.com/claudineyveloso/soldim.git/internal/services/refresh_token"
-	salechannel "github.com/claudineyveloso/soldim.git/internal/services/sale_channel"
+	saleschannel "github.com/claudineyveloso/soldim.git/internal/services/sales_channel"
+	saleschannelbling "github.com/claudineyveloso/soldim.git/internal/services/sales_channel_bling"
 	"github.com/claudineyveloso/soldim.git/internal/services/search"
 	searchresult "github.com/claudineyveloso/soldim.git/internal/services/search_result"
 	"github.com/claudineyveloso/soldim.git/internal/services/token"
@@ -40,8 +41,7 @@ func (s *APIServer) Run() error {
 	generatetoken.RegisterRoutes(r)
 	refreshtoken.RegisterRoutes(r)
 	productbling.RegisterRoutes(r)
-	salechannel.RegisterRoutes(r)
-
+	saleschannelbling.RegisterRoutes(r)
 	userStore := user.NewStore(s.db)
 	userHandler := user.NewHandler(userStore)
 	userHandler.RegisterRoutes(r)
@@ -66,6 +66,10 @@ func (s *APIServer) Run() error {
 	productStore := product.NewStore(s.db)
 	productHandler := product.NewHandler(productStore)
 	productHandler.RegisterRoutes(r)
+
+	salesChannelStore := saleschannel.NewStore(s.db)
+	salesChannelHandler := saleschannel.NewHandler(salesChannelStore)
+	salesChannelHandler.RegisterRoutes(r)
 
 	fmt.Println("Server started on http://localhost:8080")
 	// return http.ListenAndServe("localhost:8080", r)
