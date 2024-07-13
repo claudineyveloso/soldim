@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	bearerToken = "8d9851265ae849322827e320972b03c3596b69df" // r.Header.Get("Authorization")
+	bearerToken = "41641217b8ce6364384a11bfeaccce63cdd60534"
 )
 
 func RegisterRoutes(router *mux.Router) {

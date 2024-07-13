@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	bearerToken = "57de6b80f69dfe1a6e5c4be307de21d2664f4762" // r.Header.Get("Authorization")
+	bearerToken = "41641217b8ce6364384a11bfeaccce63cdd60534"
 )
 
 func RegisterRoutes(router *mux.Router) {
@@ -22,14 +22,14 @@ func RegisterRoutes(router *mux.Router) {
 }
 
 func handleImportBlingDepositsToSoldim(w http.ResponseWriter, r *http.Request) {
-	// Obtenha os canais de venda do Bling
+	// Obtenha os depositos do Bling
 	channels, err := bling.GetDepositsFromBling(bearerToken)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error getting deposits from Bling: %v", err), http.StatusInternalServerError)
 		return
 	}
 
-	// Para cada canal de venda, faça uma requisição para criar o canal de venda no sistema local
+	// Para cada deposito, faça uma requisição para criar o deposito no sistema local
 	for _, channel := range channels {
 		channelJSON, err := json.Marshal(channel)
 		if err != nil {
@@ -90,7 +90,7 @@ func handleGetDeposits(w http.ResponseWriter, r *http.Request) {
 	// Definir o tipo de conteúdo da resposta como JSON
 	w.Header().Set("Content-Type", "application/json")
 
-	// Converter os canais de vendas para JSON e enviar a resposta
+	// Converter os depositos para JSON e enviar a resposta
 	err = json.NewEncoder(w).Encode(channels)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao converter depositos para JSON: %v", err), http.StatusInternalServerError)

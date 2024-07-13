@@ -95,13 +95,6 @@ type StockResponse struct {
 	} `json:"data"`
 }
 
-//	type ProductResponse struct {
-//		Retorno struct {
-//			Products []ProductWrapper `json:"produtos"`
-//			Total    int              `json:"total"`
-//			Limit    int              `json:"limit"`
-//		} `json:"retorno"`
-//	}
 type ProductResponse struct {
 	Data  []Product `json:"data"`
 	Total int       `json:"total"`

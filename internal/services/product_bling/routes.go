@@ -17,7 +17,7 @@ import (
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "8d9851265ae849322827e320972b03c3596b69df" // r.Header.Get("Authorization")
+	bearerToken     = "41641217b8ce6364384a11bfeaccce63cdd60534"
 )
 
 func RegisterRoutes(router *mux.Router) {
@@ -59,7 +59,8 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Printf("Processing page: %d with %d products\n", page, len(products))
 		processProducts(products)
-
+		// processStocks(products)
+		// processDepositProducts(products)
 		if page >= totalPages {
 			break
 		}
