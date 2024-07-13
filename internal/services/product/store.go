@@ -130,7 +130,7 @@ func (s *Store) GetProductByID(productID int64) (*types.Product, error) {
 	if err != nil {
 		return nil, err
 	}
-	product := convertDBProductToProduct(dbProduct)
+	product := convertGetProductRowToProduct(dbProduct)
 
 	return product, nil
 }
@@ -145,7 +145,7 @@ func (s *Store) DeleteProduct(productID int64) error {
 	return nil
 }
 
-func convertDBProductToProduct(dbProduct db.Product) *types.Product {
+func convertDBProductToProduct(dbProduct db.GetProductsRow) *types.Product {
 	product := &types.Product{
 		ID:                         dbProduct.ID,
 		Nome:                       dbProduct.Nome,
@@ -174,6 +174,48 @@ func convertDBProductToProduct(dbProduct db.Product) *types.Product {
 		Descricaoembalagemdiscreta: dbProduct.Descricaoembalagemdiscreta,
 		CreatedAt:                  dbProduct.CreatedAt,
 		UpdatedAt:                  dbProduct.UpdatedAt,
+		Saldofisicototal:           types.NewNullableInt(dbProduct.Saldofisicototal),
+		Saldovirtualtotal:          types.NewNullableInt(dbProduct.Saldovirtualtotal),
+		Saldofisico:                types.NewNullableInt(dbProduct.Saldofisico),
+		Saldovirtual:               types.NewNullableInt(dbProduct.Saldovirtual),
+	}
+	return product
+}
+
+func convertGetProductRowToProduct(dbProduct db.GetProductRow) *types.Product {
+	product := &types.Product{
+		ID:                         dbProduct.ID,
+		Idprodutopai:               dbProduct.Idprodutopai,
+		Nome:                       dbProduct.Nome,
+		Codigo:                     dbProduct.Codigo,
+		Preco:                      dbProduct.Preco,
+		ImagemUrl:                  dbProduct.ImagemUrl,
+		Tipo:                       dbProduct.Tipo,
+		Situacao:                   dbProduct.Situacao,
+		Formato:                    dbProduct.Formato,
+		DescricaoCurta:             dbProduct.DescricaoCurta,
+		Datavalidade:               dbProduct.Datavalidade,
+		Unidade:                    dbProduct.Unidade,
+		Pesoliquido:                dbProduct.Pesoliquido,
+		Pesobruto:                  dbProduct.Pesobruto,
+		Volumes:                    dbProduct.Volumes,
+		Itensporcaixa:              dbProduct.Itensporcaixa,
+		Gtin:                       dbProduct.Gtin,
+		Gtinembalagem:              dbProduct.Gtinembalagem,
+		Tipoproducao:               dbProduct.Tipoproducao,
+		Condicao:                   dbProduct.Condicao,
+		Fretegratis:                dbProduct.Fretegratis,
+		Marca:                      dbProduct.Marca,
+		Descricaocomplementar:      dbProduct.Descricaocomplementar,
+		Linkexterno:                dbProduct.Linkexterno,
+		Observacoes:                dbProduct.Observacoes,
+		Descricaoembalagemdiscreta: dbProduct.Descricaoembalagemdiscreta,
+		CreatedAt:                  dbProduct.CreatedAt,
+		UpdatedAt:                  dbProduct.UpdatedAt,
+		Saldofisicototal:           types.NewNullableInt(dbProduct.Saldofisicototal),
+		Saldovirtualtotal:          types.NewNullableInt(dbProduct.Saldovirtualtotal),
+		Saldofisico:                types.NewNullableInt(dbProduct.Saldofisico),
+		Saldovirtual:               types.NewNullableInt(dbProduct.Saldovirtual),
 	}
 	return product
 }

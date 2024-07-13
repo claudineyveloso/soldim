@@ -17,7 +17,7 @@ import (
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "57de6b80f69dfe1a6e5c4be307de21d2664f4762" // r.Header.Get("Authorization")
+	bearerToken     = "8d9851265ae849322827e320972b03c3596b69df" // r.Header.Get("Authorization")
 )
 
 func RegisterRoutes(router *mux.Router) {

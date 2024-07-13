@@ -36,7 +36,7 @@ func (s *Store) CreateSalesChannel(saleschannel types.SalesChannel) error {
 	}
 
 	if err := queries.CreateSalesChannel(ctx, createSalesChannelParams); err != nil {
-		fmt.Println("Erro ao criar um Rascunho:", err)
+		fmt.Println("Erro ao criar um canal de vendas:", err)
 		return err
 	}
 	return nil
@@ -53,13 +53,13 @@ func (s *Store) GetSalesChannel() ([]*types.SalesChannel, error) {
 
 	var saleschannels []*types.SalesChannel
 	for _, dbSalesChannel := range dbSalesChannels {
-		saleschannel := convertDBProductToProduct(dbSalesChannel)
+		saleschannel := convertDBSalesChannelToSalesChannel(dbSalesChannel)
 		saleschannels = append(saleschannels, saleschannel)
 	}
 	return saleschannels, nil
 }
 
-func convertDBProductToProduct(dbSalesChannel db.SalesChannel) *types.SalesChannel {
+func convertDBSalesChannelToSalesChannel(dbSalesChannel db.SalesChannel) *types.SalesChannel {
 	saleschannel := &types.SalesChannel{
 		ID:        dbSalesChannel.ID,
 		Descricao: dbSalesChannel.Descricao,

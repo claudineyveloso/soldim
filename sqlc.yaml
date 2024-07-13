@@ -12,6 +12,9 @@ sql:
       - "internal/scripts/token.sql"
       - "internal/scripts/draft.sql"
       - "internal/scripts/sales_channel.sql"
+      - "internal/scripts/deposit.sql"
+      - "internal/scripts/stock.sql"
+      - "internal/scripts/deposit_product.sql"
     gen:
       go:
         package: "db"

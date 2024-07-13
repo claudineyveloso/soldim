@@ -3,18 +3,126 @@ INSERT INTO products (ID, idProdutoPai, nome, codigo, preco, tipo, situacao, for
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28);
 
 -- name: GetProduct :one
-SELECT *
-FROM products
-WHERE products.id = $1;
+SELECT p.ID,
+       p.idProdutoPai,
+       p.nome,
+       p.codigo,
+       p.preco,
+       p.tipo,
+       p.situacao,
+       p.formato,
+       p.descricao_curta,
+       p.imagem_url,
+       p.dataValidade,
+       p.unidade,
+       p.pesoLiquido,
+       p.pesoBruto,
+       p.volumes,
+       p.itensPorCaixa,
+       p.gtin,
+       p.gtinEmbalagem,
+       p.tipoProducao,
+       p.condicao,
+       p.freteGratis,
+       p.marca,
+       p.descricaoComplementar,
+       p.linkExterno,
+       p.observacoes,
+       p.descricaoEmbalagemDiscreta,
+       p.created_at,
+       p.updated_at,
+       s.saldofisicototal,
+       s.saldovirtualtotal,
+       dp.saldofisico,
+       dp.saldovirtual
+FROM 
+    products p
+LEFT JOIN 
+    stocks s ON p.id = s.product_id
+LEFT JOIN 
+    deposit_products dp ON p.id = dp.product_id
+WHERE p.id = $1;
 
 -- name: GetProducts :many
-SELECT *
-FROM products;
+SELECT p.ID,
+       p.idProdutoPai,
+       p.nome,
+       p.codigo,
+       p.preco,
+       p.tipo,
+       p.situacao,
+       p.formato,
+       p.descricao_curta,
+       p.imagem_url,
+       p.dataValidade,
+       p.unidade,
+       p.pesoLiquido,
+       p.pesoBruto,
+       p.volumes,
+       p.itensPorCaixa,
+       p.gtin,
+       p.gtinEmbalagem,
+       p.tipoProducao,
+       p.condicao,
+       p.freteGratis,
+       p.marca,
+       p.descricaoComplementar,
+       p.linkExterno,
+       p.observacoes,
+       p.descricaoEmbalagemDiscreta,
+       p.created_at,
+       p.updated_at,
+       s.saldofisicototal,
+       s.saldovirtualtotal,
+       dp.saldofisico,
+       dp.saldovirtual
+FROM 
+    products p
+LEFT JOIN 
+    stocks s ON p.id = s.product_id
+LEFT JOIN 
+    deposit_products dp ON p.id = dp.product_id;
 
 -- name: GetProductByName :one
-SELECT *
-FROM products
-WHERE products.nome = $1;
+SELECT p.ID,
+       p.idProdutoPai,
+       p.nome,
+       p.codigo,
+       p.preco,
+       p.tipo,
+       p.situacao,
+       p.formato,
+       p.descricao_curta,
+       p.imagem_url,
+       p.dataValidade,
+       p.unidade,
+       p.pesoLiquido,
+       p.pesoBruto,
+       p.volumes,
+       p.itensPorCaixa,
+       p.gtin,
+       p.gtinEmbalagem,
+       p.tipoProducao,
+       p.condicao,
+       p.freteGratis,
+       p.marca,
+       p.descricaoComplementar,
+       p.linkExterno,
+       p.observacoes,
+       p.descricaoEmbalagemDiscreta,
+       p.created_at,
+       p.updated_at,
+       s.saldofisicototal,
+       s.saldovirtualtotal,
+       dp.saldofisico,
+       dp.saldovirtual
+FROM 
+    products p
+LEFT JOIN 
+    stocks s ON p.id = s.product_id
+LEFT JOIN 
+    deposit_products dp ON p.id = dp.product_id
+WHERE p.nome = $1;
 
 -- name: UpdateProduct :exec
 UPDATE products SET idProdutoPai = $2, 

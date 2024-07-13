@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/claudineyveloso/soldim.git/internal/services/deposit"
+	depositbling "github.com/claudineyveloso/soldim.git/internal/services/deposit_bling"
 	"github.com/claudineyveloso/soldim.git/internal/services/draft"
 	generatetoken "github.com/claudineyveloso/soldim.git/internal/services/generate_token"
 	"github.com/claudineyveloso/soldim.git/internal/services/healthy"
@@ -42,6 +44,7 @@ func (s *APIServer) Run() error {
 	refreshtoken.RegisterRoutes(r)
 	productbling.RegisterRoutes(r)
 	saleschannelbling.RegisterRoutes(r)
+	depositbling.RegisterRoutes(r)
 	userStore := user.NewStore(s.db)
 	userHandler := user.NewHandler(userStore)
 	userHandler.RegisterRoutes(r)
@@ -70,6 +73,10 @@ func (s *APIServer) Run() error {
 	salesChannelStore := saleschannel.NewStore(s.db)
 	salesChannelHandler := saleschannel.NewHandler(salesChannelStore)
 	salesChannelHandler.RegisterRoutes(r)
+
+	depositStore := deposit.NewStore(s.db)
+	depositHandler := deposit.NewHandler(depositStore)
+	depositHandler.RegisterRoutes(r)
 
 	fmt.Println("Server started on http://localhost:8080")
 	// return http.ListenAndServe("localhost:8080", r)

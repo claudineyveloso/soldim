@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
@@ -91,14 +92,85 @@ func (q *Queries) DeleteProduct(ctx context.Context, id int64) error {
 }
 
 const getProduct = `-- name: GetProduct :one
-SELECT id, idprodutopai, nome, codigo, preco, tipo, situacao, formato, descricao_curta, imagem_url, datavalidade, unidade, pesoliquido, pesobruto, volumes, itensporcaixa, gtin, gtinembalagem, tipoproducao, condicao, fretegratis, marca, descricaocomplementar, linkexterno, observacoes, descricaoembalagemdiscreta, created_at, updated_at
-FROM products
-WHERE products.id = $1
+SELECT p.ID,
+       p.idProdutoPai,
+       p.nome,
+       p.codigo,
+       p.preco,
+       p.tipo,
+       p.situacao,
+       p.formato,
+       p.descricao_curta,
+       p.imagem_url,
+       p.dataValidade,
+       p.unidade,
+       p.pesoLiquido,
+       p.pesoBruto,
+       p.volumes,
+       p.itensPorCaixa,
+       p.gtin,
+       p.gtinEmbalagem,
+       p.tipoProducao,
+       p.condicao,
+       p.freteGratis,
+       p.marca,
+       p.descricaoComplementar,
+       p.linkExterno,
+       p.observacoes,
+       p.descricaoEmbalagemDiscreta,
+       p.created_at,
+       p.updated_at,
+       s.saldofisicototal,
+       s.saldovirtualtotal,
+       dp.saldofisico,
+       dp.saldovirtual
+FROM 
+    products p
+LEFT JOIN 
+    stocks s ON p.id = s.product_id
+LEFT JOIN 
+    deposit_products dp ON p.id = dp.product_id
+WHERE p.id = $1
 `
 
-func (q *Queries) GetProduct(ctx context.Context, id int64) (Product, error) {
+type GetProductRow struct {
+	ID                         int64         `json:"id"`
+	Idprodutopai               int64         `json:"idprodutopai"`
+	Nome                       string        `json:"nome"`
+	Codigo                     string        `json:"codigo"`
+	Preco                      float64       `json:"preco"`
+	Tipo                       string        `json:"tipo"`
+	Situacao                   string        `json:"situacao"`
+	Formato                    string        `json:"formato"`
+	DescricaoCurta             string        `json:"descricao_curta"`
+	ImagemUrl                  string        `json:"imagem_url"`
+	Datavalidade               time.Time     `json:"datavalidade"`
+	Unidade                    string        `json:"unidade"`
+	Pesoliquido                float64       `json:"pesoliquido"`
+	Pesobruto                  float64       `json:"pesobruto"`
+	Volumes                    int32         `json:"volumes"`
+	Itensporcaixa              int32         `json:"itensporcaixa"`
+	Gtin                       string        `json:"gtin"`
+	Gtinembalagem              string        `json:"gtinembalagem"`
+	Tipoproducao               string        `json:"tipoproducao"`
+	Condicao                   int32         `json:"condicao"`
+	Fretegratis                bool          `json:"fretegratis"`
+	Marca                      string        `json:"marca"`
+	Descricaocomplementar      string        `json:"descricaocomplementar"`
+	Linkexterno                string        `json:"linkexterno"`
+	Observacoes                string        `json:"observacoes"`
+	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
+	CreatedAt                  time.Time     `json:"created_at"`
+	UpdatedAt                  time.Time     `json:"updated_at"`
+	Saldofisicototal           sql.NullInt32 `json:"saldofisicototal"`
+	Saldovirtualtotal          sql.NullInt32 `json:"saldovirtualtotal"`
+	Saldofisico                sql.NullInt32 `json:"saldofisico"`
+	Saldovirtual               sql.NullInt32 `json:"saldovirtual"`
+}
+
+func (q *Queries) GetProduct(ctx context.Context, id int64) (GetProductRow, error) {
 	row := q.db.QueryRowContext(ctx, getProduct, id)
-	var i Product
+	var i GetProductRow
 	err := row.Scan(
 		&i.ID,
 		&i.Idprodutopai,
@@ -128,19 +200,94 @@ func (q *Queries) GetProduct(ctx context.Context, id int64) (Product, error) {
 		&i.Descricaoembalagemdiscreta,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Saldofisicototal,
+		&i.Saldovirtualtotal,
+		&i.Saldofisico,
+		&i.Saldovirtual,
 	)
 	return i, err
 }
 
 const getProductByName = `-- name: GetProductByName :one
-SELECT id, idprodutopai, nome, codigo, preco, tipo, situacao, formato, descricao_curta, imagem_url, datavalidade, unidade, pesoliquido, pesobruto, volumes, itensporcaixa, gtin, gtinembalagem, tipoproducao, condicao, fretegratis, marca, descricaocomplementar, linkexterno, observacoes, descricaoembalagemdiscreta, created_at, updated_at
-FROM products
-WHERE products.nome = $1
+SELECT p.ID,
+       p.idProdutoPai,
+       p.nome,
+       p.codigo,
+       p.preco,
+       p.tipo,
+       p.situacao,
+       p.formato,
+       p.descricao_curta,
+       p.imagem_url,
+       p.dataValidade,
+       p.unidade,
+       p.pesoLiquido,
+       p.pesoBruto,
+       p.volumes,
+       p.itensPorCaixa,
+       p.gtin,
+       p.gtinEmbalagem,
+       p.tipoProducao,
+       p.condicao,
+       p.freteGratis,
+       p.marca,
+       p.descricaoComplementar,
+       p.linkExterno,
+       p.observacoes,
+       p.descricaoEmbalagemDiscreta,
+       p.created_at,
+       p.updated_at,
+       s.saldofisicototal,
+       s.saldovirtualtotal,
+       dp.saldofisico,
+       dp.saldovirtual
+FROM 
+    products p
+LEFT JOIN 
+    stocks s ON p.id = s.product_id
+LEFT JOIN 
+    deposit_products dp ON p.id = dp.product_id
+WHERE p.nome = $1
 `
 
-func (q *Queries) GetProductByName(ctx context.Context, nome string) (Product, error) {
+type GetProductByNameRow struct {
+	ID                         int64         `json:"id"`
+	Idprodutopai               int64         `json:"idprodutopai"`
+	Nome                       string        `json:"nome"`
+	Codigo                     string        `json:"codigo"`
+	Preco                      float64       `json:"preco"`
+	Tipo                       string        `json:"tipo"`
+	Situacao                   string        `json:"situacao"`
+	Formato                    string        `json:"formato"`
+	DescricaoCurta             string        `json:"descricao_curta"`
+	ImagemUrl                  string        `json:"imagem_url"`
+	Datavalidade               time.Time     `json:"datavalidade"`
+	Unidade                    string        `json:"unidade"`
+	Pesoliquido                float64       `json:"pesoliquido"`
+	Pesobruto                  float64       `json:"pesobruto"`
+	Volumes                    int32         `json:"volumes"`
+	Itensporcaixa              int32         `json:"itensporcaixa"`
+	Gtin                       string        `json:"gtin"`
+	Gtinembalagem              string        `json:"gtinembalagem"`
+	Tipoproducao               string        `json:"tipoproducao"`
+	Condicao                   int32         `json:"condicao"`
+	Fretegratis                bool          `json:"fretegratis"`
+	Marca                      string        `json:"marca"`
+	Descricaocomplementar      string        `json:"descricaocomplementar"`
+	Linkexterno                string        `json:"linkexterno"`
+	Observacoes                string        `json:"observacoes"`
+	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
+	CreatedAt                  time.Time     `json:"created_at"`
+	UpdatedAt                  time.Time     `json:"updated_at"`
+	Saldofisicototal           sql.NullInt32 `json:"saldofisicototal"`
+	Saldovirtualtotal          sql.NullInt32 `json:"saldovirtualtotal"`
+	Saldofisico                sql.NullInt32 `json:"saldofisico"`
+	Saldovirtual               sql.NullInt32 `json:"saldovirtual"`
+}
+
+func (q *Queries) GetProductByName(ctx context.Context, nome string) (GetProductByNameRow, error) {
 	row := q.db.QueryRowContext(ctx, getProductByName, nome)
-	var i Product
+	var i GetProductByNameRow
 	err := row.Scan(
 		&i.ID,
 		&i.Idprodutopai,
@@ -170,24 +317,99 @@ func (q *Queries) GetProductByName(ctx context.Context, nome string) (Product, e
 		&i.Descricaoembalagemdiscreta,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Saldofisicototal,
+		&i.Saldovirtualtotal,
+		&i.Saldofisico,
+		&i.Saldovirtual,
 	)
 	return i, err
 }
 
 const getProducts = `-- name: GetProducts :many
-SELECT id, idprodutopai, nome, codigo, preco, tipo, situacao, formato, descricao_curta, imagem_url, datavalidade, unidade, pesoliquido, pesobruto, volumes, itensporcaixa, gtin, gtinembalagem, tipoproducao, condicao, fretegratis, marca, descricaocomplementar, linkexterno, observacoes, descricaoembalagemdiscreta, created_at, updated_at
-FROM products
+SELECT p.ID,
+       p.idProdutoPai,
+       p.nome,
+       p.codigo,
+       p.preco,
+       p.tipo,
+       p.situacao,
+       p.formato,
+       p.descricao_curta,
+       p.imagem_url,
+       p.dataValidade,
+       p.unidade,
+       p.pesoLiquido,
+       p.pesoBruto,
+       p.volumes,
+       p.itensPorCaixa,
+       p.gtin,
+       p.gtinEmbalagem,
+       p.tipoProducao,
+       p.condicao,
+       p.freteGratis,
+       p.marca,
+       p.descricaoComplementar,
+       p.linkExterno,
+       p.observacoes,
+       p.descricaoEmbalagemDiscreta,
+       p.created_at,
+       p.updated_at,
+       s.saldofisicototal,
+       s.saldovirtualtotal,
+       dp.saldofisico,
+       dp.saldovirtual
+FROM 
+    products p
+LEFT JOIN 
+    stocks s ON p.id = s.product_id
+LEFT JOIN 
+    deposit_products dp ON p.id = dp.product_id
 `
 
-func (q *Queries) GetProducts(ctx context.Context) ([]Product, error) {
+type GetProductsRow struct {
+	ID                         int64         `json:"id"`
+	Idprodutopai               int64         `json:"idprodutopai"`
+	Nome                       string        `json:"nome"`
+	Codigo                     string        `json:"codigo"`
+	Preco                      float64       `json:"preco"`
+	Tipo                       string        `json:"tipo"`
+	Situacao                   string        `json:"situacao"`
+	Formato                    string        `json:"formato"`
+	DescricaoCurta             string        `json:"descricao_curta"`
+	ImagemUrl                  string        `json:"imagem_url"`
+	Datavalidade               time.Time     `json:"datavalidade"`
+	Unidade                    string        `json:"unidade"`
+	Pesoliquido                float64       `json:"pesoliquido"`
+	Pesobruto                  float64       `json:"pesobruto"`
+	Volumes                    int32         `json:"volumes"`
+	Itensporcaixa              int32         `json:"itensporcaixa"`
+	Gtin                       string        `json:"gtin"`
+	Gtinembalagem              string        `json:"gtinembalagem"`
+	Tipoproducao               string        `json:"tipoproducao"`
+	Condicao                   int32         `json:"condicao"`
+	Fretegratis                bool          `json:"fretegratis"`
+	Marca                      string        `json:"marca"`
+	Descricaocomplementar      string        `json:"descricaocomplementar"`
+	Linkexterno                string        `json:"linkexterno"`
+	Observacoes                string        `json:"observacoes"`
+	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
+	CreatedAt                  time.Time     `json:"created_at"`
+	UpdatedAt                  time.Time     `json:"updated_at"`
+	Saldofisicototal           sql.NullInt32 `json:"saldofisicototal"`
+	Saldovirtualtotal          sql.NullInt32 `json:"saldovirtualtotal"`
+	Saldofisico                sql.NullInt32 `json:"saldofisico"`
+	Saldovirtual               sql.NullInt32 `json:"saldovirtual"`
+}
+
+func (q *Queries) GetProducts(ctx context.Context) ([]GetProductsRow, error) {
 	rows, err := q.db.QueryContext(ctx, getProducts)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Product
+	var items []GetProductsRow
 	for rows.Next() {
-		var i Product
+		var i GetProductsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Idprodutopai,
@@ -217,6 +439,10 @@ func (q *Queries) GetProducts(ctx context.Context) ([]Product, error) {
 			&i.Descricaoembalagemdiscreta,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Saldofisicototal,
+			&i.Saldovirtualtotal,
+			&i.Saldofisico,
+			&i.Saldovirtual,
 		); err != nil {
 			return nil, err
 		}

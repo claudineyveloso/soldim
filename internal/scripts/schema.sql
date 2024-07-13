@@ -162,13 +162,13 @@ ADD
 
 DROP TABLE IF EXISTS "deposits";
 CREATE TABLE IF NOT EXISTS deposits (
-  id            bigint PRIMARY KEY,
-  descricao     varchar(255) not null,
-  situacao      int not null default 0,
-  padrao        boolean not null default false,
-  desconsiderarSaldo boolean not null default false,
-  created_at    timestamp not null,
-  updated_at    timestamp not null
+  id                  bigint PRIMARY KEY,
+  descricao           varchar(255) not null,
+  situacao            int not null default 0,
+  padrao              boolean not null default false,
+  desconsiderarSaldo  boolean not null default false,
+  created_at          timestamp not null,
+  updated_at          timestamp not null
 );
 
 DROP TABLE IF EXISTS "deposit_products";
