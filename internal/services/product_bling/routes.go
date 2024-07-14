@@ -2,22 +2,26 @@ package productbling
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
+	"sync"
+	"time"
 
 	"github.com/claudineyveloso/soldim.git/internal/bling"
 	"github.com/claudineyveloso/soldim.git/internal/types"
 	"github.com/claudineyveloso/soldim.git/internal/utils"
 	"github.com/gorilla/mux"
+	"golang.org/x/time/rate"
 )
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "41641217b8ce6364384a11bfeaccce63cdd60534"
+	bearerToken     = "4b8ea3f8b7fb190a73c00e4e25e8ab27a733e822"
 )
 
 func RegisterRoutes(router *mux.Router) {
@@ -59,8 +63,17 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Printf("Processing page: %d with %d products\n", page, len(products))
 		processProducts(products)
-		// processStocks(products)
-		// processDepositProducts(products)
+
+		var wg sync.WaitGroup
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+			processStocks(products, bearerToken)
+		}()
+
+		wg.Wait()
+
 		if page >= totalPages {
 			break
 		}
@@ -219,6 +232,362 @@ func processProducts(products []types.Product) {
 		}
 
 		fmt.Printf("Product created successfully: %v\n", product)
+	}
+}
+
+func processStocks(products []types.Product, bearerToken string) {
+	var wg sync.WaitGroup
+
+	// Criar um rate limiter que permite 3 requisições por segundo
+	limiter := rate.NewLimiter(rate.Every(time.Second/3), 1)
+
+	for _, product := range products {
+		wg.Add(1)
+		go func(product types.Product) {
+			defer wg.Done()
+
+			// Aguardar até que uma requisição possa ser feita
+			err := limiter.Wait(context.Background())
+			if err != nil {
+				fmt.Printf("Error waiting for rate limiter: %v\n", err)
+				return
+			}
+
+			processStockForProduct(product, bearerToken)
+		}(product)
+	}
+
+	wg.Wait()
+}
+
+// func processStocks(products []types.Product, bearerToken string) {
+// 	var wg sync.WaitGroup
+//
+// 	for _, product := range products {
+// 		wg.Add(1)
+// 		go func(product types.Product) {
+// 			defer wg.Done()
+// 			processStockForProduct(product, bearerToken)
+// 		}(product)
+// 	}
+//
+// 	wg.Wait()
+// }
+
+func processStockForProduct(product types.Product, bearerToken string) {
+	stockResponse, err := bling.GetStockProductFromBling(bearerToken, product.ID)
+	if err != nil {
+		fmt.Printf("Error fetching stock for product %d: %v\n", product.ID, err)
+		return
+	}
+
+	fmt.Printf("Parsed stock response for product %d: %+v\n", product.ID, stockResponse)
+
+	for _, stockData := range stockResponse.Data {
+		fmt.Printf("Processing stock data: %+v\n", stockData)
+
+		// Criar o stock
+		stock := types.Stock{
+			ProductID:         stockData.Produto.ID,
+			SaldoFisicoTotal:  int32(stockData.SaldoFisicoTotal),
+			SaldoVirtualTotal: int32(stockData.SaldoVirtualTotal),
+		}
+
+		stockJSON, err := json.Marshal(stock)
+		if err != nil {
+			fmt.Printf("Error marshalling stock for product %d: %v\n", product.ID, err)
+			continue
+		}
+
+		fmt.Printf("Sending stock data for product %d: %s\n", product.ID, string(stockJSON))
+
+		stockResp, err := http.Post("http://localhost:8080/create_stock", "application/json", bytes.NewBuffer(stockJSON))
+		if err != nil {
+			fmt.Printf("Error sending stock data for product %d: %v\n", product.ID, err)
+			continue
+		}
+		defer stockResp.Body.Close()
+
+		stockRespBody, _ := io.ReadAll(stockResp.Body)
+		fmt.Printf("Response from create_stock for product %d: %s\n", product.ID, string(stockRespBody))
+
+		// Criar deposit products
+		for _, deposito := range stockData.Depositos {
+			fmt.Printf("Processing deposit data: %+v\n", deposito)
+
+			depositProduct := types.DepositProduct{
+				ProductID:    stockData.Produto.ID,
+				DepositID:    deposito.ID,
+				SaldoFisico:  int32(deposito.SaldoFisico),
+				SaldoVirtual: int32(deposito.SaldoVirtual),
+			}
+
+			fmt.Printf("Values assigned for deposit product for product %d: %+v\n", product.ID, depositProduct)
+
+			depositProductJSON, err := json.Marshal(depositProduct)
+			if err != nil {
+				fmt.Printf("Error marshalling deposit product for product %d: %v\n", product.ID, err)
+				continue
+			}
+
+			fmt.Printf("Sending deposit product data for product %d: %s\n", product.ID, string(depositProductJSON))
+
+			depositResp, err := http.Post("http://localhost:8080/create_deposit_product", "application/json", bytes.NewBuffer(depositProductJSON))
+			if err != nil {
+				fmt.Printf("Error sending deposit product data for product %d: %v\n", product.ID, err)
+				continue
+			}
+			defer depositResp.Body.Close()
+
+			depositRespBody, _ := io.ReadAll(depositResp.Body)
+			fmt.Printf("Response from create_deposit_product for product %d: %s\n", product.ID, string(depositRespBody))
+		}
+	}
+}
+
+func processStockForProductsss(product types.Product, bearerToken string) {
+	stockResponse, err := bling.GetStockProductFromBling(bearerToken, product.ID)
+	if err != nil {
+		fmt.Printf("Error fetching stock for product %d: %v\n", product.ID, err)
+		return
+	}
+
+	fmt.Printf("Parsed stock response for product %d: %+v\n", product.ID, stockResponse)
+
+	for _, stockData := range stockResponse.Data {
+		// Criar o stock
+		stock := types.Stock{
+			ProductID:         stockData.Produto.ID,
+			SaldoFisicoTotal:  int32(stockData.SaldoFisicoTotal),
+			SaldoVirtualTotal: int32(stockData.SaldoVirtualTotal),
+		}
+
+		stockJSON, err := json.Marshal(stock)
+		if err != nil {
+			fmt.Printf("Error marshalling stock for product %d: %v\n", product.ID, err)
+			continue
+		}
+
+		fmt.Printf("Sending stock data for product %d: %s\n", product.ID, string(stockJSON))
+
+		stockResp, err := http.Post("http://localhost:8080/create_stock", "application/json", bytes.NewBuffer(stockJSON))
+		if err != nil {
+			fmt.Printf("Error sending stock data for product %d: %v\n", product.ID, err)
+			continue
+		}
+		defer stockResp.Body.Close()
+
+		stockRespBody, _ := io.ReadAll(stockResp.Body)
+		fmt.Printf("Response from create_stock for product %d: %s\n", product.ID, string(stockRespBody))
+
+		// Criar deposit products
+		for _, deposito := range stockData.Depositos {
+			depositProduct := types.DepositProduct{
+				ProductID:    stockData.Produto.ID,
+				DepositID:    deposito.ID,
+				SaldoFisico:  int32(deposito.SaldoFisico),
+				SaldoVirtual: int32(deposito.SaldoVirtual),
+			}
+
+			depositProductJSON, err := json.Marshal(depositProduct)
+			if err != nil {
+				fmt.Printf("Error marshalling deposit product for product %d: %v\n", product.ID, err)
+				continue
+			}
+
+			fmt.Printf("Sending deposit product data for product %d: %s\n", product.ID, string(depositProductJSON))
+
+			depositResp, err := http.Post("http://localhost:8080/create_deposit_product", "application/json", bytes.NewBuffer(depositProductJSON))
+			if err != nil {
+				fmt.Printf("Error sending deposit product data for product %d: %v\n", product.ID, err)
+				continue
+			}
+			defer depositResp.Body.Close()
+
+			depositRespBody, _ := io.ReadAll(depositResp.Body)
+			fmt.Printf("Response from create_deposit_product for product %d: %s\n", product.ID, string(depositRespBody))
+		}
+	}
+}
+
+// func processStockForProductss(product types.Product) {
+//
+// 	url := fmt.Sprintf("https://bling.com.br/Api/v3/estoques/saldos?idsProdutos%%5B%%5D=%d", product.ID)
+// 	fmt.Printf("Fetching stock data from URL: %s\n", url)
+//
+// 	resp, err := http.Get(url)
+// 	if err != nil {
+// 		fmt.Printf("Error fetching stock for product %d: %v\n", product.ID, err)
+// 		return
+// 	}
+// 	defer resp.Body.Close()
+//
+// 	body, err := io.ReadAll(resp.Body)
+// 	if err != nil {
+// 		fmt.Printf("Error reading stock response for product %d: %v\n", product.ID, err)
+// 		return
+// 	}
+//
+// 	fmt.Printf("Stock response for product %d: %s\n", product.ID, string(body))
+//
+// 	var stockResponsess struct {
+// 		Data []struct {
+// 			Produto struct {
+// 				ID int64 `json:"id"`
+// 			} `json:"produto"`
+// 			SaldoFisicoTotal  int `json:"saldo_fisico_total"`
+// 			SaldoVirtualTotal int `json:"saldo_virtual_total"`
+// 			Depositos         []struct {
+// 				ID           int64 `json:"id"`
+// 				SaldoFisico  int   `json:"saldo_fisico"`
+// 				SaldoVirtual int   `json:"saldo_virtual"`
+// 			} `json:"depositos"`
+// 		} `json:"data"`
+// 	}
+//
+// 	err = json.Unmarshal(body, &stockResponse)
+// 	if err != nil {
+// 		fmt.Printf("Error unmarshalling stock response for product %d: %v\n", product.ID, err)
+// 		return
+// 	}
+//
+// 	fmt.Printf("Parsed stock response for product %d: %+v\n", product.ID, stockResponse)
+//
+// 	for _, stockData := range stockResponse.Data {
+// 		// Criar o stock
+// 		stock := types.Stock{
+// 			ProductID:         stockData.Produto.ID,
+// 			SaldoFisicoTotal:  int32(stockData.SaldoFisicoTotal),
+// 			SaldoVirtualTotal: int32(stockData.SaldoVirtualTotal),
+// 		}
+//
+// 		stockJSON, err := json.Marshal(stock)
+// 		if err != nil {
+// 			fmt.Printf("Error marshalling stock for product %d: %v\n", product.ID, err)
+// 			continue
+// 		}
+//
+// 		fmt.Printf("Sending stock data for product %d: %s\n", product.ID, string(stockJSON))
+//
+// 		stockResp, err := http.Post("http://localhost:8080/create_stock", "application/json", bytes.NewBuffer(stockJSON))
+// 		if err != nil {
+// 			fmt.Printf("Error sending stock data for product %d: %v\n", product.ID, err)
+// 			continue
+// 		}
+// 		defer stockResp.Body.Close()
+//
+// 		stockRespBody, _ := io.ReadAll(stockResp.Body)
+// 		fmt.Printf("Response from create_stock for product %d: %s\n", product.ID, string(stockRespBody))
+//
+// 		// Criar deposit products
+// 		for _, deposito := range stockData.Depositos {
+// 			depositProduct := types.DepositProduct{
+// 				ProductID:    stockData.Produto.ID,
+// 				DepositID:    deposito.ID,
+// 				SaldoFisico:  int32(deposito.SaldoFisico),
+// 				SaldoVirtual: int32(deposito.SaldoVirtual),
+// 			}
+//
+// 			depositProductJSON, err := json.Marshal(depositProduct)
+// 			if err != nil {
+// 				fmt.Printf("Error marshalling deposit product for product %d: %v\n", product.ID, err)
+// 				continue
+// 			}
+//
+// 			fmt.Printf("Sending deposit product data for product %d: %s\n", product.ID, string(depositProductJSON))
+//
+// 			depositResp, err := http.Post("http://localhost:8080/create_deposit_product", "application/json", bytes.NewBuffer(depositProductJSON))
+// 			if err != nil {
+// 				fmt.Printf("Error sending deposit product data for product %d: %v\n", product.ID, err)
+// 				continue
+// 			}
+// 			defer depositResp.Body.Close()
+//
+// 			depositRespBody, _ := io.ReadAll(depositResp.Body)
+// 			fmt.Printf("Response from create_deposit_product for product %d: %s\n", product.ID, string(depositRespBody))
+// 		}
+// 	}
+// }
+
+func processStockForProduct111(product types.Product) {
+	url := fmt.Sprintf("https://bling.com.br/Api/v3/estoques/saldos?idsProdutos%%5B%%5D=%d", product.ID)
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Printf("Error fetching stock for product %d: %v\n", product.ID, err)
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("Error reading stock response for product %d: %v\n", product.ID, err)
+		return
+	}
+
+	var stockResponse struct {
+		Data []struct {
+			Produto struct {
+				ID int64 `json:"id"`
+			} `json:"produto"`
+			SaldoFisicoTotal  int `json:"saldo_fisico_total"`
+			SaldoVirtualTotal int `json:"saldo_virtual_total"`
+			Depositos         []struct {
+				ID           int64 `json:"id"`
+				SaldoFisico  int   `json:"saldo_fisico"`
+				SaldoVirtual int   `json:"saldo_virtual"`
+			} `json:"depositos"`
+		} `json:"data"`
+	}
+
+	err = json.Unmarshal(body, &stockResponse)
+	if err != nil {
+		fmt.Printf("Error unmarshalling stock response for product %d: %v\n", product.ID, err)
+		return
+	}
+
+	for _, stockData := range stockResponse.Data {
+		// Criar o stock
+		stock := types.Stock{
+			ProductID:         stockData.Produto.ID,
+			SaldoFisicoTotal:  int32(stockData.SaldoFisicoTotal),
+			SaldoVirtualTotal: int32(stockData.SaldoVirtualTotal),
+		}
+
+		stockJSON, err := json.Marshal(stock)
+		if err != nil {
+			fmt.Printf("Error marshalling stock for product %d: %v\n", product.ID, err)
+			continue
+		}
+
+		stockResp, err := http.Post("http://localhost:8080/create_stock", "application/json", bytes.NewBuffer(stockJSON))
+		if err != nil {
+			fmt.Printf("Error sending stock data for product %d: %v\n", product.ID, err)
+			continue
+		}
+		stockResp.Body.Close()
+
+		// Criar deposit products
+		for _, deposito := range stockData.Depositos {
+			depositProduct := types.DepositProduct{
+				ProductID:    stockData.Produto.ID,
+				DepositID:    deposito.ID,
+				SaldoFisico:  int32(deposito.SaldoFisico),
+				SaldoVirtual: int32(deposito.SaldoVirtual),
+			}
+
+			depositProductJSON, err := json.Marshal(depositProduct)
+			if err != nil {
+				fmt.Printf("Error marshalling deposit product for product %d: %v\n", product.ID, err)
+				continue
+			}
+
+			depositResp, err := http.Post("http://localhost:8080/create_deposit_product", "application/json", bytes.NewBuffer(depositProductJSON))
+			if err != nil {
+				fmt.Printf("Error sending deposit product data for product %d: %v\n", product.ID, err)
+				continue
+			}
+			depositResp.Body.Close()
+		}
 	}
 }
 

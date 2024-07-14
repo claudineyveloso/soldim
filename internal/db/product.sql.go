@@ -120,10 +120,10 @@ SELECT p.ID,
        p.descricaoEmbalagemDiscreta,
        p.created_at,
        p.updated_at,
-       s.saldofisicototal,
-       s.saldovirtualtotal,
-       dp.saldofisico,
-       dp.saldovirtual
+       s.saldo_fisico_total,
+       s.saldo_virtual_total,
+       dp.saldo_fisico,
+       dp.saldo_virtual
 FROM 
     products p
 LEFT JOIN 
@@ -162,10 +162,10 @@ type GetProductRow struct {
 	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
 	CreatedAt                  time.Time     `json:"created_at"`
 	UpdatedAt                  time.Time     `json:"updated_at"`
-	Saldofisicototal           sql.NullInt32 `json:"saldofisicototal"`
-	Saldovirtualtotal          sql.NullInt32 `json:"saldovirtualtotal"`
-	Saldofisico                sql.NullInt32 `json:"saldofisico"`
-	Saldovirtual               sql.NullInt32 `json:"saldovirtual"`
+	SaldoFisicoTotal           sql.NullInt32 `json:"saldo_fisico_total"`
+	SaldoVirtualTotal          sql.NullInt32 `json:"saldo_virtual_total"`
+	SaldoFisico                sql.NullInt32 `json:"saldo_fisico"`
+	SaldoVirtual               sql.NullInt32 `json:"saldo_virtual"`
 }
 
 func (q *Queries) GetProduct(ctx context.Context, id int64) (GetProductRow, error) {
@@ -200,10 +200,10 @@ func (q *Queries) GetProduct(ctx context.Context, id int64) (GetProductRow, erro
 		&i.Descricaoembalagemdiscreta,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Saldofisicototal,
-		&i.Saldovirtualtotal,
-		&i.Saldofisico,
-		&i.Saldovirtual,
+		&i.SaldoFisicoTotal,
+		&i.SaldoVirtualTotal,
+		&i.SaldoFisico,
+		&i.SaldoVirtual,
 	)
 	return i, err
 }
@@ -237,10 +237,10 @@ SELECT p.ID,
        p.descricaoEmbalagemDiscreta,
        p.created_at,
        p.updated_at,
-       s.saldofisicototal,
-       s.saldovirtualtotal,
-       dp.saldofisico,
-       dp.saldovirtual
+       s.saldo_fisico_total,
+       s.saldo_virtual_total,
+       dp.saldo_fisico,
+       dp.saldo_virtual
 FROM 
     products p
 LEFT JOIN 
@@ -279,10 +279,10 @@ type GetProductByNameRow struct {
 	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
 	CreatedAt                  time.Time     `json:"created_at"`
 	UpdatedAt                  time.Time     `json:"updated_at"`
-	Saldofisicototal           sql.NullInt32 `json:"saldofisicototal"`
-	Saldovirtualtotal          sql.NullInt32 `json:"saldovirtualtotal"`
-	Saldofisico                sql.NullInt32 `json:"saldofisico"`
-	Saldovirtual               sql.NullInt32 `json:"saldovirtual"`
+	SaldoFisicoTotal           sql.NullInt32 `json:"saldo_fisico_total"`
+	SaldoVirtualTotal          sql.NullInt32 `json:"saldo_virtual_total"`
+	SaldoFisico                sql.NullInt32 `json:"saldo_fisico"`
+	SaldoVirtual               sql.NullInt32 `json:"saldo_virtual"`
 }
 
 func (q *Queries) GetProductByName(ctx context.Context, nome string) (GetProductByNameRow, error) {
@@ -317,10 +317,10 @@ func (q *Queries) GetProductByName(ctx context.Context, nome string) (GetProduct
 		&i.Descricaoembalagemdiscreta,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Saldofisicototal,
-		&i.Saldovirtualtotal,
-		&i.Saldofisico,
-		&i.Saldovirtual,
+		&i.SaldoFisicoTotal,
+		&i.SaldoVirtualTotal,
+		&i.SaldoFisico,
+		&i.SaldoVirtual,
 	)
 	return i, err
 }
@@ -354,10 +354,10 @@ SELECT p.ID,
        p.descricaoEmbalagemDiscreta,
        p.created_at,
        p.updated_at,
-       s.saldofisicototal,
-       s.saldovirtualtotal,
-       dp.saldofisico,
-       dp.saldovirtual
+       s.saldo_fisico_total,
+       s.saldo_virtual_total,
+       dp.saldo_fisico,
+       dp.saldo_virtual
 FROM 
     products p
 LEFT JOIN 
@@ -395,10 +395,10 @@ type GetProductsRow struct {
 	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
 	CreatedAt                  time.Time     `json:"created_at"`
 	UpdatedAt                  time.Time     `json:"updated_at"`
-	Saldofisicototal           sql.NullInt32 `json:"saldofisicototal"`
-	Saldovirtualtotal          sql.NullInt32 `json:"saldovirtualtotal"`
-	Saldofisico                sql.NullInt32 `json:"saldofisico"`
-	Saldovirtual               sql.NullInt32 `json:"saldovirtual"`
+	SaldoFisicoTotal           sql.NullInt32 `json:"saldo_fisico_total"`
+	SaldoVirtualTotal          sql.NullInt32 `json:"saldo_virtual_total"`
+	SaldoFisico                sql.NullInt32 `json:"saldo_fisico"`
+	SaldoVirtual               sql.NullInt32 `json:"saldo_virtual"`
 }
 
 func (q *Queries) GetProducts(ctx context.Context) ([]GetProductsRow, error) {
@@ -439,10 +439,10 @@ func (q *Queries) GetProducts(ctx context.Context) ([]GetProductsRow, error) {
 			&i.Descricaoembalagemdiscreta,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.Saldofisicototal,
-			&i.Saldovirtualtotal,
-			&i.Saldofisico,
-			&i.Saldovirtual,
+			&i.SaldoFisicoTotal,
+			&i.SaldoVirtualTotal,
+			&i.SaldoFisico,
+			&i.SaldoVirtual,
 		); err != nil {
 			return nil, err
 		}

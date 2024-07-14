@@ -11,27 +11,25 @@ import (
 )
 
 const createDepositProduct = `-- name: CreateDepositProduct :exec
-INSERT INTO deposit_products (ID, deposit_id, product_id, saldoFisico, saldoVirtual, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+INSERT INTO deposit_products (deposit_id, product_id, saldo_fisico, saldo_virtual, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6)
 `
 
 type CreateDepositProductParams struct {
-	ID           int64     `json:"id"`
 	DepositID    int64     `json:"deposit_id"`
 	ProductID    int64     `json:"product_id"`
-	Saldofisico  int32     `json:"saldofisico"`
-	Saldovirtual int32     `json:"saldovirtual"`
+	SaldoFisico  int32     `json:"saldo_fisico"`
+	SaldoVirtual int32     `json:"saldo_virtual"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 func (q *Queries) CreateDepositProduct(ctx context.Context, arg CreateDepositProductParams) error {
 	_, err := q.db.ExecContext(ctx, createDepositProduct,
-		arg.ID,
 		arg.DepositID,
 		arg.ProductID,
-		arg.Saldofisico,
-		arg.Saldovirtual,
+		arg.SaldoFisico,
+		arg.SaldoVirtual,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
@@ -39,11 +37,10 @@ func (q *Queries) CreateDepositProduct(ctx context.Context, arg CreateDepositPro
 }
 
 const getDepositProducts = `-- name: GetDepositProducts :many
-SELECT ID,
-        deposit_id,
+SELECT deposit_id,
         product_id,
-        saldoFisico,
-        saldoVirtual,
+        saldo_fisico,
+        saldo_virtual,
         created_at,
         updated_at
 FROM deposit_products
@@ -59,11 +56,10 @@ func (q *Queries) GetDepositProducts(ctx context.Context) ([]DepositProduct, err
 	for rows.Next() {
 		var i DepositProduct
 		if err := rows.Scan(
-			&i.ID,
 			&i.DepositID,
 			&i.ProductID,
-			&i.Saldofisico,
-			&i.Saldovirtual,
+			&i.SaldoFisico,
+			&i.SaldoVirtual,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -81,8 +77,8 @@ func (q *Queries) GetDepositProducts(ctx context.Context) ([]DepositProduct, err
 }
 
 const updateDepositProduct = `-- name: UpdateDepositProduct :exec
-UPDATE deposit_products SET saldoFisico = $3, 
-  saldoVirtual = $4, 
+UPDATE deposit_products SET saldo_fisico = $3, 
+  saldo_virtual = $4, 
   updated_at = $5
 WHERE deposit_products.deposit_id = $1 AND deposit_products.product_id = $2
 `
@@ -90,8 +86,8 @@ WHERE deposit_products.deposit_id = $1 AND deposit_products.product_id = $2
 type UpdateDepositProductParams struct {
 	DepositID    int64     `json:"deposit_id"`
 	ProductID    int64     `json:"product_id"`
-	Saldofisico  int32     `json:"saldofisico"`
-	Saldovirtual int32     `json:"saldovirtual"`
+	SaldoFisico  int32     `json:"saldo_fisico"`
+	SaldoVirtual int32     `json:"saldo_virtual"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
@@ -99,8 +95,8 @@ func (q *Queries) UpdateDepositProduct(ctx context.Context, arg UpdateDepositPro
 	_, err := q.db.ExecContext(ctx, updateDepositProduct,
 		arg.DepositID,
 		arg.ProductID,
-		arg.Saldofisico,
-		arg.Saldovirtual,
+		arg.SaldoFisico,
+		arg.SaldoVirtual,
 		arg.UpdatedAt,
 	)
 	return err

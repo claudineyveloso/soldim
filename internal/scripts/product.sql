@@ -31,10 +31,10 @@ SELECT p.ID,
        p.descricaoEmbalagemDiscreta,
        p.created_at,
        p.updated_at,
-       s.saldofisicototal,
-       s.saldovirtualtotal,
-       dp.saldofisico,
-       dp.saldovirtual
+       s.saldo_fisico_total,
+       s.saldo_virtual_total,
+       dp.saldo_fisico,
+       dp.saldo_virtual
 FROM 
     products p
 LEFT JOIN 
@@ -72,10 +72,10 @@ SELECT p.ID,
        p.descricaoEmbalagemDiscreta,
        p.created_at,
        p.updated_at,
-       s.saldofisicototal,
-       s.saldovirtualtotal,
-       dp.saldofisico,
-       dp.saldovirtual
+       s.saldo_fisico_total,
+       s.saldo_virtual_total,
+       dp.saldo_fisico,
+       dp.saldo_virtual
 FROM 
     products p
 LEFT JOIN 
@@ -112,10 +112,10 @@ SELECT p.ID,
        p.descricaoEmbalagemDiscreta,
        p.created_at,
        p.updated_at,
-       s.saldofisicototal,
-       s.saldovirtualtotal,
-       dp.saldofisico,
-       dp.saldovirtual
+       s.saldo_fisico_total,
+       s.saldo_virtual_total,
+       dp.saldo_fisico,
+       dp.saldo_virtual
 FROM 
     products p
 LEFT JOIN 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/claudineyveloso/soldim.git/internal/services/deposit"
 	depositbling "github.com/claudineyveloso/soldim.git/internal/services/deposit_bling"
+	depositproduct "github.com/claudineyveloso/soldim.git/internal/services/deposit_product"
 	"github.com/claudineyveloso/soldim.git/internal/services/draft"
 	generatetoken "github.com/claudineyveloso/soldim.git/internal/services/generate_token"
 	"github.com/claudineyveloso/soldim.git/internal/services/healthy"
@@ -17,6 +18,7 @@ import (
 	saleschannelbling "github.com/claudineyveloso/soldim.git/internal/services/sales_channel_bling"
 	"github.com/claudineyveloso/soldim.git/internal/services/search"
 	searchresult "github.com/claudineyveloso/soldim.git/internal/services/search_result"
+	"github.com/claudineyveloso/soldim.git/internal/services/stock"
 	"github.com/claudineyveloso/soldim.git/internal/services/token"
 	"github.com/claudineyveloso/soldim.git/internal/services/user"
 	"github.com/claudineyveloso/soldim.git/internal/services/webhook"
@@ -77,6 +79,14 @@ func (s *APIServer) Run() error {
 	depositStore := deposit.NewStore(s.db)
 	depositHandler := deposit.NewHandler(depositStore)
 	depositHandler.RegisterRoutes(r)
+
+	stockStore := stock.NewStore(s.db)
+	stockHandler := stock.NewHandler(stockStore)
+	stockHandler.RegisterRoutes(r)
+
+	depositproductStore := depositproduct.NewStore(s.db)
+	depositproductHandler := depositproduct.NewHandler(depositproductStore)
+	depositproductHandler.RegisterRoutes(r)
 
 	fmt.Println("Server started on http://localhost:8080")
 	// return http.ListenAndServe("localhost:8080", r)

@@ -36,11 +36,10 @@ type Deposit struct {
 }
 
 type DepositProduct struct {
-	ID           int64     `json:"id"`
 	DepositID    int64     `json:"deposit_id"`
 	ProductID    int64     `json:"product_id"`
-	Saldofisico  int32     `json:"saldofisico"`
-	Saldovirtual int32     `json:"saldovirtual"`
+	SaldoFisico  int32     `json:"saldo_fisico"`
+	SaldoVirtual int32     `json:"saldo_virtual"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
@@ -139,10 +138,9 @@ type SearchesResult struct {
 }
 
 type Stock struct {
-	ID                int64     `json:"id"`
 	ProductID         int64     `json:"product_id"`
-	Saldofisicototal  int32     `json:"saldofisicototal"`
-	Saldovirtualtotal int32     `json:"saldovirtualtotal"`
+	SaldoFisicoTotal  int32     `json:"saldo_fisico_total"`
+	SaldoVirtualTotal int32     `json:"saldo_virtual_total"`
 	CreatedAt         time.Time `json:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at"`
 }

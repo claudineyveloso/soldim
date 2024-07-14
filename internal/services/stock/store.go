@@ -27,16 +27,35 @@ func (s *Store) CreateStock(stock types.Stock) error {
 	stock.UpdatedAt = now
 
 	createStockParams := db.CreateStockParams{
-		ID:                stock.ID,
 		ProductID:         stock.ProductID,
-		Saldofisicototal:  stock.Saldofisicototal,
-		Saldovirtualtotal: stock.Saldovirtualtotal,
+		SaldoFisicoTotal:  stock.SaldoFisicoTotal,
+		SaldoVirtualTotal: stock.SaldoVirtualTotal,
 		CreatedAt:         stock.CreatedAt,
 		UpdatedAt:         stock.UpdatedAt,
 	}
 
 	if err := queries.CreateStock(ctx, createStockParams); err != nil {
-		fmt.Println("Erro ao criar um Deposito:", err)
+		fmt.Println("Erro ao criar um Estoque:", err)
+		return err
+	}
+	return nil
+}
+
+func (s *Store) UpdateStock(stock types.Stock) error {
+	queries := db.New(s.db)
+	ctx := context.Background()
+
+	now := time.Now()
+	stock.UpdatedAt = now
+
+	updateStockParams := db.UpdateStockParams{
+		SaldoFisicoTotal:  stock.SaldoFisicoTotal,
+		SaldoVirtualTotal: stock.SaldoVirtualTotal,
+		UpdatedAt:         stock.UpdatedAt,
+	}
+
+	if err := queries.UpdateStock(ctx, updateStockParams); err != nil {
+		fmt.Println("Erro ao criar um Estoque:", err)
 		return err
 	}
 	return nil

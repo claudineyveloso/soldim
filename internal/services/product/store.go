@@ -174,10 +174,10 @@ func convertDBProductToProduct(dbProduct db.GetProductsRow) *types.Product {
 		Descricaoembalagemdiscreta: dbProduct.Descricaoembalagemdiscreta,
 		CreatedAt:                  dbProduct.CreatedAt,
 		UpdatedAt:                  dbProduct.UpdatedAt,
-		Saldofisicototal:           types.NewNullableInt(dbProduct.Saldofisicototal),
-		Saldovirtualtotal:          types.NewNullableInt(dbProduct.Saldovirtualtotal),
-		Saldofisico:                types.NewNullableInt(dbProduct.Saldofisico),
-		Saldovirtual:               types.NewNullableInt(dbProduct.Saldovirtual),
+		SaldoFisicoTotal:           types.NewNullableInt(dbProduct.SaldoFisicoTotal),
+		SaldoVirtualTotal:          types.NewNullableInt(dbProduct.SaldoVirtualTotal),
+		SaldoFisico:                types.NewNullableInt(dbProduct.SaldoFisico),
+		SaldoVirtual:               types.NewNullableInt(dbProduct.SaldoVirtual),
 	}
 	return product
 }
@@ -212,10 +212,10 @@ func convertGetProductRowToProduct(dbProduct db.GetProductRow) *types.Product {
 		Descricaoembalagemdiscreta: dbProduct.Descricaoembalagemdiscreta,
 		CreatedAt:                  dbProduct.CreatedAt,
 		UpdatedAt:                  dbProduct.UpdatedAt,
-		Saldofisicototal:           types.NewNullableInt(dbProduct.Saldofisicototal),
-		Saldovirtualtotal:          types.NewNullableInt(dbProduct.Saldovirtualtotal),
-		Saldofisico:                types.NewNullableInt(dbProduct.Saldofisico),
-		Saldovirtual:               types.NewNullableInt(dbProduct.Saldovirtual),
+		SaldoFisicoTotal:           types.NewNullableInt(dbProduct.SaldoFisicoTotal),
+		SaldoVirtualTotal:          types.NewNullableInt(dbProduct.SaldoVirtualTotal),
+		SaldoFisico:                types.NewNullableInt(dbProduct.SaldoFisico),
+		SaldoVirtual:               types.NewNullableInt(dbProduct.SaldoVirtual),
 	}
 	return product
 }

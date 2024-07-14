@@ -40,10 +40,10 @@ type Product struct {
 	Descricaoembalagemdiscreta string      `json:"descricao_embalagem_discreta"`
 	CreatedAt                  time.Time   `json:"created_at"`
 	UpdatedAt                  time.Time   `json:"updated_at"`
-	Saldofisicototal           NullableInt `json:"saldo_fisico_total"`
-	Saldovirtualtotal          NullableInt `json:"saldo_virtual_total"`
-	Saldofisico                NullableInt `json:"saldo_fisico"`
-	Saldovirtual               NullableInt `json:"saldo_virtual"`
+	SaldoFisicoTotal           NullableInt `json:"saldo_fisico_total"`
+	SaldoVirtualTotal          NullableInt `json:"saldo_virtual_total"`
+	SaldoFisico                NullableInt `json:"saldo_fisico"`
+	SaldoVirtual               NullableInt `json:"saldo_virtual"`
 }
 
 type ProductWrapper struct {
@@ -79,21 +79,21 @@ type ProductPayload struct {
 	Descricaoembalagemdiscreta string        `json:"descricao_embalagem_discreta"`
 	CreatedAt                  time.Time     `json:"created_at"`
 	UpdatedAt                  time.Time     `json:"updated_at"`
-	Saldofisicototal           sql.NullInt32 `json:"saldo_fisico_total"`
-	Saldovirtualtotal          sql.NullInt32 `json:"saldo_virtual_total"`
-	Saldofisico                sql.NullInt32 `json:"saldo_fisico"`
-	Saldovirtual               sql.NullInt32 `json:"saldo_virtual"`
+	SaldoFisicoTotal           sql.NullInt32 `json:"saldo_fisico_total"`
+	SaldoVirtualTotal          sql.NullInt32 `json:"saldo_virtual_total"`
+	SaldoFisico                sql.NullInt32 `json:"saldo_fisico"`
+	SaldoVirtual               sql.NullInt32 `json:"saldo_virtual"`
 }
 
-type StockResponse struct {
-	Data []struct {
-		Produto struct {
-			ID int `json:"id"`
-		} `json:"produto"`
-		SaldoFisicoTotal  int `json:"saldoFisicoTotal"`
-		SaldoVirtualTotal int `json:"saldoVirtualTotal"`
-	} `json:"data"`
-}
+// type StockResponse struct {
+// 	Data []struct {
+// 		Produto struct {
+// 			ID int `json:"id"`
+// 		} `json:"produto"`
+// 		SaldoFisicoTotal  int `json:"saldoFisicoTotal"`
+// 		SaldoVirtualTotal int `json:"saldoVirtualTotal"`
+// 	} `json:"data"`
+// }
 
 type ProductResponse struct {
 	Data  []Product `json:"data"`

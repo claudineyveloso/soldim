@@ -173,11 +173,10 @@ CREATE TABLE IF NOT EXISTS deposits (
 
 DROP TABLE IF EXISTS "deposit_products";
 CREATE TABLE IF NOT EXISTS deposit_products (
-  id            bigint PRIMARY KEY,
   deposit_id    bigint not null,
   product_id    bigint not null,
-  saldoFisico   int not null default 0,
-  saldoVirtual  int not null default 0,
+  saldo_fisico   int not null default 0,
+  saldo_virtual  int not null default 0,
   created_at    timestamp not null,
   updated_at    timestamp not null
 );
@@ -194,12 +193,11 @@ ADD
 
 DROP TABLE IF EXISTS "stocks";
 CREATE TABLE IF NOT EXISTS stocks (
-  id                bigint PRIMARY KEY,
-  product_id        bigint not null,
-  saldoFisicoTotal  int not null default 0,
-  saldoVirtualTotal int not null default 0,
-  created_at        timestamp not null,
-  updated_at        timestamp not null
+  product_id          BIGINT not null,
+  saldo_fisico_total  INT NOT NULL,
+  saldo_virtual_total INT NOT NULL,
+  created_at          TIMESTAMP NOT NULL,
+  updated_at          TIMESTAMP NOT NULL
 );
 ALTER TABLE
   "stocks"

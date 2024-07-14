@@ -11,25 +11,23 @@ import (
 )
 
 const createStock = `-- name: CreateStock :exec
-INSERT INTO stocks (ID, product_id, saldoFisicoTotal, saldoVirtualTotal, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6)
+INSERT INTO stocks (product_id, saldo_fisico_total, saldo_virtual_total, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5)
 `
 
 type CreateStockParams struct {
-	ID                int64     `json:"id"`
 	ProductID         int64     `json:"product_id"`
-	Saldofisicototal  int32     `json:"saldofisicototal"`
-	Saldovirtualtotal int32     `json:"saldovirtualtotal"`
+	SaldoFisicoTotal  int32     `json:"saldo_fisico_total"`
+	SaldoVirtualTotal int32     `json:"saldo_virtual_total"`
 	CreatedAt         time.Time `json:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at"`
 }
 
 func (q *Queries) CreateStock(ctx context.Context, arg CreateStockParams) error {
 	_, err := q.db.ExecContext(ctx, createStock,
-		arg.ID,
 		arg.ProductID,
-		arg.Saldofisicototal,
-		arg.Saldovirtualtotal,
+		arg.SaldoFisicoTotal,
+		arg.SaldoVirtualTotal,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
@@ -37,7 +35,11 @@ func (q *Queries) CreateStock(ctx context.Context, arg CreateStockParams) error 
 }
 
 const getStocks = `-- name: GetStocks :many
-SELECT id, product_id, saldofisicototal, saldovirtualtotal, created_at, updated_at
+SELECT product_id,
+        saldo_fisico_total,
+        saldo_virtual_total,
+        created_at,
+        updated_at
 FROM stocks
 `
 
@@ -51,10 +53,9 @@ func (q *Queries) GetStocks(ctx context.Context) ([]Stock, error) {
 	for rows.Next() {
 		var i Stock
 		if err := rows.Scan(
-			&i.ID,
 			&i.ProductID,
-			&i.Saldofisicototal,
-			&i.Saldovirtualtotal,
+			&i.SaldoFisicoTotal,
+			&i.SaldoVirtualTotal,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -72,24 +73,24 @@ func (q *Queries) GetStocks(ctx context.Context) ([]Stock, error) {
 }
 
 const updateStock = `-- name: UpdateStock :exec
-UPDATE stocks SET saldoFisicoTotal = $2, 
-  saldoVirtualTotal = $3, 
+UPDATE stocks SET saldo_fisico_total = $2, 
+  saldo_virtual_total = $3, 
   updated_at = $4
-WHERE stocks.id = $1
+WHERE stocks.product_id = $1
 `
 
 type UpdateStockParams struct {
-	ID                int64     `json:"id"`
-	Saldofisicototal  int32     `json:"saldofisicototal"`
-	Saldovirtualtotal int32     `json:"saldovirtualtotal"`
+	ProductID         int64     `json:"product_id"`
+	SaldoFisicoTotal  int32     `json:"saldo_fisico_total"`
+	SaldoVirtualTotal int32     `json:"saldo_virtual_total"`
 	UpdatedAt         time.Time `json:"updated_at"`
 }
 
 func (q *Queries) UpdateStock(ctx context.Context, arg UpdateStockParams) error {
 	_, err := q.db.ExecContext(ctx, updateStock,
-		arg.ID,
-		arg.Saldofisicototal,
-		arg.Saldovirtualtotal,
+		arg.ProductID,
+		arg.SaldoFisicoTotal,
+		arg.SaldoVirtualTotal,
 		arg.UpdatedAt,
 	)
 	return err
