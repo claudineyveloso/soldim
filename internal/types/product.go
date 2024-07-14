@@ -7,8 +7,7 @@ import (
 )
 
 type NullableInt struct {
-	Value int32
-	Valid bool
+	sql.NullInt32
 }
 
 type Product struct {
@@ -51,49 +50,39 @@ type ProductWrapper struct {
 }
 
 type ProductPayload struct {
-	ID                         int64         `json:"id"`
-	Idprodutopai               int64         `json:"id_produto_pai"`
-	Nome                       string        `json:"nome"`
-	Codigo                     string        `json:"codigo"`
-	Preco                      float64       `json:"preco"`
-	ImagemUrl                  string        `json:"imagem_url"`
-	Tipo                       string        `json:"tipo"`
-	Situacao                   string        `json:"situacao"`
-	Formato                    string        `json:"formato"`
-	DescricaoCurta             string        `json:"descricao_curta"`
-	Datavalidade               time.Time     `json:"data_validade"`
-	Unidade                    string        `json:"unidade"`
-	Pesoliquido                float64       `json:"peso_liquido"`
-	Pesobruto                  float64       `json:"peso_bruto"`
-	Volumes                    int32         `json:"volumes"`
-	Itensporcaixa              int32         `json:"itens_por_caixa"`
-	Gtin                       string        `json:"gtin"`
-	Gtinembalagem              string        `json:"gtin_embalagem"`
-	Tipoproducao               string        `json:"tipo_producao"`
-	Condicao                   int32         `json:"condicao"`
-	Fretegratis                bool          `json:"frete_gratis"`
-	Marca                      string        `json:"marca"`
-	Descricaocomplementar      string        `json:"descricao_complementar"`
-	Linkexterno                string        `json:"link_externo"`
-	Observacoes                string        `json:"observacoes"`
-	Descricaoembalagemdiscreta string        `json:"descricao_embalagem_discreta"`
-	CreatedAt                  time.Time     `json:"created_at"`
-	UpdatedAt                  time.Time     `json:"updated_at"`
-	SaldoFisicoTotal           sql.NullInt32 `json:"saldo_fisico_total"`
-	SaldoVirtualTotal          sql.NullInt32 `json:"saldo_virtual_total"`
-	SaldoFisico                sql.NullInt32 `json:"saldo_fisico"`
-	SaldoVirtual               sql.NullInt32 `json:"saldo_virtual"`
+	ID                         int64       `json:"id"`
+	Idprodutopai               int64       `json:"id_produto_pai"`
+	Nome                       string      `json:"nome"`
+	Codigo                     string      `json:"codigo"`
+	Preco                      float64     `json:"preco"`
+	ImagemUrl                  string      `json:"imagem_url"`
+	Tipo                       string      `json:"tipo"`
+	Situacao                   string      `json:"situacao"`
+	Formato                    string      `json:"formato"`
+	DescricaoCurta             string      `json:"descricao_curta"`
+	Datavalidade               time.Time   `json:"data_validade"`
+	Unidade                    string      `json:"unidade"`
+	Pesoliquido                float64     `json:"peso_liquido"`
+	Pesobruto                  float64     `json:"peso_bruto"`
+	Volumes                    int32       `json:"volumes"`
+	Itensporcaixa              int32       `json:"itens_por_caixa"`
+	Gtin                       string      `json:"gtin"`
+	Gtinembalagem              string      `json:"gtin_embalagem"`
+	Tipoproducao               string      `json:"tipo_producao"`
+	Condicao                   int32       `json:"condicao"`
+	Fretegratis                bool        `json:"frete_gratis"`
+	Marca                      string      `json:"marca"`
+	Descricaocomplementar      string      `json:"descricao_complementar"`
+	Linkexterno                string      `json:"link_externo"`
+	Observacoes                string      `json:"observacoes"`
+	Descricaoembalagemdiscreta string      `json:"descricao_embalagem_discreta"`
+	CreatedAt                  time.Time   `json:"created_at"`
+	UpdatedAt                  time.Time   `json:"updated_at"`
+	SaldoFisicoTotal           NullableInt `json:"saldo_fisico_total"`
+	SaldoVirtualTotal          NullableInt `json:"saldo_virtual_total"`
+	SaldoFisico                NullableInt `json:"saldo_fisico"`
+	SaldoVirtual               NullableInt `json:"saldo_virtual"`
 }
-
-// type StockResponse struct {
-// 	Data []struct {
-// 		Produto struct {
-// 			ID int `json:"id"`
-// 		} `json:"produto"`
-// 		SaldoFisicoTotal  int `json:"saldoFisicoTotal"`
-// 		SaldoVirtualTotal int `json:"saldoVirtualTotal"`
-// 	} `json:"data"`
-// }
 
 type ProductResponse struct {
 	Data  []Product `json:"data"`
@@ -109,16 +98,33 @@ type ProductStore interface {
 	DeleteProduct(id int64) error
 }
 
+// MarshalJSON customiza a serialização JSON para NullableInt.
 func (ni NullableInt) MarshalJSON() ([]byte, error) {
-	if !ni.Valid {
-		return []byte("null"), nil
+	if ni.Valid {
+		return json.Marshal(ni.Int32)
 	}
-	return json.Marshal(ni.Value)
+	return json.Marshal(nil)
 }
 
-func NewNullableInt(ni sql.NullInt32) NullableInt {
-	return NullableInt{
-		Value: ni.Int32,
-		Valid: ni.Valid,
+// UnmarshalJSON customiza a desserialização JSON para NullableInt.
+func (ni *NullableInt) UnmarshalJSON(data []byte) error {
+	// Tenta desserializar como um inteiro primeiro
+	var intValue int32
+	if err := json.Unmarshal(data, &intValue); err == nil {
+		ni.Int32 = intValue
+		ni.Valid = true
+		return nil
 	}
+
+	// Tenta desserializar como um null
+	var nullValue interface{}
+	if err := json.Unmarshal(data, &nullValue); err == nil {
+		if nullValue == nil {
+			ni.Valid = false
+			return nil
+		}
+	}
+
+	// Se falhar em ambos os casos, retorna um erro
+	return json.Unmarshal(data, &ni.NullInt32)
 }

@@ -173,13 +173,13 @@ CREATE TABLE IF NOT EXISTS deposits (
 
 DROP TABLE IF EXISTS "deposit_products";
 CREATE TABLE IF NOT EXISTS deposit_products (
-  deposit_id    bigint not null,
-  product_id    bigint not null,
-  saldo_fisico   int not null default 0,
-  saldo_virtual  int not null default 0,
-  created_at    timestamp not null,
-  updated_at    timestamp not null
-);
+  deposit_id     BIGINT NOT NULL,
+  product_id     BIGINT NOT NULL,
+  saldo_fisico   INTEGER NOT NULL DEFAULT 0,
+  saldo_virtual  INTEGER NOT NULL DEFAULT 0,
+  created_at     TIMESTAMP NOT NULL,
+  updated_at     TIMESTAMP NOT NULL
+
 
 ALTER TABLE
   "deposit_products"
@@ -193,7 +193,7 @@ ADD
 
 DROP TABLE IF EXISTS "stocks";
 CREATE TABLE IF NOT EXISTS stocks (
-  product_id          BIGINT not null,
+  product_id          BIGINT NOT NULL,
   saldo_fisico_total  INT NOT NULL,
   saldo_virtual_total INT NOT NULL,
   created_at          TIMESTAMP NOT NULL,
@@ -202,14 +202,29 @@ CREATE TABLE IF NOT EXISTS stocks (
 ALTER TABLE
   "stocks"
 ADD
-  FOREIGN KEY ("product_id") REFERENCES "products" ("id"); 
+  FOREIGN KEY ("product_id") REFERENCES "products" ("id");
+
+DROP TABLE IF EXISTS "supplier_products";
+CREATE TABLE IF NOT EXISTS supplier_products (
+  id            BIGINT PRIMARY KEY,
+  descricao     VARCHAR(255) NOT NULL DEFAULT '',
+  codigo        BIGINT NOT NULL DEFAULT 0,
+  precoCusto    FLOAT NOT NULL DEFAULT 0,
+  precoCompra   FLOAT NOT NULL DEFAULT 0,
+  padrao        BOOLEAN NOT NULL DEFAULT TRUE,
+  supplier_id   BIGINT NOT NULL,
+  product_id    BIGINT NOT NULL,
+  created_at    TIMESTAMP NOT NULL,
+  updated_at    TIMESTAMP NOT NULL
+);
+
 
 DROP TABLE IF EXISTS "tokens";
 CREATE TABLE IF NOT EXISTS tokens (
   id            UUID PRIMARY KEY,
-  access_token  varchar(255) not null,
-  expires_in    integer not null,
-  token_type    varchar(100) not null,
-  scope         varchar not null,
-  refresh_token varchar(255) not null
+  access_token  VARCHAR(255) NOT NULL,
+  expires_in    INTEGER NOT NULL,
+  token_type    VARCHAR(100) NOT NULL,
+  scope         VARCHAR NOT NULL,
+  refresh_token VARCHAR(255) NOT NULL
 );

@@ -224,7 +224,7 @@ func GetProductsFromBling(bearerToken string, page int, limit int, name string, 
 	}
 
 	// Adicionando logs para verificar a estrutura deserializada
-	fmt.Printf("Dados deserializados: %+v\n", responseData)
+	// fmt.Printf("Dados deserializados: %+v\n", responseData)
 
 	produtos := responseData.Data
 
