@@ -4,125 +4,188 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $
 
 -- name: GetProduct :one
 SELECT p.ID,
-       p.idProdutoPai,
-       p.nome,
-       p.codigo,
-       p.preco,
-       p.tipo,
-       p.situacao,
-       p.formato,
-       p.descricao_curta,
-       p.imagem_url,
-       p.dataValidade,
-       p.unidade,
-       p.pesoLiquido,
-       p.pesoBruto,
-       p.volumes,
-       p.itensPorCaixa,
-       p.gtin,
-       p.gtinEmbalagem,
-       p.tipoProducao,
-       p.condicao,
-       p.freteGratis,
-       p.marca,
-       p.descricaoComplementar,
-       p.linkExterno,
-       p.observacoes,
-       p.descricaoEmbalagemDiscreta,
-       p.created_at,
-       p.updated_at,
-       s.saldo_fisico_total,
-       s.saldo_virtual_total,
-       dp.saldo_fisico,
-       dp.saldo_virtual
-FROM 
+        p.idProdutoPai,
+        p.nome,
+        p.codigo,
+        p.preco,
+        p.tipo,
+        p.situacao,
+        p.formato,
+        p.descricao_curta,
+        p.imagem_url,
+        p.dataValidade,
+        p.unidade,
+        p.pesoLiquido,
+        p.pesoBruto,
+        p.volumes,
+        p.itensPorCaixa,
+        p.gtin,
+        p.gtinEmbalagem,
+        p.tipoProducao,
+        p.condicao,
+        p.freteGratis,
+        p.marca,
+        p.descricaoComplementar,
+        p.linkExterno,
+        p.observacoes,
+        p.descricaoEmbalagemDiscreta,
+        p.created_at,
+        p.updated_at,
+        s.saldo_fisico_total,
+        s.saldo_virtual_total,
+        dp.saldo_fisico,
+        dp.saldo_virtual,
+        sp.preco_custo,
+        sp.preco_compra,
+        sp.supplier_id
+FROM
     products p
-LEFT JOIN 
+LEFT JOIN
     stocks s ON p.id = s.product_id
-LEFT JOIN 
+LEFT JOIN
     deposit_products dp ON p.id = dp.product_id
+LEFT JOIN
+    supplier_products sp ON p.id = sp.product_id
 WHERE p.id = $1;
 
 -- name: GetProducts :many
 SELECT p.ID,
-       p.idProdutoPai,
-       p.nome,
-       p.codigo,
-       p.preco,
-       p.tipo,
-       p.situacao,
-       p.formato,
-       p.descricao_curta,
-       p.imagem_url,
-       p.dataValidade,
-       p.unidade,
-       p.pesoLiquido,
-       p.pesoBruto,
-       p.volumes,
-       p.itensPorCaixa,
-       p.gtin,
-       p.gtinEmbalagem,
-       p.tipoProducao,
-       p.condicao,
-       p.freteGratis,
-       p.marca,
-       p.descricaoComplementar,
-       p.linkExterno,
-       p.observacoes,
-       p.descricaoEmbalagemDiscreta,
-       p.created_at,
-       p.updated_at,
-       s.saldo_fisico_total,
-       s.saldo_virtual_total,
-       dp.saldo_fisico,
-       dp.saldo_virtual
-FROM 
+        p.idProdutoPai,
+        p.nome,
+        p.codigo,
+        p.preco,
+        p.tipo,
+        p.situacao,
+        p.formato,
+        p.descricao_curta,
+        p.imagem_url,
+        p.dataValidade,
+        p.unidade,
+        p.pesoLiquido,
+        p.pesoBruto,
+        p.volumes,
+        p.itensPorCaixa,
+        p.gtin,
+        p.gtinEmbalagem,
+        p.tipoProducao,
+        p.condicao,
+        p.freteGratis,
+        p.marca,
+        p.descricaoComplementar,
+        p.linkExterno,
+        p.observacoes,
+        p.descricaoEmbalagemDiscreta,
+        p.created_at,
+        p.updated_at,
+        s.saldo_fisico_total,
+        s.saldo_virtual_total,
+        dp.saldo_fisico,
+        dp.saldo_virtual,
+        sp.preco_custo,
+        sp.preco_compra,
+        sp.supplier_id
+FROM
     products p
-LEFT JOIN 
+LEFT JOIN
     stocks s ON p.id = s.product_id
-LEFT JOIN 
-    deposit_products dp ON p.id = dp.product_id;
+LEFT JOIN
+    deposit_products dp ON p.id = dp.product_id
+LEFT JOIN
+    supplier_products sp ON p.id = sp.product_id;
 
 -- name: GetProductByName :one
 SELECT p.ID,
-       p.idProdutoPai,
-       p.nome,
-       p.codigo,
-       p.preco,
-       p.tipo,
-       p.situacao,
-       p.formato,
-       p.descricao_curta,
-       p.imagem_url,
-       p.dataValidade,
-       p.unidade,
-       p.pesoLiquido,
-       p.pesoBruto,
-       p.volumes,
-       p.itensPorCaixa,
-       p.gtin,
-       p.gtinEmbalagem,
-       p.tipoProducao,
-       p.condicao,
-       p.freteGratis,
-       p.marca,
-       p.descricaoComplementar,
-       p.linkExterno,
-       p.observacoes,
-       p.descricaoEmbalagemDiscreta,
-       p.created_at,
-       p.updated_at,
-       s.saldo_fisico_total,
-       s.saldo_virtual_total,
-       dp.saldo_fisico,
-       dp.saldo_virtual
-FROM 
+        p.idProdutoPai,
+        p.nome,
+        p.codigo,
+        p.preco,
+        p.tipo,
+        p.situacao,
+        p.formato,
+        p.descricao_curta,
+        p.imagem_url,
+        p.dataValidade,
+        p.unidade,
+        p.pesoLiquido,
+        p.pesoBruto,
+        p.volumes,
+        p.itensPorCaixa,
+        p.gtin,
+        p.gtinEmbalagem,
+        p.tipoProducao,
+        p.condicao,
+        p.freteGratis,
+        p.marca,
+        p.descricaoComplementar,
+        p.linkExterno,
+        p.observacoes,
+        p.descricaoEmbalagemDiscreta,
+        p.created_at,
+        p.updated_at,
+        s.saldo_fisico_total,
+        s.saldo_virtual_total,
+        dp.saldo_fisico,
+        dp.saldo_virtual,
+        sp.preco_custo,
+        sp.preco_compra,
+        sp.supplier_id
+FROM
     products p
-LEFT JOIN 
+LEFT JOIN
     stocks s ON p.id = s.product_id
-LEFT JOIN 
+LEFT JOIN
     deposit_products dp ON p.id = dp.product_id
+LEFT JOIN
+    supplier_products sp ON p.id = sp.product_id
 WHERE p.nome = $1;
+
+
+
+-- name: GetProductBySupplierID :one
+SELECT p.ID,
+        p.idProdutoPai,
+        p.nome,
+        p.codigo,
+        p.preco,
+        p.tipo,
+        p.situacao,
+        p.formato,
+        p.descricao_curta,
+        p.imagem_url,
+        p.dataValidade,
+        p.unidade,
+        p.pesoLiquido,
+        p.pesoBruto,
+        p.volumes,
+        p.itensPorCaixa,
+        p.gtin,
+        p.gtinEmbalagem,
+        p.tipoProducao,
+        p.condicao,
+        p.freteGratis,
+        p.marca,
+        p.descricaoComplementar,
+        p.linkExterno,
+        p.observacoes,
+        p.descricaoEmbalagemDiscreta,
+        p.created_at,
+        p.updated_at,
+        s.saldo_fisico_total,
+        s.saldo_virtual_total,
+        dp.saldo_fisico,
+        dp.saldo_virtual,
+        sp.preco_custo,
+        sp.preco_compra,
+        sp.supplier_id
+FROM
+    products p
+LEFT JOIN
+    stocks s ON p.id = s.product_id
+LEFT JOIN
+    deposit_products dp ON p.id = dp.product_id
+LEFT JOIN
+    supplier_products sp ON p.id = sp.product_id
+WHERE sp.supplier_id = $1;
 
 -- name: UpdateProduct :exec
 UPDATE products SET idProdutoPai = $2, 

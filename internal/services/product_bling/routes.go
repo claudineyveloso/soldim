@@ -21,7 +21,7 @@ import (
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "fb67710b1095fd287742c2b33ca0d1467b6ab7bb"
+	bearerToken     = "b925150715499ff7c242e9f0b298d92c69ab0bf3"
 )
 
 func RegisterRoutes(router *mux.Router) {
@@ -72,6 +72,12 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 			processStocks(products, bearerToken)
 		}()
 
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			processSuppliers(products, bearerToken)
+		}()
+
 		wg.Wait()
 
 		if page >= totalPages {
@@ -102,7 +108,6 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, product := range products {
-		// Substituímos a linha para chamar o endpoint local
 		url := fmt.Sprintf("http://localhost:8080/get_product_id_bling?productID=%d", product.ID)
 		resp, err := http.Get(url)
 		if err != nil {
@@ -211,181 +216,6 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(jsonResponse)
 }
 
-func handleImportBlingProductsToSoldim_aaa(w http.ResponseWriter, r *http.Request) {
-	pageStr := r.URL.Query().Get("page")
-	limitStr := r.URL.Query().Get("limit")
-	name := r.URL.Query().Get("name")
-	criterioStr := "5"
-	page, err := strconv.Atoi(pageStr)
-	if err != nil || page < 1 {
-		page = 1
-	}
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil || limit < 1 {
-		limit = limitePorPagina
-	}
-
-	criterio, err := strconv.Atoi(criterioStr)
-	if err != nil {
-		criterio = 0 // Valor padrão para criterio se não for fornecido ou inválido
-	}
-
-	// fmt.Printf("Requesting page: %d with limit: %d and name: %s\n", page, limit, name)
-
-	for {
-		products, totalPages, err := bling.GetProductsFromBling(bearerToken, page, limit, name, criterio)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// fmt.Printf("Processing page: %d with %d products\n", page, len(products))
-		processProducts(products)
-
-		var wg sync.WaitGroup
-		wg.Add(1)
-
-		go func() {
-			defer wg.Done()
-			processStocks(products, bearerToken)
-		}()
-
-		wg.Wait()
-
-		if page >= totalPages {
-			break
-		}
-
-		page++
-	}
-
-	resp, err := http.Get("http://localhost:8080/get_products")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	var products []types.Product
-	err = json.Unmarshal(body, &products)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	for _, product := range products {
-		// Substituímos a linha para chamar o endpoint local
-		url := fmt.Sprintf("http://localhost:8080/get_product_id_bling?productID=%d", product.ID)
-		resp, err := http.Get(url)
-		if err != nil {
-			fmt.Printf("Error getting product from Bling: %v\n", err)
-			continue
-		}
-		defer resp.Body.Close()
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			fmt.Printf("Error reading response body: %v\n", err)
-			continue
-		}
-
-		var blingProduct types.Product
-		err = json.Unmarshal(body, &blingProduct)
-		if err != nil {
-			fmt.Printf("Error unmarshalling product: %v\n", err)
-			continue
-		}
-
-		fmt.Println("***********************************************************************************")
-		fmt.Printf("Updating product with ID: %d\n", blingProduct.ID)
-		fmt.Println("***********************************************************************************")
-		// Mapear BlingProduct para a estrutura necessária
-		updateProduct := types.Product{
-			ID:                         blingProduct.ID,
-			Nome:                       blingProduct.Nome,
-			Codigo:                     blingProduct.Codigo,
-			Preco:                      blingProduct.Preco,
-			Tipo:                       blingProduct.Tipo,
-			Situacao:                   blingProduct.Situacao,
-			Formato:                    blingProduct.Formato,
-			DescricaoCurta:             blingProduct.DescricaoCurta,
-			Datavalidade:               blingProduct.Datavalidade,
-			Unidade:                    blingProduct.Unidade,
-			Pesoliquido:                blingProduct.Pesoliquido,
-			Pesobruto:                  blingProduct.Pesobruto,
-			Volumes:                    blingProduct.Volumes,
-			Itensporcaixa:              blingProduct.Itensporcaixa,
-			Gtin:                       blingProduct.Gtin,
-			Gtinembalagem:              blingProduct.Gtinembalagem,
-			Tipoproducao:               blingProduct.Tipoproducao,
-			Condicao:                   blingProduct.Condicao,
-			Fretegratis:                blingProduct.Fretegratis,
-			Marca:                      blingProduct.Marca,
-			Descricaocomplementar:      blingProduct.Descricaocomplementar,
-			Linkexterno:                blingProduct.Linkexterno,
-			Observacoes:                blingProduct.Observacoes,
-			Descricaoembalagemdiscreta: blingProduct.Descricaoembalagemdiscreta,
-		}
-
-		// Adicionar log detalhado do updateProduct
-		fmt.Println("***********************************************************************************")
-		fmt.Printf("Update product details: %+v\n", updateProduct)
-		fmt.Println("***********************************************************************************")
-		// Atualize o produto em localhost com os dados obtidos do Bling
-		updateURL := fmt.Sprintf("http://localhost:8080/update_product?productID=%d", updateProduct.ID)
-		productJSON, err := json.Marshal(updateProduct)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Error marshalling updated product: %v", err), http.StatusInternalServerError)
-			return
-		}
-
-		// fmt.Printf("Product JSON: %s\n", string(productJSON)) // Adicionando log do JSON do produto
-
-		req, err := http.NewRequest("PUT", updateURL, bytes.NewBuffer(productJSON))
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Error creating update request: %v", err), http.StatusInternalServerError)
-			return
-		}
-		req.Header.Set("Content-Type", "application/json")
-
-		client := &http.Client{}
-		resp, err = client.Do(req)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Error sending update request: %v", err), http.StatusInternalServerError)
-			return
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			body, _ := io.ReadAll(resp.Body)
-			fmt.Printf("Failed to update product. Status: %v, Response: %s\n", resp.Status, string(body)) // Adicionando log da resposta de erro
-			http.Error(w, fmt.Sprintf("Failed to update product. Status: %v", resp.Status), http.StatusInternalServerError)
-			return
-		}
-
-		fmt.Printf("Product updated successfully: %v\n", updateProduct)
-	}
-
-	response := map[string]interface{}{
-		"message": "Registros importados e atualizados com sucesso",
-		"status":  http.StatusOK,
-	}
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		utils.WriteError(w, http.StatusInternalServerError, err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write(jsonResponse)
-}
-
 func processProducts(products []types.Product) {
 	for _, product := range products {
 		productJSON, err := json.Marshal(product)
@@ -443,24 +273,12 @@ func processStocks(products []types.Product, bearerToken string) {
 	wg.Wait()
 }
 
-// func processStocks(products []types.Product, bearerToken string) {
-// 	var wg sync.WaitGroup
-//
-// 	for _, product := range products {
-// 		wg.Add(1)
-// 		go func(product types.Product) {
-// 			defer wg.Done()
-// 			processStockForProduct(product, bearerToken)
-// 		}(product)
-// 	}
-//
-// 	wg.Wait()
-// }
-
 func processStockForProduct(product types.Product, bearerToken string) {
 	stockResponse, err := bling.GetStockProductFromBling(bearerToken, product.ID)
 	if err != nil {
 		fmt.Printf("Error fetching stock for product %d: %v\n", product.ID, err)
+		utils.LogErrorToFile(fmt.Sprintf("Error fetching stock for product %d: %v\n", product.ID, err))
+
 		return
 	}
 
@@ -490,9 +308,6 @@ func processStockForProduct(product types.Product, bearerToken string) {
 			continue
 		}
 		defer stockResp.Body.Close()
-
-		// stockRespBody, _ := io.ReadAll(stockResp.Body)
-		// fmt.Printf("Response from create_stock for product %d: %s\n", product.ID, string(stockRespBody))
 
 		// Criar deposit products
 		for _, deposito := range stockData.Depositos {
@@ -528,249 +343,67 @@ func processStockForProduct(product types.Product, bearerToken string) {
 	}
 }
 
-func processStockForProductsss(product types.Product, bearerToken string) {
-	stockResponse, err := bling.GetStockProductFromBling(bearerToken, product.ID)
-	if err != nil {
-		fmt.Printf("Error fetching stock for product %d: %v\n", product.ID, err)
-		return
+func processSuppliers(products []types.Product, bearerToken string) {
+	var wg sync.WaitGroup
+
+	// Criar um rate limiter que permite 3 requisições por segundo
+	limiter := rate.NewLimiter(rate.Every(time.Second/3), 1)
+
+	for _, product := range products {
+		wg.Add(1)
+		go func(product types.Product) {
+			defer wg.Done()
+
+			// Aguardar até que uma requisição possa ser feita
+			err := limiter.Wait(context.Background())
+			if err != nil {
+				fmt.Printf("Error waiting for rate limiter: %v\n", err)
+				return
+			}
+
+			processSupplierForProduct(product, bearerToken)
+		}(product)
 	}
 
-	// fmt.Printf("Parsed stock response for product %d: %+v\n", product.ID, stockResponse)
-
-	for _, stockData := range stockResponse.Data {
-		// Criar o stock
-		stock := types.Stock{
-			ProductID:         stockData.Produto.ID,
-			SaldoFisicoTotal:  int32(stockData.SaldoFisicoTotal),
-			SaldoVirtualTotal: int32(stockData.SaldoVirtualTotal),
-		}
-
-		stockJSON, err := json.Marshal(stock)
-		if err != nil {
-			fmt.Printf("Error marshalling stock for product %d: %v\n", product.ID, err)
-			continue
-		}
-
-		// fmt.Printf("Sending stock data for product %d: %s\n", product.ID, string(stockJSON))
-
-		stockResp, err := http.Post("http://localhost:8080/create_stock", "application/json", bytes.NewBuffer(stockJSON))
-		if err != nil {
-			fmt.Printf("Error sending stock data for product %d: %v\n", product.ID, err)
-			continue
-		}
-		defer stockResp.Body.Close()
-
-		// stockRespBody, _ := io.ReadAll(stockResp.Body)
-		// fmt.Printf("Response from create_stock for product %d: %s\n", product.ID, string(stockRespBody))
-
-		// Criar deposit products
-		for _, deposito := range stockData.Depositos {
-			depositProduct := types.DepositProduct{
-				ProductID:    stockData.Produto.ID,
-				DepositID:    deposito.ID,
-				SaldoFisico:  int32(deposito.SaldoFisico),
-				SaldoVirtual: int32(deposito.SaldoVirtual),
-			}
-
-			depositProductJSON, err := json.Marshal(depositProduct)
-			if err != nil {
-				fmt.Printf("Error marshalling deposit product for product %d: %v\n", product.ID, err)
-				continue
-			}
-
-			// fmt.Printf("Sending deposit product data for product %d: %s\n", product.ID, string(depositProductJSON))
-
-			depositResp, err := http.Post("http://localhost:8080/create_deposit_product", "application/json", bytes.NewBuffer(depositProductJSON))
-			if err != nil {
-				fmt.Printf("Error sending deposit product data for product %d: %v\n", product.ID, err)
-				continue
-			}
-			defer depositResp.Body.Close()
-
-			// depositRespBody, _ := io.ReadAll(depositResp.Body)
-			// fmt.Printf("Response from create_deposit_product for product %d: %s\n", product.ID, string(depositRespBody))
-		}
-	}
+	wg.Wait()
 }
 
-// func processStockForProductss(product types.Product) {
-//
-// 	url := fmt.Sprintf("https://bling.com.br/Api/v3/estoques/saldos?idsProdutos%%5B%%5D=%d", product.ID)
-// 	fmt.Printf("Fetching stock data from URL: %s\n", url)
-//
-// 	resp, err := http.Get(url)
-// 	if err != nil {
-// 		fmt.Printf("Error fetching stock for product %d: %v\n", product.ID, err)
-// 		return
-// 	}
-// 	defer resp.Body.Close()
-//
-// 	body, err := io.ReadAll(resp.Body)
-// 	if err != nil {
-// 		fmt.Printf("Error reading stock response for product %d: %v\n", product.ID, err)
-// 		return
-// 	}
-//
-// 	fmt.Printf("Stock response for product %d: %s\n", product.ID, string(body))
-//
-// 	var stockResponsess struct {
-// 		Data []struct {
-// 			Produto struct {
-// 				ID int64 `json:"id"`
-// 			} `json:"produto"`
-// 			SaldoFisicoTotal  int `json:"saldo_fisico_total"`
-// 			SaldoVirtualTotal int `json:"saldo_virtual_total"`
-// 			Depositos         []struct {
-// 				ID           int64 `json:"id"`
-// 				SaldoFisico  int   `json:"saldo_fisico"`
-// 				SaldoVirtual int   `json:"saldo_virtual"`
-// 			} `json:"depositos"`
-// 		} `json:"data"`
-// 	}
-//
-// 	err = json.Unmarshal(body, &stockResponse)
-// 	if err != nil {
-// 		fmt.Printf("Error unmarshalling stock response for product %d: %v\n", product.ID, err)
-// 		return
-// 	}
-//
-// 	fmt.Printf("Parsed stock response for product %d: %+v\n", product.ID, stockResponse)
-//
-// 	for _, stockData := range stockResponse.Data {
-// 		// Criar o stock
-// 		stock := types.Stock{
-// 			ProductID:         stockData.Produto.ID,
-// 			SaldoFisicoTotal:  int32(stockData.SaldoFisicoTotal),
-// 			SaldoVirtualTotal: int32(stockData.SaldoVirtualTotal),
-// 		}
-//
-// 		stockJSON, err := json.Marshal(stock)
-// 		if err != nil {
-// 			fmt.Printf("Error marshalling stock for product %d: %v\n", product.ID, err)
-// 			continue
-// 		}
-//
-// 		fmt.Printf("Sending stock data for product %d: %s\n", product.ID, string(stockJSON))
-//
-// 		stockResp, err := http.Post("http://localhost:8080/create_stock", "application/json", bytes.NewBuffer(stockJSON))
-// 		if err != nil {
-// 			fmt.Printf("Error sending stock data for product %d: %v\n", product.ID, err)
-// 			continue
-// 		}
-// 		defer stockResp.Body.Close()
-//
-// 		stockRespBody, _ := io.ReadAll(stockResp.Body)
-// 		fmt.Printf("Response from create_stock for product %d: %s\n", product.ID, string(stockRespBody))
-//
-// 		// Criar deposit products
-// 		for _, deposito := range stockData.Depositos {
-// 			depositProduct := types.DepositProduct{
-// 				ProductID:    stockData.Produto.ID,
-// 				DepositID:    deposito.ID,
-// 				SaldoFisico:  int32(deposito.SaldoFisico),
-// 				SaldoVirtual: int32(deposito.SaldoVirtual),
-// 			}
-//
-// 			depositProductJSON, err := json.Marshal(depositProduct)
-// 			if err != nil {
-// 				fmt.Printf("Error marshalling deposit product for product %d: %v\n", product.ID, err)
-// 				continue
-// 			}
-//
-// 			fmt.Printf("Sending deposit product data for product %d: %s\n", product.ID, string(depositProductJSON))
-//
-// 			depositResp, err := http.Post("http://localhost:8080/create_deposit_product", "application/json", bytes.NewBuffer(depositProductJSON))
-// 			if err != nil {
-// 				fmt.Printf("Error sending deposit product data for product %d: %v\n", product.ID, err)
-// 				continue
-// 			}
-// 			defer depositResp.Body.Close()
-//
-// 			depositRespBody, _ := io.ReadAll(depositResp.Body)
-// 			fmt.Printf("Response from create_deposit_product for product %d: %s\n", product.ID, string(depositRespBody))
-// 		}
-// 	}
-// }
-
-func processStockForProduct111(product types.Product) {
-	url := fmt.Sprintf("https://bling.com.br/Api/v3/estoques/saldos?idsProdutos%%5B%%5D=%d", product.ID)
-	resp, err := http.Get(url)
+func processSupplierForProduct(product types.Product, bearerToken string) {
+	supplierResponse, err := bling.GetSupplierProductFromBling(bearerToken, product.ID)
 	if err != nil {
-		fmt.Printf("Error fetching stock for product %d: %v\n", product.ID, err)
-		return
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Printf("Error reading stock response for product %d: %v\n", product.ID, err)
+		fmt.Printf("Error fetching supplier for product %d: %v\n", product.ID, err)
 		return
 	}
 
-	var stockResponse struct {
-		Data []struct {
-			Produto struct {
-				ID int64 `json:"id"`
-			} `json:"produto"`
-			SaldoFisicoTotal  int `json:"saldo_fisico_total"`
-			SaldoVirtualTotal int `json:"saldo_virtual_total"`
-			Depositos         []struct {
-				ID           int64 `json:"id"`
-				SaldoFisico  int   `json:"saldo_fisico"`
-				SaldoVirtual int   `json:"saldo_virtual"`
-			} `json:"depositos"`
-		} `json:"data"`
-	}
-
-	err = json.Unmarshal(body, &stockResponse)
-	if err != nil {
-		fmt.Printf("Error unmarshalling stock response for product %d: %v\n", product.ID, err)
-		return
-	}
-
-	for _, stockData := range stockResponse.Data {
-		// Criar o stock
-		stock := types.Stock{
-			ProductID:         stockData.Produto.ID,
-			SaldoFisicoTotal:  int32(stockData.SaldoFisicoTotal),
-			SaldoVirtualTotal: int32(stockData.SaldoVirtualTotal),
+	for _, supplierData := range supplierResponse.Data {
+		// Criar o supplier product
+		supplierProduct := types.SupplierProduct{
+			ID:          supplierData.ID,
+			Descricao:   supplierData.Descricao,
+			PrecoCusto:  supplierData.PrecoCusto,
+			PrecoCompra: supplierData.PrecoCompra,
+			Padrao:      supplierData.Padrao,
+			SupplierID:  supplierData.Fornecedor.ID,
+			ProductID:   supplierData.Produto.ID,
 		}
 
-		stockJSON, err := json.Marshal(stock)
+		supplierProductJSON, err := json.Marshal(supplierProduct)
 		if err != nil {
-			fmt.Printf("Error marshalling stock for product %d: %v\n", product.ID, err)
+			fmt.Printf("Error marshalling supplier product for product %d: %v\n", product.ID, err)
 			continue
 		}
 
-		stockResp, err := http.Post("http://localhost:8080/create_stock", "application/json", bytes.NewBuffer(stockJSON))
+		fmt.Printf("Sending supplier product data for product %d: %s\n", product.ID, string(supplierProductJSON))
+
+		supplierProductResp, err := http.Post("http://localhost:8080/create_supplier_product", "application/json", bytes.NewBuffer(supplierProductJSON))
 		if err != nil {
-			fmt.Printf("Error sending stock data for product %d: %v\n", product.ID, err)
+			fmt.Printf("Error sending supplier product data for product %d: %v\n", product.ID, err)
 			continue
 		}
-		stockResp.Body.Close()
+		defer supplierProductResp.Body.Close()
 
-		// Criar deposit products
-		for _, deposito := range stockData.Depositos {
-			depositProduct := types.DepositProduct{
-				ProductID:    stockData.Produto.ID,
-				DepositID:    deposito.ID,
-				SaldoFisico:  int32(deposito.SaldoFisico),
-				SaldoVirtual: int32(deposito.SaldoVirtual),
-			}
-
-			depositProductJSON, err := json.Marshal(depositProduct)
-			if err != nil {
-				fmt.Printf("Error marshalling deposit product for product %d: %v\n", product.ID, err)
-				continue
-			}
-
-			depositResp, err := http.Post("http://localhost:8080/create_deposit_product", "application/json", bytes.NewBuffer(depositProductJSON))
-			if err != nil {
-				fmt.Printf("Error sending deposit product data for product %d: %v\n", product.ID, err)
-				continue
-			}
-			depositResp.Body.Close()
-		}
+		supplierProductRespBody, _ := io.ReadAll(supplierProductResp.Body)
+		fmt.Printf("Response from create_supplier_product for product %d: %s\n", product.ID, string(supplierProductRespBody))
 	}
 }
 

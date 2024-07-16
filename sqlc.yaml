@@ -15,6 +15,7 @@ sql:
       - "internal/scripts/deposit.sql"
       - "internal/scripts/stock.sql"
       - "internal/scripts/deposit_product.sql"
+      - "internal/scripts/supplier_product.sql"
     gen:
       go:
         package: "db"

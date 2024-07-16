@@ -157,6 +157,19 @@ type Supplier struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
+type SupplierProduct struct {
+	ID          int64     `json:"id"`
+	Descricao   string    `json:"descricao"`
+	Codigo      int64     `json:"codigo"`
+	PrecoCusto  float64   `json:"preco_custo"`
+	PrecoCompra float64   `json:"preco_compra"`
+	Padrao      bool      `json:"padrao"`
+	SupplierID  int64     `json:"supplier_id"`
+	ProductID   int64     `json:"product_id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
 type Token struct {
 	ID           uuid.UUID `json:"id"`
 	AccessToken  string    `json:"access_token"`

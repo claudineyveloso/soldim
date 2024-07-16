@@ -19,6 +19,7 @@ import (
 	"github.com/claudineyveloso/soldim.git/internal/services/search"
 	searchresult "github.com/claudineyveloso/soldim.git/internal/services/search_result"
 	"github.com/claudineyveloso/soldim.git/internal/services/stock"
+	supplierproduct "github.com/claudineyveloso/soldim.git/internal/services/supplier_product"
 	"github.com/claudineyveloso/soldim.git/internal/services/token"
 	"github.com/claudineyveloso/soldim.git/internal/services/user"
 	"github.com/claudineyveloso/soldim.git/internal/services/webhook"
@@ -87,6 +88,10 @@ func (s *APIServer) Run() error {
 	depositproductStore := depositproduct.NewStore(s.db)
 	depositproductHandler := depositproduct.NewHandler(depositproductStore)
 	depositproductHandler.RegisterRoutes(r)
+
+	supplierproductStore := supplierproduct.NewStore(s.db)
+	supplierproductHandler := supplierproduct.NewHandler(supplierproductStore)
+	supplierproductHandler.RegisterRoutes(r)
 
 	fmt.Println("Server started on http://localhost:8080")
 	// return http.ListenAndServe("localhost:8080", r)
