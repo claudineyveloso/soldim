@@ -217,7 +217,54 @@ CREATE TABLE IF NOT EXISTS supplier_products (
   created_at    TIMESTAMP NOT NULL,
   updated_at    TIMESTAMP NOT NULL
 );
+ALTER TABLE
+  "supplier_products"
+ADD
+   FOREIGN KEY ("product_id") REFERENCES "products" ("id"); 
 
+
+DROP TABLE IF EXISTS "situations";
+CREATE TABLE IF NOT EXISTS situations (
+  id            BIGINT PRIMARY KEY,
+  descricao     VARCHAR(255) NOT NULL DEFAULT '',
+  created_at    TIMESTAMP NOT NULL,
+  updated_at    TIMESTAMP NOT NULL
+);
+
+DROP TABLE IF EXISTS "stores";
+CREATE TABLE IF NOT EXISTS stores (
+  id            BIGINT PRIMARY KEY,
+  descricao     VARCHAR(255) NOT NULL DEFAULT '',
+  created_at    TIMESTAMP NOT NULL,
+  updated_at    TIMESTAMP NOT NULL
+);
+
+
+DROP TABLE IF EXISTS "sales_orders";
+CREATE TABLE IF NOT EXISTS sales_orders (
+  id                  BIGINT PRIMARY KEY,
+  numero              INT NOT NULL,
+  numeroLoja          VARCHAR(100) NOT NULL,
+  data                DATE NOT NULL,
+  dataSaida           DATE NOT NULL,
+  dataPrevista        DATE NOT NULL,
+  totalProdutos       FLOAT NOT NULL DEFAULT 0,
+  totalDescontos      FLOAT NOT NULL DEFAULT 0,
+  situation_id        BIGINT NOT NULL DEFAULT 0,
+  store_id            BIGINT NOT NULL,
+  created_at          TIMESTAMP NOT NULL,
+  updated_at          TIMESTAMP NOT NULL
+);
+
+ALTER TABLE
+  "sales_orders"
+ADD
+   FOREIGN KEY ("situation_id") REFERENCES "situations" ("id"); 
+
+ALTER TABLE
+  "sales_orders"
+ADD
+   FOREIGN KEY ("store_id") REFERENCES "stores" ("id"); 
 
 DROP TABLE IF EXISTS "tokens";
 CREATE TABLE IF NOT EXISTS tokens (
