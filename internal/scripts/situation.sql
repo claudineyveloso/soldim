@@ -1,13 +1,13 @@
 -- name: CreateSituation :exec
 INSERT INTO situations (id, descricao, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5);
+VALUES ($1, $2, $3, $4);
 
 -- name: GetSituations :many
 SELECT id,
         descricao,
         created_at,
         updated_at
-FROM situations
+FROM situations;
 
 -- name: GetSituation :one
 SELECT id,

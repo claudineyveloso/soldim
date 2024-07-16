@@ -1,6 +1,6 @@
 -- name: CreateStore :exec
-INSERT INTO sales_orders (id, descricao, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5);
+INSERT INTO stores (id, descricao, created_at, updated_at)
+VALUES ($1, $2, $3, $4);
 
 -- name: GetStores :many
 SELECT id,
