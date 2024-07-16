@@ -117,6 +117,21 @@ type SalesChannel struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type SalesOrder struct {
+	ID             int64     `json:"id"`
+	Numero         int32     `json:"numero"`
+	Numeroloja     string    `json:"numeroloja"`
+	Data           time.Time `json:"data"`
+	Datasaida      time.Time `json:"datasaida"`
+	Dataprevista   time.Time `json:"dataprevista"`
+	Totalprodutos  float64   `json:"totalprodutos"`
+	Totaldescontos float64   `json:"totaldescontos"`
+	SituationID    int64     `json:"situation_id"`
+	StoreID        int64     `json:"store_id"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+}
+
 type Search struct {
 	ID          uuid.UUID `json:"id"`
 	Description string    `json:"description"`
@@ -137,12 +152,26 @@ type SearchesResult struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
+type Situation struct {
+	ID        int64     `json:"id"`
+	Descricao string    `json:"descricao"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type Stock struct {
 	ProductID         int64     `json:"product_id"`
 	SaldoFisicoTotal  int32     `json:"saldo_fisico_total"`
 	SaldoVirtualTotal int32     `json:"saldo_virtual_total"`
 	CreatedAt         time.Time `json:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at"`
+}
+
+type Store struct {
+	ID        int64     `json:"id"`
+	Descricao string    `json:"descricao"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Supplier struct {
