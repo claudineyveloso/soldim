@@ -179,7 +179,7 @@ CREATE TABLE IF NOT EXISTS deposit_products (
   saldo_virtual  INTEGER NOT NULL DEFAULT 0,
   created_at     TIMESTAMP NOT NULL,
   updated_at     TIMESTAMP NOT NULL
-
+);
 
 ALTER TABLE
   "deposit_products"
@@ -209,8 +209,8 @@ CREATE TABLE IF NOT EXISTS supplier_products (
   id            BIGINT PRIMARY KEY,
   descricao     VARCHAR(255) NOT NULL DEFAULT '',
   codigo        BIGINT NOT NULL DEFAULT 0,
-  precoCusto    FLOAT NOT NULL DEFAULT 0,
-  precoCompra   FLOAT NOT NULL DEFAULT 0,
+  preco_custo    FLOAT NOT NULL DEFAULT 0,
+  preco_compra   FLOAT NOT NULL DEFAULT 0,
   padrao        BOOLEAN NOT NULL DEFAULT TRUE,
   supplier_id   BIGINT NOT NULL,
   product_id    BIGINT NOT NULL,
@@ -218,6 +218,15 @@ CREATE TABLE IF NOT EXISTS supplier_products (
   updated_at    TIMESTAMP NOT NULL
 );
 
+ALTER TABLE
+  "supplier_products"
+ADD
+    FOREIGN KEY ("supplier_id") REFERENCES "suppliers" ("id"); 
+
+ALTER TABLE
+  "supplier_products"
+ADD
+   FOREIGN KEY ("product_id") REFERENCES "products" ("id"); 
 
 DROP TABLE IF EXISTS "tokens";
 CREATE TABLE IF NOT EXISTS tokens (

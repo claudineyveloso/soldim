@@ -178,6 +178,9 @@ func convertDBProductToProduct(dbProduct db.GetProductsRow) *types.Product {
 		SaldoVirtualTotal:          types.NullableInt{NullInt32: dbProduct.SaldoVirtualTotal},
 		SaldoFisico:                types.NullableInt{NullInt32: dbProduct.SaldoFisico},
 		SaldoVirtual:               types.NullableInt{NullInt32: dbProduct.SaldoVirtual},
+		PrecoCusto:                 types.NullableFloat{NullFloat64: dbProduct.PrecoCusto},
+		PrecoCompra:                types.NullableFloat{NullFloat64: dbProduct.PrecoCompra},
+		SupplierID:                 types.NullableInt64{NullInt64: dbProduct.SupplierID},
 	}
 	return product
 }
@@ -216,6 +219,9 @@ func convertGetProductRowToProduct(dbProduct db.GetProductRow) *types.Product {
 		SaldoVirtualTotal:          types.NullableInt{NullInt32: dbProduct.SaldoVirtualTotal},
 		SaldoFisico:                types.NullableInt{NullInt32: dbProduct.SaldoFisico},
 		SaldoVirtual:               types.NullableInt{NullInt32: dbProduct.SaldoVirtual},
+		PrecoCusto:                 types.NullableFloat{NullFloat64: dbProduct.PrecoCusto},
+		PrecoCompra:                types.NullableFloat{NullFloat64: dbProduct.PrecoCompra},
+		SupplierID:                 types.NullableInt64{NullInt64: dbProduct.SupplierID},
 	}
 	return product
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -115,4 +116,26 @@ func CalculateRelevanceScore(query, description string) int {
 		}
 	}
 	return score
+}
+
+func LogErrorToFile(logMessage string) {
+	// Define the log file path
+	logFilePath := "errors.log"
+
+	// Open the log file in append mode, create it if it doesn't exist
+	logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Printf("Error opening log file: %v\n", err)
+		return
+	}
+	defer logFile.Close()
+
+	// Create a timestamp for the log entry
+	timestamp := time.Now().Format(time.RFC3339)
+
+	// Write the log message to the file
+	_, err = fmt.Fprintf(logFile, "[%s] %s", timestamp, logMessage)
+	if err != nil {
+		fmt.Printf("Error writing to log file: %v\n", err)
+	}
 }
