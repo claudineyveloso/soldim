@@ -11,5 +11,7 @@ type Situation struct {
 
 type SituationStore interface {
 	CreateSituation(Situation) error
-	UpdateSalesOrder(Situation) error
+	GetSituations() ([]*Situation, error)
+	GetSituationByID(id int64) (*Situation, error)
+	GetSituationByDescription(descricao string) (*Situation, error)
 }

@@ -11,5 +11,7 @@ type Store struct {
 
 type StoreStore interface {
 	CreateStore(Store) error
-	UpdateStore(Store) error
+	GetStores() ([]*Store, error)
+	GetStoreByID(id int64) (*Store, error)
+	GetStoreByDescription(descricao string) (*Store, error)
 }
