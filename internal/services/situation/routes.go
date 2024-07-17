@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/claudineyveloso/soldim.git/internal/types"
 	"github.com/claudineyveloso/soldim.git/internal/utils"
@@ -23,6 +24,7 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/create_situation", h.handleCreateSituation).Methods(http.MethodPost)
 	router.HandleFunc("/get_situations", h.handleGetSituations).Methods(http.MethodGet)
 	router.HandleFunc("/get_situation/{situationID}", h.handleGetSituation).Methods(http.MethodGet)
+	router.HandleFunc("/get_situation_description/{description}", h.handleGetSituationByDescription).Methods(http.MethodGet)
 }
 
 func (h *Handler) handleCreateSituation(w http.ResponseWriter, r *http.Request) {
@@ -57,4 +59,51 @@ func (h *Handler) handleCreateSituation(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(jsonResponse)
+}
+
+func (h *Handler) handleGetSituations(w http.ResponseWriter, r *http.Request) {
+	draft, err := h.situatiomnStore.GetSituations()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erro ao obter o Rascunho: %v", err), http.StatusInternalServerError)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, draft)
+}
+
+func (h *Handler) handleGetSituation(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	situationIDStr, ok := vars["situationID"]
+	if !ok {
+		http.Error(w, "ID da Situação ausente!", http.StatusBadRequest)
+		return
+	}
+
+	situationID, err := strconv.ParseInt(situationIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "ID da Situação inválido!", http.StatusBadRequest)
+		return
+	}
+
+	situation, err := h.situatiomnStore.GetSituationByID(situationID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erro ao obter a Situação: %v", err), http.StatusInternalServerError)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, situation)
+}
+
+func (h *Handler) handleGetSituationByDescription(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	description, ok := vars["description"]
+	if !ok {
+		http.Error(w, "Descrição da Situação ausente!", http.StatusBadRequest)
+		return
+	}
+
+	situation, err := h.situatiomnStore.GetSituationByDescription(description)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erro ao obter a Situação: %v", err), http.StatusInternalServerError)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, situation)
 }
