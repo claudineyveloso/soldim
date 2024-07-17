@@ -76,7 +76,7 @@ func (s *Store) GetSalesOrderByID(salesorderID int64) (*types.SalesOrder, error)
 	return product, nil
 }
 
-func (s *Store) GetSalesOrderByDescription(number int32) (*types.SalesOrder, error) {
+func (s *Store) GetSalesOrderByNumber(number int32) (*types.SalesOrder, error) {
 	queries := db.New(s.db)
 	ctx := context.Background()
 	dbSalesOrder, err := queries.GetSalesOrderByNumber(ctx, number)

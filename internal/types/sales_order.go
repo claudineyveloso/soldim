@@ -21,5 +21,5 @@ type SalesOrderStore interface {
 	CreateSalesOrder(SalesOrder) error
 	GetSalesOrders() ([]*SalesOrder, error)
 	GetSalesOrderByID(id int64) (*SalesOrder, error)
-	// GetSalesOrderByNumer(numero int32) (*SalesOrder, error)
+	GetSalesOrderByNumer(numero int32) (*SalesOrder, error)
 }
