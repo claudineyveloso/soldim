@@ -16,9 +16,12 @@ import (
 	refreshtoken "github.com/claudineyveloso/soldim.git/internal/services/refresh_token"
 	saleschannel "github.com/claudineyveloso/soldim.git/internal/services/sales_channel"
 	saleschannelbling "github.com/claudineyveloso/soldim.git/internal/services/sales_channel_bling"
+	salesorder "github.com/claudineyveloso/soldim.git/internal/services/sales_order"
 	"github.com/claudineyveloso/soldim.git/internal/services/search"
 	searchresult "github.com/claudineyveloso/soldim.git/internal/services/search_result"
+	"github.com/claudineyveloso/soldim.git/internal/services/situation"
 	"github.com/claudineyveloso/soldim.git/internal/services/stock"
+	"github.com/claudineyveloso/soldim.git/internal/services/store"
 	supplierproduct "github.com/claudineyveloso/soldim.git/internal/services/supplier_product"
 	"github.com/claudineyveloso/soldim.git/internal/services/token"
 	"github.com/claudineyveloso/soldim.git/internal/services/user"
@@ -92,6 +95,18 @@ func (s *APIServer) Run() error {
 	supplierproductStore := supplierproduct.NewStore(s.db)
 	supplierproductHandler := supplierproduct.NewHandler(supplierproductStore)
 	supplierproductHandler.RegisterRoutes(r)
+
+	situationStore := situation.NewStore(s.db)
+	situationHandler := situation.NewHandler(situationStore)
+	situationHandler.RegisterRoutes(r)
+
+	storeStore := store.NewStore(s.db)
+	storeHandler := store.NewHandler(storeStore)
+	storeHandler.RegisterRoutes(r)
+
+	salesOrderStore := salesorder.NewStore(s.db)
+	salesOrderHandler := salesorder.NewHandler(salesOrderStore)
+	salesOrderHandler.RegisterRoutes(r)
 
 	fmt.Println("Server started on http://localhost:8080")
 	// return http.ListenAndServe("localhost:8080", r)

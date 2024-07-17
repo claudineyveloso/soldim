@@ -24,6 +24,7 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/create_store", h.handleCreateStore).Methods(http.MethodPost)
 	router.HandleFunc("/get_stores", h.handleGetStores).Methods(http.MethodGet)
 	router.HandleFunc("/get_store/{storeID}", h.handleGetStore).Methods(http.MethodGet)
+	router.HandleFunc("/get_store_description/{description}", h.handleGetStoreByDescription).Methods(http.MethodGet)
 }
 
 func (h *Handler) handleCreateStore(w http.ResponseWriter, r *http.Request) {

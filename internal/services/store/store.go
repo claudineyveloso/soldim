@@ -57,10 +57,10 @@ func (s *Store) GetStores() ([]*types.Store, error) {
 	return stores, nil
 }
 
-func (s *Store) GetSalesOrderByID(salesorderID int64) (*types.Store, error) {
+func (s *Store) GetStoreByID(storeID int64) (*types.Store, error) {
 	queries := db.New(s.db)
 	ctx := context.Background()
-	dbStore, err := queries.GetStore(ctx, salesorderID)
+	dbStore, err := queries.GetStore(ctx, storeID)
 	if err != nil {
 		return nil, err
 	}

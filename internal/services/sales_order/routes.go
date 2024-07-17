@@ -108,7 +108,7 @@ func (h *Handler) handleGetSalesOrderNumber(w http.ResponseWriter, r *http.Reque
 	// Converta parsedSalesOrderNumber de int64 para int32
 	salesOrderNumber := int32(parsedSalesOrderNumber)
 
-	salesOrder, err := h.salesOrderStore.GetSalesOrderByNumer(salesOrderNumber)
+	salesOrder, err := h.salesOrderStore.GetSalesOrderByNumber(salesOrderNumber)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
