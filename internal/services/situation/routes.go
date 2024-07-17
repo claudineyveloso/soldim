@@ -13,11 +13,11 @@ import (
 )
 
 type Handler struct {
-	situatiomnStore types.SituationStore
+	situationStore types.SituationStore
 }
 
 func NewHandler(situationStore types.SituationStore) *Handler {
-	return &Handler{situatiomnStore: situationStore}
+	return &Handler{situationStore: situationStore}
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
@@ -38,7 +38,7 @@ func (h *Handler) handleCreateSituation(w http.ResponseWriter, r *http.Request) 
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("Payload inválido: %v", errors))
 		return
 	}
-	err := h.situatiomnStore.CreateSituation(situation)
+	err := h.situationStore.CreateSituation(situation)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
@@ -62,7 +62,7 @@ func (h *Handler) handleCreateSituation(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *Handler) handleGetSituations(w http.ResponseWriter, r *http.Request) {
-	draft, err := h.situatiomnStore.GetSituations()
+	draft, err := h.situationStore.GetSituations()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter o Rascunho: %v", err), http.StatusInternalServerError)
 		return
@@ -84,7 +84,7 @@ func (h *Handler) handleGetSituation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	situation, err := h.situatiomnStore.GetSituationByID(situationID)
+	situation, err := h.situationStore.GetSituationByID(situationID)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter a Situação: %v", err), http.StatusInternalServerError)
 		return
@@ -100,7 +100,7 @@ func (h *Handler) handleGetSituationByDescription(w http.ResponseWriter, r *http
 		return
 	}
 
-	situation, err := h.situatiomnStore.GetSituationByDescription(description)
+	situation, err := h.situationStore.GetSituationByDescription(description)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter a Situação: %v", err), http.StatusInternalServerError)
 		return
