@@ -107,7 +107,7 @@ type ProductResponse struct {
 
 type ProductStore interface {
 	CreateProduct(ProductPayload) error
-	GetProducts() ([]*Product, error)
+	GetProducts(nome, situacao string) ([]*Product, error)
 	GetProductByID(id int64) (*Product, error)
 	UpdateProduct(ProductPayload) error
 	DeleteProduct(id int64) error

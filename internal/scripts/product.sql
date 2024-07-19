@@ -91,7 +91,10 @@ LEFT JOIN
 LEFT JOIN
     deposit_products dp ON p.id = dp.product_id
 LEFT JOIN
-    supplier_products sp ON p.id = sp.product_id;
+    supplier_products sp ON p.id = sp.product_id
+WHERE ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
+  AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2);
+
 
 -- name: GetProductByName :one
 SELECT p.ID,

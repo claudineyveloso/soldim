@@ -31,7 +31,9 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 func (h *Handler) handleGetProducts(w http.ResponseWriter, r *http.Request) {
 	// bucketID := auth.GetUserIDFromContext(r.Context())
 	// fmt.Println("Valor de userIDffsadfsda", bucketID)
-	product, err := h.productStore.GetProducts()
+	nome := r.URL.Query().Get("nome")
+	situacao := r.URL.Query().Get("situacao")
+	product, err := h.productStore.GetProducts(nome, situacao)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter os produtos : %v", err), http.StatusInternalServerError)
 		return

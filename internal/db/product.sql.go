@@ -519,7 +519,14 @@ LEFT JOIN
     deposit_products dp ON p.id = dp.product_id
 LEFT JOIN
     supplier_products sp ON p.id = sp.product_id
+WHERE ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
+  AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2)
 `
+
+type GetProductsParams struct {
+	Column1 string `json:"column_1"`
+	Column2 string `json:"column_2"`
+}
 
 type GetProductsRow struct {
 	ID                         int64           `json:"id"`
@@ -559,8 +566,8 @@ type GetProductsRow struct {
 	SupplierID                 sql.NullInt64   `json:"supplier_id"`
 }
 
-func (q *Queries) GetProducts(ctx context.Context) ([]GetProductsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getProducts)
+func (q *Queries) GetProducts(ctx context.Context, arg GetProductsParams) ([]GetProductsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getProducts, arg.Column1, arg.Column2)
 	if err != nil {
 		return nil, err
 	}

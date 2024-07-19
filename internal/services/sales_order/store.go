@@ -25,13 +25,13 @@ func (s *Store) CreateSalesOrder(salesorder types.SalesOrder) error {
 	now := time.Now()
 	salesorder.CreatedAt = now
 	salesorder.UpdatedAt = now
-
 	createSalesOrderParams := db.CreateSalesOrderParams{
+		ID:             salesorder.ID,
 		Numero:         salesorder.Numero,
 		Numeroloja:     salesorder.Numeroloja,
-		Data:           salesorder.Data,
-		Datasaida:      salesorder.Datasaida,
-		Dataprevista:   salesorder.Dataprevista,
+		Data:           salesorder.Data.Time,
+		Datasaida:      salesorder.Datasaida.Time,
+		Dataprevista:   salesorder.Dataprevista.Time,
 		Totalprodutos:  salesorder.Totalprodutos,
 		Totaldescontos: salesorder.Totaldescontos,
 		SituationID:    salesorder.SituationID,
@@ -39,6 +39,8 @@ func (s *Store) CreateSalesOrder(salesorder types.SalesOrder) error {
 		CreatedAt:      salesorder.CreatedAt,
 		UpdatedAt:      salesorder.UpdatedAt,
 	}
+
+	fmt.Println("Criando um Pedido de Vendas...", createSalesOrderParams)
 
 	if err := queries.CreateSalesOrder(ctx, createSalesOrderParams); err != nil {
 		fmt.Println("Erro ao criar um Pedido de Vendas:", err)
@@ -93,9 +95,9 @@ func convertDBSalesOrderToSalesOrder(dbSalesOrder db.SalesOrder) *types.SalesOrd
 		ID:             dbSalesOrder.ID,
 		Numero:         dbSalesOrder.Numero,
 		Numeroloja:     dbSalesOrder.Numeroloja,
-		Data:           dbSalesOrder.Data,
-		Datasaida:      dbSalesOrder.Datasaida,
-		Dataprevista:   dbSalesOrder.Dataprevista,
+		Data:           types.CustomDate{Time: dbSalesOrder.Data},
+		Datasaida:      types.CustomDate{Time: dbSalesOrder.Datasaida},
+		Dataprevista:   types.CustomDate{Time: dbSalesOrder.Dataprevista},
 		Totalprodutos:  dbSalesOrder.Totalprodutos,
 		Totaldescontos: dbSalesOrder.Totaldescontos,
 		SituationID:    dbSalesOrder.SituationID,

@@ -17,6 +17,7 @@ import (
 	saleschannel "github.com/claudineyveloso/soldim.git/internal/services/sales_channel"
 	saleschannelbling "github.com/claudineyveloso/soldim.git/internal/services/sales_channel_bling"
 	salesorder "github.com/claudineyveloso/soldim.git/internal/services/sales_order"
+	salesorderbling "github.com/claudineyveloso/soldim.git/internal/services/sales_order_bling"
 	"github.com/claudineyveloso/soldim.git/internal/services/search"
 	searchresult "github.com/claudineyveloso/soldim.git/internal/services/search_result"
 	"github.com/claudineyveloso/soldim.git/internal/services/situation"
@@ -51,6 +52,7 @@ func (s *APIServer) Run() error {
 	productbling.RegisterRoutes(r)
 	saleschannelbling.RegisterRoutes(r)
 	depositbling.RegisterRoutes(r)
+	salesorderbling.RegisterRoutes(r)
 	userStore := user.NewStore(s.db)
 	userHandler := user.NewHandler(userStore)
 	userHandler.RegisterRoutes(r)

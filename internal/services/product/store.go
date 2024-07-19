@@ -63,11 +63,15 @@ func (s *Store) CreateProduct(product types.ProductPayload) error {
 	return nil
 }
 
-func (s *Store) GetProducts() ([]*types.Product, error) {
+func (s *Store) GetProducts(nome, situacao string) ([]*types.Product, error) {
 	queries := db.New(s.db)
 	ctx := context.Background()
+	params := db.GetProductsParams{
+		Column1: nome,
+		Column2: situacao,
+	}
 
-	dbProducts, err := queries.GetProducts(ctx)
+	dbProducts, err := queries.GetProducts(ctx, params)
 	if err != nil {
 		return nil, err
 	}
