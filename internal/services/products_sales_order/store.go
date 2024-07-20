@@ -18,7 +18,7 @@ func NewStore(db *sql.DB) *Store {
 	return &Store{db: db}
 }
 
-func (s *Store) CreateProductSalesOrder(productsalesorder types.ProductSalesOrder) error {
+func (s *Store) CreateProductSalesOrder(productsalesorder types.ProductSalesOrderPayload) error {
 	queries := db.New(s.db)
 	ctx := context.Background()
 

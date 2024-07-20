@@ -27,14 +27,14 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 }
 
 func (h *Handler) handleCreateProductSalesOrder(w http.ResponseWriter, r *http.Request) {
-	var productsalesOrder types.ProductSalesOrder
+	var productsalesOrder types.ProductSalesOrderPayload
 	if err := utils.ParseJSON(r, &productsalesOrder); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
 	if err := utils.Validate.Struct(productsalesOrder); err != nil {
 		errors := err.(validator.ValidationErrors)
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("Payload inválido: %v", errors))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("payload inválido: %v", errors))
 		return
 	}
 	err := h.productSalesOrderStore.CreateProductSalesOrder(productsalesOrder)
@@ -75,12 +75,12 @@ func (h *Handler) handleGetProductSalesOrder(w http.ResponseWriter, r *http.Requ
 	vars := mux.Vars(r)
 	productSalesOrderIDStr, ok := vars["supplierID"]
 	if !ok {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Produto ausente!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("id do produto ausente"))
 		return
 	}
 	parsedProductSalesOrderID, err := strconv.ParseInt(productSalesOrderIDStr, 10, 64)
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Rascunho inválido!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("id do rascunho inválido"))
 		return
 	}
 

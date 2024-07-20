@@ -27,6 +27,14 @@ type ProductSalesOrder struct {
 	Preco          float64
 }
 
+type ProductSalesOrderPayload struct {
+	SalesOrderID int64     `json:"sales_order_id"`
+	ProductID    int64     `json:"product_id"`
+	Quantidade   int32     `json:"quantidade"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+}
+
 func ToInt64(n sql.NullInt64) int64 {
 	if n.Valid {
 		return n.Int64
@@ -63,7 +71,7 @@ func ToTime(t sql.NullTime) time.Time {
 }
 
 type ProductSalesOrderStore interface {
-	CreateProductSalesOrder(ProductSalesOrder) error
+	CreateProductSalesOrder(ProductSalesOrderPayload) error
 	GetProductSalesOrders() ([]*ProductSalesOrder, error)
 	GetProductSalesOrdersBySupplierID(supplierID int64) ([]*ProductSalesOrder, error)
 }

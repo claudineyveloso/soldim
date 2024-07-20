@@ -15,7 +15,7 @@ import (
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "528469daa40b776a7ce1da75f9bce1a7c8729f0f"
+	bearerToken     = "9886c96e963dac41b5c3b24c12dd03751ce9d9f7"
 )
 
 func RegisterRoutes(router *mux.Router) {
@@ -54,6 +54,11 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 		page++
 
 	}
+	//err = processProductsSalesOrders()
+	//if err != nil {
+	//	http.Error(w, err.Error(), http.StatusInternalServerError)
+	//	return
+	//}
 }
 
 func processSales(sales []types.SalesOrder) {
@@ -92,6 +97,46 @@ func processSales(sales []types.SalesOrder) {
 		fmt.Printf("Sales Orders created successfully: %v\n", sale)
 	}
 }
+
+// func processProductsSalesOrders() error {
+// 	resp, err := http.Get("http://localhost:8080/get_sales_orders")
+// 	if err != nil {
+// 		return fmt.Errorf("erro ao chamar get_sales_orders: %v", err)
+// 	}
+// 	defer resp.Body.Close()
+//
+// 	if resp.StatusCode != http.StatusOK {
+// 		return fmt.Errorf("falha na requisição para get_sales_orders: %s", resp.Status)
+// 	}
+//
+// 	var salesOrders []types.SalesOrder
+// 	err = json.NewDecoder(resp.Body).Decode(&salesOrders)
+// 	if err != nil {
+// 		return fmt.Errorf("erro ao decodificar resposta: %v", err)
+// 	}
+//
+// 	for _, salesOrder := range salesOrders {
+// 		salesOrderData, err := bling.GetSalesOrdersIDInBling(bearerToken, salesOrder.ID)
+// 		if err != nil {
+// 			return fmt.Errorf("erro ao obter SalesOrdersIDInBling para ID %d: %v", salesOrder.ID, err)
+// 		}
+//
+// 		err = createProductsSalesOrder(salesOrderData)
+// 		if err != nil {
+// 			return fmt.Errorf("erro ao criar ProductSalesOrder para ID %d: %v", salesOrder.ID, err)
+// 		}
+// 	}
+//
+// 	return nil
+// }
+
+// func createProductsSalesOrder(salesOrderData *types.BlingSalesOrderData) error {
+// 	for _, item := range salesOrderData.Itens {
+// 		// Implemente a lógica de criação de ProductSalesOrder aqui, usando item.ID e item.Quantidade
+// 		fmt.Printf("Criando ProductSalesOrder para Item ID: %d, Quantidade: %d\n", item.ID, item.Quantidade)
+// 	}
+// 	return nil
+// }
 
 func handleGetSalesOrder(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
