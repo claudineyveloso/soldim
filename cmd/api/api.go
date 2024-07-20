@@ -13,6 +13,7 @@ import (
 	"github.com/claudineyveloso/soldim.git/internal/services/healthy"
 	"github.com/claudineyveloso/soldim.git/internal/services/product"
 	productbling "github.com/claudineyveloso/soldim.git/internal/services/product_bling"
+	productssalesorder "github.com/claudineyveloso/soldim.git/internal/services/products_sales_order"
 	refreshtoken "github.com/claudineyveloso/soldim.git/internal/services/refresh_token"
 	saleschannel "github.com/claudineyveloso/soldim.git/internal/services/sales_channel"
 	saleschannelbling "github.com/claudineyveloso/soldim.git/internal/services/sales_channel_bling"
@@ -110,8 +111,11 @@ func (s *APIServer) Run() error {
 	salesOrderHandler := salesorder.NewHandler(salesOrderStore)
 	salesOrderHandler.RegisterRoutes(r)
 
+	productSalesOrderStore := productssalesorder.NewStore(s.db)
+	productSalesOrderHandler := productssalesorder.NewHandler(productSalesOrderStore)
+	productSalesOrderHandler.RegisterRoutes(r)
+
 	fmt.Println("Server started on http://localhost:8080")
-	// return http.ListenAndServe("localhost:8080", r)
 	return http.ListenAndServe("localhost:8080",
 		handlers.CORS(
 			handlers.AllowedOrigins([]string{"*"}),

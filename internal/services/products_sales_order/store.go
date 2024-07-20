@@ -18,7 +18,7 @@ func NewStore(db *sql.DB) *Store {
 	return &Store{db: db}
 }
 
-func (s *Store) CreateProductsSalesOrder(productsalesorder types.ProductSalesOrder) error {
+func (s *Store) CreateProductSalesOrder(productsalesorder types.ProductSalesOrder) error {
 	queries := db.New(s.db)
 	ctx := context.Background()
 
@@ -63,12 +63,12 @@ func (s *Store) GetProductSalesOrdersBySupplierID(supplierID int64) ([]*types.Pr
 		return nil, err
 	}
 
-	return convertDBProductsSalesOrders(dbSalesOrders), nil
+	return convertDBProductSalesOrdersBySupplierID(dbSalesOrders), nil
 }
 
 func convertDBProductsSalesOrderToProductsSalesOrder(row interface{}) *types.ProductSalesOrder {
 	switch r := row.(type) {
-	case db.GetProductSalesOrderRow:
+	case db.GetProductSalesOrdersRow:
 		return &types.ProductSalesOrder{
 			ID:             types.ToInt64(r.ID),
 			SalesOrderID:   r.SalesOrderID,
@@ -120,7 +120,7 @@ func convertDBProductsSalesOrderToProductsSalesOrder(row interface{}) *types.Pro
 func convertDBProductsSalesOrders(rows interface{}) []*types.ProductSalesOrder {
 	var productssalesorders []*types.ProductSalesOrder
 	switch rs := rows.(type) {
-	case []db.GetProductSalesOrderRow:
+	case []db.GetProductSalesOrdersRow:
 		for _, r := range rs {
 			productsalesorder := convertDBProductsSalesOrderToProductsSalesOrder(r)
 			productssalesorders = append(productssalesorders, productsalesorder)
@@ -132,4 +132,13 @@ func convertDBProductsSalesOrders(rows interface{}) []*types.ProductSalesOrder {
 		}
 	}
 	return productssalesorders
+}
+
+func convertDBProductSalesOrdersBySupplierID(rows []db.GetProductSalesOrderBySupplierIDRow) []*types.ProductSalesOrder {
+	var productSalesOrders []*types.ProductSalesOrder
+	for _, row := range rows {
+		productSalesOrder := convertDBProductsSalesOrderToProductsSalesOrder(row)
+		productSalesOrders = append(productSalesOrders, productSalesOrder)
+	}
+	return productSalesOrders
 }

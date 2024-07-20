@@ -63,7 +63,7 @@ func ToTime(t sql.NullTime) time.Time {
 }
 
 type ProductSalesOrderStore interface {
-	CreateProductSalesOrde(ProductSalesOrder) error
+	CreateProductSalesOrder(ProductSalesOrder) error
 	GetProductSalesOrders() ([]*ProductSalesOrder, error)
-	GetProductSalesOrdersBySupplierID(id int64) (*ProductSalesOrder, error)
+	GetProductSalesOrdersBySupplierID(supplierID int64) ([]*ProductSalesOrder, error)
 }

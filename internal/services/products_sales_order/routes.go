@@ -37,7 +37,7 @@ func (h *Handler) handleCreateProductSalesOrder(w http.ResponseWriter, r *http.R
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("Payload inválido: %v", errors))
 		return
 	}
-	err := h.productSalesOrderStore.CreateProductSalesOrde(productsalesOrder)
+	err := h.productSalesOrderStore.CreateProductSalesOrder(productsalesOrder)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
