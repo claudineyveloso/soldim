@@ -46,7 +46,7 @@ func (s *Store) GetProductSalesOrders() ([]*types.ProductSalesOrder, error) {
 	queries := db.New(s.db)
 	ctx := context.Background()
 
-	dbProductsSalesOrders, err := queries.GetProductSalesOrder(ctx)
+	dbProductsSalesOrders, err := queries.GetProductSalesOrders(ctx)
 	if err != nil {
 		return nil, err
 	}

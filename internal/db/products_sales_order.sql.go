@@ -35,98 +35,6 @@ func (q *Queries) CreateProductSalesOrder(ctx context.Context, arg CreateProduct
 	return err
 }
 
-const getProductSalesOrder = `-- name: GetProductSalesOrder :many
-SELECT pso.sales_order_id, 
-        pso.product_id, 
-        pso.quantidade, 
-        pso.created_at, 
-        pso.updated_at,
-        so.id,
-        so.numero,
-        so.numeroloja,
-        so.data,
-        so.datasaida,
-        so.dataprevista,
-        so.totalprodutos,
-        so.totaldescontos,
-        so.situation_id,
-        so.store_id,
-        sp.supplier_id,
-        p.nome,
-        p.codigo,
-        p.preco
-FROM products_sales_orders pso
-LEFT JOIN products p ON p.id = pso.product_id
-LEFT JOIN sales_orders so ON so.id = pso.sales_order_id
-LEFT JOIN supplier_products sp ON pso.product_id = sp.product_id
-ORDER BY pso.product_id, pso.sales_order_id
-`
-
-type GetProductSalesOrderRow struct {
-	SalesOrderID   int64           `json:"sales_order_id"`
-	ProductID      int64           `json:"product_id"`
-	Quantidade     int32           `json:"quantidade"`
-	CreatedAt      time.Time       `json:"created_at"`
-	UpdatedAt      time.Time       `json:"updated_at"`
-	ID             sql.NullInt64   `json:"id"`
-	Numero         sql.NullInt32   `json:"numero"`
-	Numeroloja     sql.NullString  `json:"numeroloja"`
-	Data           sql.NullTime    `json:"data"`
-	Datasaida      sql.NullTime    `json:"datasaida"`
-	Dataprevista   sql.NullTime    `json:"dataprevista"`
-	Totalprodutos  sql.NullFloat64 `json:"totalprodutos"`
-	Totaldescontos sql.NullFloat64 `json:"totaldescontos"`
-	SituationID    sql.NullInt64   `json:"situation_id"`
-	StoreID        sql.NullInt64   `json:"store_id"`
-	SupplierID     sql.NullInt64   `json:"supplier_id"`
-	Nome           sql.NullString  `json:"nome"`
-	Codigo         sql.NullString  `json:"codigo"`
-	Preco          sql.NullFloat64 `json:"preco"`
-}
-
-func (q *Queries) GetProductSalesOrder(ctx context.Context) ([]GetProductSalesOrderRow, error) {
-	rows, err := q.db.QueryContext(ctx, getProductSalesOrder)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetProductSalesOrderRow
-	for rows.Next() {
-		var i GetProductSalesOrderRow
-		if err := rows.Scan(
-			&i.SalesOrderID,
-			&i.ProductID,
-			&i.Quantidade,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.ID,
-			&i.Numero,
-			&i.Numeroloja,
-			&i.Data,
-			&i.Datasaida,
-			&i.Dataprevista,
-			&i.Totalprodutos,
-			&i.Totaldescontos,
-			&i.SituationID,
-			&i.StoreID,
-			&i.SupplierID,
-			&i.Nome,
-			&i.Codigo,
-			&i.Preco,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getProductSalesOrderBySupplierID = `-- name: GetProductSalesOrderBySupplierID :many
 SELECT pso.sales_order_id, 
         pso.product_id, 
@@ -186,6 +94,98 @@ func (q *Queries) GetProductSalesOrderBySupplierID(ctx context.Context, supplier
 	var items []GetProductSalesOrderBySupplierIDRow
 	for rows.Next() {
 		var i GetProductSalesOrderBySupplierIDRow
+		if err := rows.Scan(
+			&i.SalesOrderID,
+			&i.ProductID,
+			&i.Quantidade,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.ID,
+			&i.Numero,
+			&i.Numeroloja,
+			&i.Data,
+			&i.Datasaida,
+			&i.Dataprevista,
+			&i.Totalprodutos,
+			&i.Totaldescontos,
+			&i.SituationID,
+			&i.StoreID,
+			&i.SupplierID,
+			&i.Nome,
+			&i.Codigo,
+			&i.Preco,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getProductSalesOrders = `-- name: GetProductSalesOrders :many
+SELECT pso.sales_order_id, 
+        pso.product_id, 
+        pso.quantidade, 
+        pso.created_at, 
+        pso.updated_at,
+        so.id,
+        so.numero,
+        so.numeroloja,
+        so.data,
+        so.datasaida,
+        so.dataprevista,
+        so.totalprodutos,
+        so.totaldescontos,
+        so.situation_id,
+        so.store_id,
+        sp.supplier_id,
+        p.nome,
+        p.codigo,
+        p.preco
+FROM products_sales_orders pso
+LEFT JOIN products p ON p.id = pso.product_id
+LEFT JOIN sales_orders so ON so.id = pso.sales_order_id
+LEFT JOIN supplier_products sp ON pso.product_id = sp.product_id
+ORDER BY pso.product_id, pso.sales_order_id
+`
+
+type GetProductSalesOrdersRow struct {
+	SalesOrderID   int64           `json:"sales_order_id"`
+	ProductID      int64           `json:"product_id"`
+	Quantidade     int32           `json:"quantidade"`
+	CreatedAt      time.Time       `json:"created_at"`
+	UpdatedAt      time.Time       `json:"updated_at"`
+	ID             sql.NullInt64   `json:"id"`
+	Numero         sql.NullInt32   `json:"numero"`
+	Numeroloja     sql.NullString  `json:"numeroloja"`
+	Data           sql.NullTime    `json:"data"`
+	Datasaida      sql.NullTime    `json:"datasaida"`
+	Dataprevista   sql.NullTime    `json:"dataprevista"`
+	Totalprodutos  sql.NullFloat64 `json:"totalprodutos"`
+	Totaldescontos sql.NullFloat64 `json:"totaldescontos"`
+	SituationID    sql.NullInt64   `json:"situation_id"`
+	StoreID        sql.NullInt64   `json:"store_id"`
+	SupplierID     sql.NullInt64   `json:"supplier_id"`
+	Nome           sql.NullString  `json:"nome"`
+	Codigo         sql.NullString  `json:"codigo"`
+	Preco          sql.NullFloat64 `json:"preco"`
+}
+
+func (q *Queries) GetProductSalesOrders(ctx context.Context) ([]GetProductSalesOrdersRow, error) {
+	rows, err := q.db.QueryContext(ctx, getProductSalesOrders)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetProductSalesOrdersRow
+	for rows.Next() {
+		var i GetProductSalesOrdersRow
 		if err := rows.Scan(
 			&i.SalesOrderID,
 			&i.ProductID,

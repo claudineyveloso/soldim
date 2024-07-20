@@ -2,7 +2,7 @@
 INSERT INTO products_sales_orders (sales_order_id, product_id, quantidade, created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5);
 
--- name: GetProductSalesOrder :many
+-- name: GetProductSalesOrders :many
 SELECT pso.sales_order_id, 
         pso.product_id, 
         pso.quantidade, 
