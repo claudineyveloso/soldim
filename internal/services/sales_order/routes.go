@@ -65,7 +65,7 @@ func (h *Handler) handleGetSalesOrders(w http.ResponseWriter, r *http.Request) {
 	// fmt.Println("Valor de userIDffsadfsda", bucketID)
 	salesOrder, err := h.salesOrderStore.GetSalesOrders()
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Erro ao obter o Bucket: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Erro ao obter o Pedido de vendas: %v", err), http.StatusInternalServerError)
 		return
 	}
 	utils.WriteJSON(w, http.StatusOK, salesOrder)

@@ -142,7 +142,52 @@ LEFT JOIN
     supplier_products sp ON p.id = sp.product_id
 WHERE p.nome = $1;
 
-
+-- name: GetProductEmptyStock :many
+SELECT p.ID,
+       p.idProdutoPai,
+       p.nome,
+       p.codigo,
+       p.preco,
+       p.tipo,
+       p.situacao,
+       p.formato,
+       p.descricao_curta,
+       p.imagem_url,
+       p.dataValidade,
+       p.unidade,
+       p.pesoLiquido,
+       p.pesoBruto,
+       p.volumes,
+       p.itensPorCaixa,
+       p.gtin,
+       p.gtinEmbalagem,
+       p.tipoProducao,
+       p.condicao,
+       p.freteGratis,
+       p.marca,
+       p.descricaoComplementar,
+       p.linkExterno,
+       p.observacoes,
+       p.descricaoEmbalagemDiscreta,
+       p.created_at,
+       p.updated_at,
+       s.saldo_fisico_total,
+       s.saldo_virtual_total,
+       dp.saldo_fisico,
+       dp.saldo_virtual,
+       sp.preco_custo,
+       sp.preco_compra,
+       sp.supplier_id
+FROM products p
+LEFT JOIN stocks s ON p.id = s.product_id
+LEFT JOIN deposit_products dp ON p.id = dp.product_id
+LEFT JOIN supplier_products sp ON p.id = sp.product_id
+WHERE ('' IS NULL OR '' = '' OR p.nome ILIKE '%' || '' || '%')
+  AND ('' IS NULL OR '' = '' OR p.situacao = '')
+  AND s.saldo_fisico_total = 0
+  AND s.saldo_virtual_total = 0
+  AND dp.saldo_fisico = 0
+  AND dp.saldo_virtual = 0;
 
 -- name: GetProductBySupplierID :one
 SELECT p.ID,

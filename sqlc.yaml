@@ -19,6 +19,7 @@ sql:
       - "internal/scripts/sales_order.sql"
       - "internal/scripts/situation.sql"
       - "internal/scripts/store.sql"
+      - "internal/scripts/products_sales_order.sql"
     gen:
       go:
         package: "db"

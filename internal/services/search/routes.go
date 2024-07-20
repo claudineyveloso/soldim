@@ -119,7 +119,7 @@ func (h *Handler) handleGetSearches(w http.ResponseWriter, r *http.Request) {
 	// fmt.Println("Valor de userIDffsadfsda", bucketID)
 	searches, err := h.searchStore.GetSearches()
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Erro ao obter o Bucket: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Erro ao obter a procura de produto: %v", err), http.StatusInternalServerError)
 		return
 	}
 	utils.WriteJSON(w, http.StatusOK, searches)

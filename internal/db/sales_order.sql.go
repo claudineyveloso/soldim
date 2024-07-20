@@ -173,3 +173,47 @@ func (q *Queries) GetSalesOrders(ctx context.Context) ([]SalesOrder, error) {
 	}
 	return items, nil
 }
+
+const getTotalSalesOrderLastThirtyDays = `-- name: GetTotalSalesOrderLastThirtyDays :many
+SELECT
+    DATE_TRUNC('day', datasaida) AS dia,
+    SUM(totalprodutos) AS total_produtos_soma,
+    COUNT(*) AS total_vendas
+FROM 
+    sales_orders
+WHERE 
+    datasaida >= NOW() - INTERVAL '30 days' AND datasaida < NOW() 
+GROUP BY 
+    DATE_TRUNC('day', datasaida)
+ORDER BY 
+    dia
+`
+
+type GetTotalSalesOrderLastThirtyDaysRow struct {
+	Dia               int64 `json:"dia"`
+	TotalProdutosSoma int64 `json:"total_produtos_soma"`
+	TotalVendas       int64 `json:"total_vendas"`
+}
+
+func (q *Queries) GetTotalSalesOrderLastThirtyDays(ctx context.Context) ([]GetTotalSalesOrderLastThirtyDaysRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTotalSalesOrderLastThirtyDays)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTotalSalesOrderLastThirtyDaysRow
+	for rows.Next() {
+		var i GetTotalSalesOrderLastThirtyDaysRow
+		if err := rows.Scan(&i.Dia, &i.TotalProdutosSoma, &i.TotalVendas); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

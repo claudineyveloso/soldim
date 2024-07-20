@@ -108,6 +108,14 @@ type Product struct {
 	UpdatedAt                  time.Time `json:"updated_at"`
 }
 
+type ProductsSalesOrder struct {
+	SalesOrderID int64     `json:"sales_order_id"`
+	ProductID    int64     `json:"product_id"`
+	Quantidade   int32     `json:"quantidade"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+}
+
 type SalesChannel struct {
 	ID        int32     `json:"id"`
 	Descricao string    `json:"descricao"`

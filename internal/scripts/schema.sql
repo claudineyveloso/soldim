@@ -275,6 +275,25 @@ ALTER TABLE
 ADD
    FOREIGN KEY ("store_id") REFERENCES "stores" ("id"); 
 
+DROP TABLE IF EXISTS "products_sales_orders";
+CREATE TABLE IF NOT EXISTS products_sales_orders (
+  sales_order_id  BIGINT NOT NULL,
+  product_id      BIGINT NOT NULL,
+  quantidade      INT NOT NULL DEFAULT 0,
+  created_at          TIMESTAMP NOT NULL,
+  updated_at          TIMESTAMP NOT NULL
+);
+
+ALTER TABLE
+  "products_sales_orders"
+ADD
+   FOREIGN KEY ("sales_order_id") REFERENCES "sales_orders" ("id"); 
+
+ALTER TABLE
+  "products_sales_orders"
+ADD
+   FOREIGN KEY ("product_id") REFERENCES "products" ("id"); 
+
 DROP TABLE IF EXISTS "tokens";
 CREATE TABLE IF NOT EXISTS tokens (
   id            UUID PRIMARY KEY,

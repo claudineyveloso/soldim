@@ -50,3 +50,17 @@ FROM sales_orders
 WHERE sales_orders.numero = $1;
 
 
+-- name: GetTotalSalesOrderLastThirtyDays :many
+SELECT
+    DATE_TRUNC('day', datasaida) AS dia,
+    SUM(totalprodutos) AS total_produtos_soma,
+    COUNT(*) AS total_vendas
+FROM 
+    sales_orders
+WHERE 
+    datasaida >= NOW() - INTERVAL '30 days' AND datasaida < NOW() 
+GROUP BY 
+    DATE_TRUNC('day', datasaida)
+ORDER BY 
+    dia;
+

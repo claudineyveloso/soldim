@@ -9,21 +9,18 @@ import (
 
 	"github.com/claudineyveloso/soldim.git/internal/bling"
 	"github.com/claudineyveloso/soldim.git/internal/types"
+	"github.com/claudineyveloso/soldim.git/internal/utils"
 	"github.com/gorilla/mux"
 )
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "21f697adee12b3cdb6e20e978d5d8fdfe0ff8093"
+	bearerToken     = "528469daa40b776a7ce1da75f9bce1a7c8729f0f"
 )
 
 func RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/import_sales_orders", handleImportBlingSalesOrdersToSoldim).Methods(http.MethodGet)
-	// router.HandleFunc("/get_products_bling", handleGetProduct).Methods(http.MethodGet)
-	// router.HandleFunc("/create_product_bling", handleCreateProduct).Methods(http.MethodPost)
-	// router.HandleFunc("/update_product_bling", handleUpdateProduct).Methods(http.MethodPut)
-	// router.HandleFunc("/delete_product_bling", handleDeleteProduct).Methods(http.MethodDelete)
-	// router.HandleFunc("/get_product_id_bling", handleGetProductId).Methods(http.MethodGet)
+	router.HandleFunc("/get_sales_order_bling", handleGetSalesOrder).Methods(http.MethodGet)
 }
 
 func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request) {
@@ -94,4 +91,24 @@ func processSales(sales []types.SalesOrder) {
 
 		fmt.Printf("Sales Orders created successfully: %v\n", sale)
 	}
+}
+
+func handleGetSalesOrder(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	salesOrderIDStr, ok := vars["salesOrderID"]
+	if !ok {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Produto ausente!"))
+		return
+	}
+	salesOrderID, err := strconv.Atoi(salesOrderIDStr)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Pedido de Vendas inválido: %v", err))
+		return
+	}
+	salesOrder, err := bling.GetSalesOrdersIDInBling(bearerToken, int64(salesOrderID))
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, salesOrder)
 }

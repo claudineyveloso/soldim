@@ -475,6 +475,151 @@ func (q *Queries) GetProductBySupplierID(ctx context.Context, supplierID int64) 
 	return i, err
 }
 
+const getProductEmptyStock = `-- name: GetProductEmptyStock :many
+SELECT p.ID,
+       p.idProdutoPai,
+       p.nome,
+       p.codigo,
+       p.preco,
+       p.tipo,
+       p.situacao,
+       p.formato,
+       p.descricao_curta,
+       p.imagem_url,
+       p.dataValidade,
+       p.unidade,
+       p.pesoLiquido,
+       p.pesoBruto,
+       p.volumes,
+       p.itensPorCaixa,
+       p.gtin,
+       p.gtinEmbalagem,
+       p.tipoProducao,
+       p.condicao,
+       p.freteGratis,
+       p.marca,
+       p.descricaoComplementar,
+       p.linkExterno,
+       p.observacoes,
+       p.descricaoEmbalagemDiscreta,
+       p.created_at,
+       p.updated_at,
+       s.saldo_fisico_total,
+       s.saldo_virtual_total,
+       dp.saldo_fisico,
+       dp.saldo_virtual,
+       sp.preco_custo,
+       sp.preco_compra,
+       sp.supplier_id
+FROM products p
+LEFT JOIN stocks s ON p.id = s.product_id
+LEFT JOIN deposit_products dp ON p.id = dp.product_id
+LEFT JOIN supplier_products sp ON p.id = sp.product_id
+WHERE ('' IS NULL OR '' = '' OR p.nome ILIKE '%' || '' || '%')
+  AND ('' IS NULL OR '' = '' OR p.situacao = '')
+  AND s.saldo_fisico_total = 0
+  AND s.saldo_virtual_total = 0
+  AND dp.saldo_fisico = 0
+  AND dp.saldo_virtual = 0
+`
+
+type GetProductEmptyStockRow struct {
+	ID                         int64           `json:"id"`
+	Idprodutopai               int64           `json:"idprodutopai"`
+	Nome                       string          `json:"nome"`
+	Codigo                     string          `json:"codigo"`
+	Preco                      float64         `json:"preco"`
+	Tipo                       string          `json:"tipo"`
+	Situacao                   string          `json:"situacao"`
+	Formato                    string          `json:"formato"`
+	DescricaoCurta             string          `json:"descricao_curta"`
+	ImagemUrl                  string          `json:"imagem_url"`
+	Datavalidade               time.Time       `json:"datavalidade"`
+	Unidade                    string          `json:"unidade"`
+	Pesoliquido                float64         `json:"pesoliquido"`
+	Pesobruto                  float64         `json:"pesobruto"`
+	Volumes                    int32           `json:"volumes"`
+	Itensporcaixa              int32           `json:"itensporcaixa"`
+	Gtin                       string          `json:"gtin"`
+	Gtinembalagem              string          `json:"gtinembalagem"`
+	Tipoproducao               string          `json:"tipoproducao"`
+	Condicao                   int32           `json:"condicao"`
+	Fretegratis                bool            `json:"fretegratis"`
+	Marca                      string          `json:"marca"`
+	Descricaocomplementar      string          `json:"descricaocomplementar"`
+	Linkexterno                string          `json:"linkexterno"`
+	Observacoes                string          `json:"observacoes"`
+	Descricaoembalagemdiscreta string          `json:"descricaoembalagemdiscreta"`
+	CreatedAt                  time.Time       `json:"created_at"`
+	UpdatedAt                  time.Time       `json:"updated_at"`
+	SaldoFisicoTotal           sql.NullInt32   `json:"saldo_fisico_total"`
+	SaldoVirtualTotal          sql.NullInt32   `json:"saldo_virtual_total"`
+	SaldoFisico                sql.NullInt32   `json:"saldo_fisico"`
+	SaldoVirtual               sql.NullInt32   `json:"saldo_virtual"`
+	PrecoCusto                 sql.NullFloat64 `json:"preco_custo"`
+	PrecoCompra                sql.NullFloat64 `json:"preco_compra"`
+	SupplierID                 sql.NullInt64   `json:"supplier_id"`
+}
+
+func (q *Queries) GetProductEmptyStock(ctx context.Context) ([]GetProductEmptyStockRow, error) {
+	rows, err := q.db.QueryContext(ctx, getProductEmptyStock)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetProductEmptyStockRow
+	for rows.Next() {
+		var i GetProductEmptyStockRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Idprodutopai,
+			&i.Nome,
+			&i.Codigo,
+			&i.Preco,
+			&i.Tipo,
+			&i.Situacao,
+			&i.Formato,
+			&i.DescricaoCurta,
+			&i.ImagemUrl,
+			&i.Datavalidade,
+			&i.Unidade,
+			&i.Pesoliquido,
+			&i.Pesobruto,
+			&i.Volumes,
+			&i.Itensporcaixa,
+			&i.Gtin,
+			&i.Gtinembalagem,
+			&i.Tipoproducao,
+			&i.Condicao,
+			&i.Fretegratis,
+			&i.Marca,
+			&i.Descricaocomplementar,
+			&i.Linkexterno,
+			&i.Observacoes,
+			&i.Descricaoembalagemdiscreta,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.SaldoFisicoTotal,
+			&i.SaldoVirtualTotal,
+			&i.SaldoFisico,
+			&i.SaldoVirtual,
+			&i.PrecoCusto,
+			&i.PrecoCompra,
+			&i.SupplierID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getProducts = `-- name: GetProducts :many
 SELECT p.ID,
         p.idProdutoPai,
