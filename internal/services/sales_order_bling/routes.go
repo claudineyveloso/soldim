@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
+	"time"
 
 	"github.com/claudineyveloso/soldim.git/internal/bling"
 	"github.com/claudineyveloso/soldim.git/internal/types"
@@ -15,7 +17,7 @@ import (
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "9886c96e963dac41b5c3b24c12dd03751ce9d9f7"
+	bearerToken     = "b6d394f2f6a284f09a39cd3c2f4b788737d4a3c0"
 )
 
 func RegisterRoutes(router *mux.Router) {
@@ -35,7 +37,7 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 		limit = limitePorPagina
 	}
 
-	fmt.Printf("Requesting page: %d with limit: %d", page, limit)
+	fmt.Printf("Requesting page: %d with limit: %d\n", page, limit)
 
 	for {
 		sales, totalPages, err := bling.GetSalesOrdersFromBling(bearerToken, page, limit)
@@ -52,13 +54,13 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 		}
 
 		page++
-
 	}
-	//err = processProductsSalesOrders()
-	//if err != nil {
-	//	http.Error(w, err.Error(), http.StatusInternalServerError)
-	//	return
-	//}
+
+	err = processProductsSalesOrders()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func processSales(sales []types.SalesOrder) {
@@ -98,45 +100,84 @@ func processSales(sales []types.SalesOrder) {
 	}
 }
 
-// func processProductsSalesOrders() error {
-// 	resp, err := http.Get("http://localhost:8080/get_sales_orders")
-// 	if err != nil {
-// 		return fmt.Errorf("erro ao chamar get_sales_orders: %v", err)
-// 	}
-// 	defer resp.Body.Close()
-//
-// 	if resp.StatusCode != http.StatusOK {
-// 		return fmt.Errorf("falha na requisição para get_sales_orders: %s", resp.Status)
-// 	}
-//
-// 	var salesOrders []types.SalesOrder
-// 	err = json.NewDecoder(resp.Body).Decode(&salesOrders)
-// 	if err != nil {
-// 		return fmt.Errorf("erro ao decodificar resposta: %v", err)
-// 	}
-//
-// 	for _, salesOrder := range salesOrders {
-// 		salesOrderData, err := bling.GetSalesOrdersIDInBling(bearerToken, salesOrder.ID)
-// 		if err != nil {
-// 			return fmt.Errorf("erro ao obter SalesOrdersIDInBling para ID %d: %v", salesOrder.ID, err)
-// 		}
-//
-// 		err = createProductsSalesOrder(salesOrderData)
-// 		if err != nil {
-// 			return fmt.Errorf("erro ao criar ProductSalesOrder para ID %d: %v", salesOrder.ID, err)
-// 		}
-// 	}
-//
-// 	return nil
-// }
+func processProductsSalesOrders() error {
+	logFile, err := os.OpenFile("error_import_sales_orders_log.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("erro ao abrir arquivo de log: %v", err)
+	}
+	defer logFile.Close()
 
-// func createProductsSalesOrder(salesOrderData *types.BlingSalesOrderData) error {
-// 	for _, item := range salesOrderData.Itens {
-// 		// Implemente a lógica de criação de ProductSalesOrder aqui, usando item.ID e item.Quantidade
-// 		fmt.Printf("Criando ProductSalesOrder para Item ID: %d, Quantidade: %d\n", item.ID, item.Quantidade)
-// 	}
-// 	return nil
-// }
+	resp, err := http.Get("http://localhost:8080/get_sales_orders")
+	if err != nil {
+		return fmt.Errorf("erro ao chamar get_sales_orders: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("falha na requisição para get_sales_orders: %s", resp.Status)
+	}
+
+	var salesOrders []types.SalesOrder
+	err = json.NewDecoder(resp.Body).Decode(&salesOrders)
+	if err != nil {
+		return fmt.Errorf("erro ao decodificar resposta: %v", err)
+	}
+
+	for _, salesOrder := range salesOrders {
+		salesOrderData, err := bling.GetSalesOrdersIDInBling(bearerToken, salesOrder.ID)
+		if err != nil {
+			// return fmt.Errorf("erro ao obter SalesOrdersIDInBling para ID %d: %v", salesOrder.ID, err)
+			utils.LogError(logFile, salesOrder.ID, fmt.Errorf("erro ao obter SalesOrdersIDInBling para ID %d: %v", salesOrder.ID, err))
+			continue
+		}
+
+		for _, item := range salesOrderData.Itens {
+			productSalesOrder := types.ProductSalesOrderPayload{
+				SalesOrderID: salesOrderData.ID,
+				ProductID:    item.Produto.ID,
+				Quantidade:   int32(item.Quantidade), // Converte quantidade para int32
+				CreatedAt:    time.Now(),
+				UpdatedAt:    time.Now(),
+			}
+
+			err = createProductsSalesOrder(productSalesOrder)
+			if err != nil {
+				utils.LogError(logFile, salesOrder.ID, fmt.Errorf("erro ao criar ProductSalesOrder para SalesOrder ID %d e Item ID %d: %v", salesOrder.ID, item.ID, err))
+				continue
+				// return fmt.Errorf("erro ao criar ProductSalesOrder para SalesOrder ID %d e Item ID %d: %v", salesOrder.ID, item.ID, err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func createProductsSalesOrder(productsalesorder types.ProductSalesOrderPayload) error {
+	productsalesorderJSON, err := json.Marshal(productsalesorder)
+	if err != nil {
+		return fmt.Errorf("error marshalling product sales order: %v", err)
+	}
+
+	req, err := http.NewRequest("POST", "http://localhost:8080/create_products_sales_order", bytes.NewBuffer(productsalesorderJSON))
+	if err != nil {
+		return fmt.Errorf("error creating request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("error sending request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to create product sales orders. Status: %v", resp.Status)
+	}
+
+	fmt.Printf("Product Sales Orders created successfully: %v\n", productsalesorder)
+	return nil
+}
 
 func handleGetSalesOrder(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)

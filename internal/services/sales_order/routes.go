@@ -13,7 +13,8 @@ import (
 )
 
 type Handler struct {
-	salesOrderStore types.SalesOrderStore
+	salesOrderStore        types.SalesOrderStore
+	productSalesOrderStore types.ProductSalesOrderStore
 }
 
 func NewHandler(salesOrderStore types.SalesOrderStore) *Handler {

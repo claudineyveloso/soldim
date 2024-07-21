@@ -40,7 +40,7 @@ func (h *Handler) handleCreateSearch(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := utils.Validate.Struct(search); err != nil {
 		errors := err.(validator.ValidationErrors)
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("Payload inválido: %v", errors))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("payload inválido: %v", errors))
 		return
 	}
 
@@ -129,12 +129,12 @@ func (h *Handler) handleGetSearch(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	str, ok := vars["searchID"]
 	if !ok {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID da Busca ausente!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("id da Busca ausente"))
 		return
 	}
 	parsedSearchesID, err := uuid.Parse(str)
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Busca inválido!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("id do Busca inválido"))
 		return
 	}
 
@@ -150,12 +150,12 @@ func (h *Handler) handleDeleteSearch(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	str, ok := vars["searchID"]
 	if !ok {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Busca ausente!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("id do Busca ausente"))
 		return
 	}
 	parsedSearchesID, err := uuid.Parse(str)
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Busca inválido!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("id do Busca inválido"))
 		return
 	}
 

@@ -118,12 +118,19 @@ func CalculateRelevanceScore(query, description string) int {
 	return score
 }
 
+func LogError(logFile *os.File, ID int64, err error) {
+	logEntry := fmt.Sprintf("ID: %d, Error: %v\n", ID, err)
+	if _, writeErr := logFile.WriteString(logEntry); writeErr != nil {
+		fmt.Printf("Erro ao escrever no arquivo de log: %v\n", writeErr)
+	}
+}
+
 func LogErrorToFile(logMessage string) {
 	// Define the log file path
 	logFilePath := "errors.log"
 
 	// Open the log file in append mode, create it if it doesn't exist
-	logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	logFile, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		fmt.Printf("Error opening log file: %v\n", err)
 		return

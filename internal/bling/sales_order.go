@@ -71,7 +71,42 @@ func GetSalesOrdersFromBling(bearerToken string, page int, limit int) ([]types.S
 	return responseData.Data, totalPages, nil
 }
 
-func GetSalesOrdersIDInBling(bearerToken string, SalesOrderID int64) (types.SalesOrder, error) {
+func GetSalesOrdersIDInBling(bearerToken string, salesOrderID int64) (types.SalesOrder, error) {
+	var salesOrder types.SalesOrder
+
+	url := fmt.Sprintf("https://bling.com.br/Api/v3/pedidos/vendas/%d", salesOrderID)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return salesOrder, fmt.Errorf("error creating request: %v", err)
+	}
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", bearerToken))
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return salesOrder, fmt.Errorf("error sending request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return salesOrder, fmt.Errorf("failed to get salesOrder from Bling. Status: %v", resp.Status)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return salesOrder, fmt.Errorf("error reading response body: %v", err)
+	}
+
+	var blingResponse types.SalesOrderResponse
+	err = json.Unmarshal(body, &blingResponse)
+	if err != nil {
+		return salesOrder, fmt.Errorf("error unmarshalling Bling salesOrder: %v", err)
+	}
+
+	return blingResponse.Data, nil
+}
+
+func GetSalesOrdersIDInBlingaa(bearerToken string, SalesOrderID int64) (types.SalesOrder, error) {
 	var salesOrder types.SalesOrder
 
 	url := fmt.Sprintf("https://bling.com.br/Api/v3/pedidos/vendas/%d", SalesOrderID)

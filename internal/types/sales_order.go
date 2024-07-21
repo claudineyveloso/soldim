@@ -6,21 +6,43 @@ import (
 )
 
 type SalesOrder struct {
-	ID             int64      `json:"id"`
-	Numero         int32      `json:"numero"`
-	Numeroloja     string     `json:"numeroloja"`
-	Data           CustomDate `json:"data"`
-	Datasaida      CustomDate `json:"datasaida"`
-	Dataprevista   CustomDate `json:"dataprevista"`
-	Totalprodutos  float64    `json:"totalprodutos"`
-	Totaldescontos float64    `json:"totaldescontos"`
-	SituationID    int64      `json:"situation_id"`
-	StoreID        int64      `json:"store_id"`
-	Contato        Contato    `json:"contato"`
-	Situacao       Situacao   `json:"situacao"`
-	Loja           Loja       `json:"loja"`
-	CreatedAt      time.Time  `json:"created_at"`
-	UpdatedAt      time.Time  `json:"updated_at"`
+	ID             int64            `json:"id"`
+	Numero         int32            `json:"numero"`
+	Numeroloja     string           `json:"numeroloja"`
+	Data           CustomDate       `json:"data"`
+	Datasaida      CustomDate       `json:"datasaida"`
+	Dataprevista   CustomDate       `json:"dataprevista"`
+	Totalprodutos  float64          `json:"totalprodutos"`
+	Totaldescontos float64          `json:"totaldescontos"`
+	SituationID    int64            `json:"situation_id"`
+	StoreID        int64            `json:"store_id"`
+	Contato        Contato          `json:"contato"`
+	Situacao       Situacao         `json:"situacao"`
+	Loja           Loja             `json:"loja"`
+	CreatedAt      time.Time        `json:"created_at"`
+	UpdatedAt      time.Time        `json:"updated_at"`
+	Itens          []SalesOrderItem `json:"itens"`
+}
+
+type SalesOrderItem struct {
+	ID                 int64        `json:"id"`
+	Codigo             string       `json:"codigo"`
+	Unidade            string       `json:"unidade"`
+	Quantidade         int32        `json:"quantidade"`
+	Desconto           float64      `json:"desconto"`
+	Valor              float64      `json:"valor"`
+	AliquotaIPI        float64      `json:"aliquotaIPI"`
+	Descricao          string       `json:"descricao"`
+	DescricaoDetalhada string       `json:"descricaoDetalhada"`
+	Produto            SalesProduct `json:"produto"`
+}
+
+type SalesOrderResponse struct {
+	Data SalesOrder `json:"data"`
+}
+
+type SalesProduct struct {
+	ID int64 `json:"id"`
 }
 
 type Contato struct {
