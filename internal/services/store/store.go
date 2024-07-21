@@ -34,7 +34,7 @@ func (s *Store) CreateStore(store types.Store) error {
 	}
 
 	if err := queries.CreateStore(ctx, createStoreParams); err != nil {
-		fmt.Println("Erro ao criar um Pedido de Vendas:", err)
+		fmt.Println("Erro ao criar uma loja:", err)
 		return err
 	}
 	return nil

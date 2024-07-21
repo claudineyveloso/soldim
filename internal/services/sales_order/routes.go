@@ -35,7 +35,7 @@ func (h *Handler) handleCreateSalesOrder(w http.ResponseWriter, r *http.Request)
 	}
 	if err := utils.Validate.Struct(salesOrder); err != nil {
 		errors := err.(validator.ValidationErrors)
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("Payload inválido: %v", errors))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("payload inválido: %v", errors))
 		return
 	}
 	err := h.salesOrderStore.CreateSalesOrder(salesOrder)
@@ -76,12 +76,12 @@ func (h *Handler) handleGetSalesOrder(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	salesOrderIDStr, ok := vars["salesOrderID"]
 	if !ok {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Produto ausente!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("id do produto ausente"))
 		return
 	}
 	parsedSalesOrderID, err := strconv.ParseInt(salesOrderIDStr, 10, 64)
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Rascunho inválido!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("id do rascunho inválido"))
 		return
 	}
 
@@ -97,7 +97,7 @@ func (h *Handler) handleGetSalesOrderNumber(w http.ResponseWriter, r *http.Reque
 	vars := mux.Vars(r)
 	salesOrderNumberStr, ok := vars["salesOrderNumber"]
 	if !ok {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("Número do Produto ausente!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("número do produto ausente"))
 		return
 	}
 	parsedSalesOrderNumber, err := strconv.ParseInt(salesOrderNumberStr, 10, 64)

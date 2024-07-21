@@ -36,7 +36,7 @@ func (s *Store) CreateProductSalesOrder(productsalesorder types.ProductSalesOrde
 	fmt.Println("Criando um Pedido de Vendas...", createProductSalesOrderParams)
 
 	if err := queries.CreateProductSalesOrder(ctx, createProductSalesOrderParams); err != nil {
-		fmt.Println("Erro ao criar um Pedido de Vendas:", err)
+		fmt.Println("Erro ao criar um produto no pedido de vendas:", err)
 		return err
 	}
 	return nil
