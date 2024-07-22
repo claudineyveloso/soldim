@@ -84,6 +84,38 @@ func (s *Store) GetProducts(nome, situacao string) ([]*types.Product, error) {
 	return products, nil
 }
 
+func (s *Store) GetProductNoMovements() ([]*types.ProductNoMovements, error) {
+	queries := db.New(s.db)
+	ctx := context.Background()
+
+	dbProducts, err := queries.GetProductNoMovements(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var products []*types.ProductNoMovements
+	for _, dbProduct := range dbProducts {
+		search := convertGetProductNoMovementRowToProductNoMovementRow(dbProduct)
+		products = append(products, search)
+	}
+	return products, nil
+}
+
+func (s *Store) GetProductEmptyStock() ([]*types.ProductEmptyStock, error) {
+	queries := db.New(s.db)
+	ctx := context.Background()
+	dbProducts, err := queries.GetProductEmptyStock(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var products []*types.ProductEmptyStock
+	for _, dbProduct := range dbProducts {
+		product := convertGetProductEmptyStockRowToProductEmptyStockRow(dbProduct)
+		products = append(products, product)
+	}
+	return products, nil
+}
+
 func (s *Store) UpdateProduct(product types.ProductPayload) error {
 	queries := db.New(s.db)
 	ctx := context.Background()
@@ -228,4 +260,90 @@ func convertGetProductRowToProduct(dbProduct db.GetProductRow) *types.Product {
 		SupplierID:                 types.NullableInt64{NullInt64: dbProduct.SupplierID},
 	}
 	return product
+}
+
+func convertGetProductNoMovementRowToProductNoMovementRow(dbProductNoMovement db.GetProductNoMovementsRow) *types.ProductNoMovements {
+	ProductNoMovements := &types.ProductNoMovements{
+		SalesOrderID:               dbProductNoMovement.SalesOrderID,
+		ProductID:                  dbProductNoMovement.ProductID,
+		Quantidade:                 dbProductNoMovement.Quantidade,
+		ID:                         types.NullableInt64{NullInt64: dbProductNoMovement.ID},
+		Nome:                       dbProductNoMovement.Nome,
+		Codigo:                     dbProductNoMovement.Codigo,
+		Preco:                      types.NullableFloat{NullFloat64: dbProductNoMovement.Preco},
+		Tipo:                       dbProductNoMovement.Tipo,
+		Situacao:                   dbProductNoMovement.Situacao,
+		Formato:                    dbProductNoMovement.Formato,
+		DescricaoCurta:             dbProductNoMovement.DescricaoCurta,
+		ImagemUrl:                  dbProductNoMovement.ImagemUrl,
+		Datavalidade:               dbProductNoMovement.Datavalidade,
+		Unidade:                    dbProductNoMovement.Unidade,
+		Pesoliquido:                types.NullableFloat{NullFloat64: dbProductNoMovement.Pesoliquido},
+		Pesobruto:                  types.NullableFloat{NullFloat64: dbProductNoMovement.Pesobruto},
+		Volumes:                    types.NullableInt{NullInt32: dbProductNoMovement.Volumes},
+		Itensporcaixa:              types.NullableInt{NullInt32: dbProductNoMovement.Itensporcaixa},
+		Gtin:                       dbProductNoMovement.Gtin,
+		Gtinembalagem:              dbProductNoMovement.Gtinembalagem,
+		Tipoproducao:               dbProductNoMovement.Tipoproducao,
+		Condicao:                   types.NullableInt{NullInt32: dbProductNoMovement.Condicao},
+		Fretegratis:                dbProductNoMovement.Fretegratis,
+		Marca:                      dbProductNoMovement.Marca,
+		Descricaocomplementar:      dbProductNoMovement.Descricaocomplementar,
+		Linkexterno:                dbProductNoMovement.Linkexterno,
+		Observacoes:                dbProductNoMovement.Observacoes,
+		Descricaoembalagemdiscreta: dbProductNoMovement.Descricaoembalagemdiscreta,
+		Numero:                     types.NullableInt{NullInt32: dbProductNoMovement.Numero},
+		Numeroloja:                 dbProductNoMovement.Numeroloja,
+		Data:                       dbProductNoMovement.Data,
+		Datasaida:                  dbProductNoMovement.Datasaida,
+		Dataprevista:               dbProductNoMovement.Dataprevista,
+		Totalprodutos:              types.NullableFloat{NullFloat64: dbProductNoMovement.Totalprodutos},
+		Totaldescontos:             types.NullableFloat{NullFloat64: dbProductNoMovement.Totaldescontos},
+		Descricao:                  dbProductNoMovement.Descricao,
+		Codigo_2:                   types.NullableInt64{NullInt64: dbProductNoMovement.Codigo_2},
+		PrecoCusto:                 types.NullableFloat{NullFloat64: dbProductNoMovement.PrecoCusto},
+		PrecoCompra:                types.NullableFloat{NullFloat64: dbProductNoMovement.PrecoCompra},
+	}
+	return ProductNoMovements
+}
+
+func convertGetProductEmptyStockRowToProductEmptyStockRow(dbProductEmptyStock db.GetProductEmptyStockRow) *types.ProductEmptyStock {
+	ProductEmptyStock := &types.ProductEmptyStock{
+		ID:                         dbProductEmptyStock.ID,
+		Idprodutopai:               dbProductEmptyStock.Idprodutopai,
+		Nome:                       dbProductEmptyStock.Nome,
+		Codigo:                     dbProductEmptyStock.Codigo,
+		Preco:                      dbProductEmptyStock.Preco,
+		Tipo:                       dbProductEmptyStock.Tipo,
+		Situacao:                   dbProductEmptyStock.Situacao,
+		Formato:                    dbProductEmptyStock.Formato,
+		DescricaoCurta:             dbProductEmptyStock.DescricaoCurta,
+		ImagemUrl:                  dbProductEmptyStock.ImagemUrl,
+		Datavalidade:               dbProductEmptyStock.Datavalidade,
+		Unidade:                    dbProductEmptyStock.Unidade,
+		Pesoliquido:                dbProductEmptyStock.Pesoliquido,
+		Pesobruto:                  dbProductEmptyStock.Pesobruto,
+		Volumes:                    dbProductEmptyStock.Volumes,
+		Itensporcaixa:              dbProductEmptyStock.Itensporcaixa,
+		Gtin:                       dbProductEmptyStock.Gtin,
+		Gtinembalagem:              dbProductEmptyStock.Gtinembalagem,
+		Tipoproducao:               dbProductEmptyStock.Tipoproducao,
+		Condicao:                   dbProductEmptyStock.Condicao,
+		Fretegratis:                dbProductEmptyStock.Fretegratis,
+		Marca:                      dbProductEmptyStock.Marca,
+		Descricaocomplementar:      dbProductEmptyStock.Descricaocomplementar,
+		Linkexterno:                dbProductEmptyStock.Linkexterno,
+		Observacoes:                dbProductEmptyStock.Observacoes,
+		Descricaoembalagemdiscreta: dbProductEmptyStock.Descricaoembalagemdiscreta,
+		CreatedAt:                  dbProductEmptyStock.CreatedAt,
+		UpdatedAt:                  dbProductEmptyStock.UpdatedAt,
+		SaldoFisicoTotal:           types.NullableInt{NullInt32: dbProductEmptyStock.SaldoFisicoTotal},
+		SaldoVirtualTotal:          types.NullableInt{NullInt32: dbProductEmptyStock.SaldoVirtualTotal},
+		SaldoFisico:                types.NullableInt{NullInt32: dbProductEmptyStock.SaldoFisico},
+		SaldoVirtual:               types.NullableInt{NullInt32: dbProductEmptyStock.SaldoVirtual},
+		PrecoCusto:                 types.NullableFloat{NullFloat64: dbProductEmptyStock.PrecoCusto},
+		PrecoCompra:                types.NullableFloat{NullFloat64: dbProductEmptyStock.PrecoCompra},
+		SupplierID:                 types.NullableInt64{NullInt64: dbProductEmptyStock.SupplierID},
+	}
+	return ProductEmptyStock
 }

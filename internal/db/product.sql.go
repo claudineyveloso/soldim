@@ -620,6 +620,158 @@ func (q *Queries) GetProductEmptyStock(ctx context.Context) ([]GetProductEmptySt
 	return items, nil
 }
 
+const getProductNoMovements = `-- name: GetProductNoMovements :many
+SELECT pso.sales_order_id, 
+        pso.product_id, 
+        pso.quantidade , 
+        p.id,
+        p.nome,
+        p.codigo,
+        p.preco,
+        p.tipo,
+        p.situacao,
+        p.formato,
+        p.descricao_curta,
+        p.imagem_url,
+        p.dataValidade,
+        p.unidade,
+        p.pesoLiquido,
+        p.pesoBruto,
+        p.volumes,
+        p.itensPorCaixa,
+        p.gtin,
+        p.gtinEmbalagem,
+        p.tipoProducao,
+        p.condicao,
+        p.freteGratis,
+        p.marca,
+        p.descricaoComplementar,
+        p.linkExterno,
+        p.observacoes,
+        p.descricaoEmbalagemDiscreta,
+        so.numero,
+        so.numeroloja,
+        so.data,
+        so.datasaida,
+        so.dataprevista,
+        so.totalprodutos,
+        so.totaldescontos,
+        sp.descricao,
+        sp.codigo,
+        sp.preco_custo,
+        sp.preco_compra
+FROM products_sales_orders pso
+LEFT JOIN products p ON p.id = pso.product_id
+LEFT JOIN sales_orders so ON so.id = pso.sales_order_id
+LEFT JOIN supplier_products sp ON pso.product_id = sp.product_id
+WHERE so.datasaida < NOW() - INTERVAL '1 week'
+`
+
+type GetProductNoMovementsRow struct {
+	SalesOrderID               int64           `json:"sales_order_id"`
+	ProductID                  int64           `json:"product_id"`
+	Quantidade                 int32           `json:"quantidade"`
+	ID                         sql.NullInt64   `json:"id"`
+	Nome                       sql.NullString  `json:"nome"`
+	Codigo                     sql.NullString  `json:"codigo"`
+	Preco                      sql.NullFloat64 `json:"preco"`
+	Tipo                       sql.NullString  `json:"tipo"`
+	Situacao                   sql.NullString  `json:"situacao"`
+	Formato                    sql.NullString  `json:"formato"`
+	DescricaoCurta             sql.NullString  `json:"descricao_curta"`
+	ImagemUrl                  sql.NullString  `json:"imagem_url"`
+	Datavalidade               sql.NullTime    `json:"datavalidade"`
+	Unidade                    sql.NullString  `json:"unidade"`
+	Pesoliquido                sql.NullFloat64 `json:"pesoliquido"`
+	Pesobruto                  sql.NullFloat64 `json:"pesobruto"`
+	Volumes                    sql.NullInt32   `json:"volumes"`
+	Itensporcaixa              sql.NullInt32   `json:"itensporcaixa"`
+	Gtin                       sql.NullString  `json:"gtin"`
+	Gtinembalagem              sql.NullString  `json:"gtinembalagem"`
+	Tipoproducao               sql.NullString  `json:"tipoproducao"`
+	Condicao                   sql.NullInt32   `json:"condicao"`
+	Fretegratis                sql.NullBool    `json:"fretegratis"`
+	Marca                      sql.NullString  `json:"marca"`
+	Descricaocomplementar      sql.NullString  `json:"descricaocomplementar"`
+	Linkexterno                sql.NullString  `json:"linkexterno"`
+	Observacoes                sql.NullString  `json:"observacoes"`
+	Descricaoembalagemdiscreta sql.NullString  `json:"descricaoembalagemdiscreta"`
+	Numero                     sql.NullInt32   `json:"numero"`
+	Numeroloja                 sql.NullString  `json:"numeroloja"`
+	Data                       sql.NullTime    `json:"data"`
+	Datasaida                  sql.NullTime    `json:"datasaida"`
+	Dataprevista               sql.NullTime    `json:"dataprevista"`
+	Totalprodutos              sql.NullFloat64 `json:"totalprodutos"`
+	Totaldescontos             sql.NullFloat64 `json:"totaldescontos"`
+	Descricao                  sql.NullString  `json:"descricao"`
+	Codigo_2                   sql.NullInt64   `json:"codigo_2"`
+	PrecoCusto                 sql.NullFloat64 `json:"preco_custo"`
+	PrecoCompra                sql.NullFloat64 `json:"preco_compra"`
+}
+
+func (q *Queries) GetProductNoMovements(ctx context.Context) ([]GetProductNoMovementsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getProductNoMovements)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetProductNoMovementsRow
+	for rows.Next() {
+		var i GetProductNoMovementsRow
+		if err := rows.Scan(
+			&i.SalesOrderID,
+			&i.ProductID,
+			&i.Quantidade,
+			&i.ID,
+			&i.Nome,
+			&i.Codigo,
+			&i.Preco,
+			&i.Tipo,
+			&i.Situacao,
+			&i.Formato,
+			&i.DescricaoCurta,
+			&i.ImagemUrl,
+			&i.Datavalidade,
+			&i.Unidade,
+			&i.Pesoliquido,
+			&i.Pesobruto,
+			&i.Volumes,
+			&i.Itensporcaixa,
+			&i.Gtin,
+			&i.Gtinembalagem,
+			&i.Tipoproducao,
+			&i.Condicao,
+			&i.Fretegratis,
+			&i.Marca,
+			&i.Descricaocomplementar,
+			&i.Linkexterno,
+			&i.Observacoes,
+			&i.Descricaoembalagemdiscreta,
+			&i.Numero,
+			&i.Numeroloja,
+			&i.Data,
+			&i.Datasaida,
+			&i.Dataprevista,
+			&i.Totalprodutos,
+			&i.Totaldescontos,
+			&i.Descricao,
+			&i.Codigo_2,
+			&i.PrecoCusto,
+			&i.PrecoCompra,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getProducts = `-- name: GetProducts :many
 SELECT p.ID,
         p.idProdutoPai,

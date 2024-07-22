@@ -122,6 +122,74 @@ func (q *Queries) GetSalesOrderByNumber(ctx context.Context, numero int32) (Sale
 	return i, err
 }
 
+const getSalesOrderTotalByDay = `-- name: GetSalesOrderTotalByDay :many
+
+SELECT so.id, 
+       so.numero, 
+       so.numeroloja, 
+       so.data, 
+       so.datasaida, 
+       so.dataprevista,
+       so.totalprodutos,
+       so.totaldescontos,
+       so.situation_id,
+       so.store_id,
+       (SELECT SUM(totalprodutos) 
+        FROM sales_orders 
+        WHERE sales_orders.datasaida >= $1) AS total_produtos_soma
+FROM sales_orders so
+WHERE so.datasaida = $1
+`
+
+type GetSalesOrderTotalByDayRow struct {
+	ID                int64     `json:"id"`
+	Numero            int32     `json:"numero"`
+	Numeroloja        string    `json:"numeroloja"`
+	Data              time.Time `json:"data"`
+	Datasaida         time.Time `json:"datasaida"`
+	Dataprevista      time.Time `json:"dataprevista"`
+	Totalprodutos     float64   `json:"totalprodutos"`
+	Totaldescontos    float64   `json:"totaldescontos"`
+	SituationID       int64     `json:"situation_id"`
+	StoreID           int64     `json:"store_id"`
+	TotalProdutosSoma int64     `json:"total_produtos_soma"`
+}
+
+func (q *Queries) GetSalesOrderTotalByDay(ctx context.Context, datasaida time.Time) ([]GetSalesOrderTotalByDayRow, error) {
+	rows, err := q.db.QueryContext(ctx, getSalesOrderTotalByDay, datasaida)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetSalesOrderTotalByDayRow
+	for rows.Next() {
+		var i GetSalesOrderTotalByDayRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Numero,
+			&i.Numeroloja,
+			&i.Data,
+			&i.Datasaida,
+			&i.Dataprevista,
+			&i.Totalprodutos,
+			&i.Totaldescontos,
+			&i.SituationID,
+			&i.StoreID,
+			&i.TotalProdutosSoma,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSalesOrders = `-- name: GetSalesOrders :many
 SELECT id,
         numero,
@@ -205,6 +273,74 @@ func (q *Queries) GetTotalSalesOrderLastThirtyDays(ctx context.Context) ([]GetTo
 	for rows.Next() {
 		var i GetTotalSalesOrderLastThirtyDaysRow
 		if err := rows.Scan(&i.Dia, &i.TotalProdutosSoma, &i.TotalVendas); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTotalSalesOrderTotalByWeek = `-- name: GetTotalSalesOrderTotalByWeek :many
+SELECT so.id, 
+        so.numero, 
+        so.numeroloja, 
+        so.data, 
+        so.datasaida, 
+        so.dataprevista,
+        so.totalprodutos,
+        so.totaldescontos,
+        so.situation_id,
+        so.store_id,
+       (SELECT SUM(totalprodutos) 
+        FROM sales_orders 
+        WHERE DATE_TRUNC('week', datasaida) = DATE_TRUNC('week', $1::date)) AS total_produtos_soma
+FROM sales_orders so
+WHERE DATE_TRUNC('week', so.datasaida) = DATE_TRUNC('week', $1::date)
+ORDER BY so.datasaida
+`
+
+type GetTotalSalesOrderTotalByWeekRow struct {
+	ID                int64     `json:"id"`
+	Numero            int32     `json:"numero"`
+	Numeroloja        string    `json:"numeroloja"`
+	Data              time.Time `json:"data"`
+	Datasaida         time.Time `json:"datasaida"`
+	Dataprevista      time.Time `json:"dataprevista"`
+	Totalprodutos     float64   `json:"totalprodutos"`
+	Totaldescontos    float64   `json:"totaldescontos"`
+	SituationID       int64     `json:"situation_id"`
+	StoreID           int64     `json:"store_id"`
+	TotalProdutosSoma int64     `json:"total_produtos_soma"`
+}
+
+func (q *Queries) GetTotalSalesOrderTotalByWeek(ctx context.Context, dollar_1 time.Time) ([]GetTotalSalesOrderTotalByWeekRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTotalSalesOrderTotalByWeek, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTotalSalesOrderTotalByWeekRow
+	for rows.Next() {
+		var i GetTotalSalesOrderTotalByWeekRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Numero,
+			&i.Numeroloja,
+			&i.Data,
+			&i.Datasaida,
+			&i.Dataprevista,
+			&i.Totalprodutos,
+			&i.Totaldescontos,
+			&i.SituationID,
+			&i.StoreID,
+			&i.TotalProdutosSoma,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

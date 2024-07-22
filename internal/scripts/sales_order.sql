@@ -49,6 +49,42 @@ SELECT id,
 FROM sales_orders
 WHERE sales_orders.numero = $1;
 
+-- name: GetSalesOrderTotalByDay :many
+
+SELECT so.id, 
+       so.numero, 
+       so.numeroloja, 
+       so.data, 
+       so.datasaida, 
+       so.dataprevista,
+       so.totalprodutos,
+       so.totaldescontos,
+       so.situation_id,
+       so.store_id,
+       (SELECT SUM(totalprodutos) 
+        FROM sales_orders 
+        WHERE sales_orders.datasaida >= $1) AS total_produtos_soma
+FROM sales_orders so
+WHERE so.datasaida = $1;
+
+
+-- name: GetTotalSalesOrderTotalByWeek :many
+SELECT so.id, 
+        so.numero, 
+        so.numeroloja, 
+        so.data, 
+        so.datasaida, 
+        so.dataprevista,
+        so.totalprodutos,
+        so.totaldescontos,
+        so.situation_id,
+        so.store_id,
+       (SELECT SUM(totalprodutos) 
+        FROM sales_orders 
+        WHERE DATE_TRUNC('week', datasaida) = DATE_TRUNC('week', $1::date)) AS total_produtos_soma
+FROM sales_orders so
+WHERE DATE_TRUNC('week', so.datasaida) = DATE_TRUNC('week', $1::date)
+ORDER BY so.datasaida;
 
 -- name: GetTotalSalesOrderLastThirtyDays :many
 SELECT

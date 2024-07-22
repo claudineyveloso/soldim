@@ -189,6 +189,52 @@ WHERE ('' IS NULL OR '' = '' OR p.nome ILIKE '%' || '' || '%')
   AND dp.saldo_fisico = 0
   AND dp.saldo_virtual = 0;
 
+-- name: GetProductNoMovements :many
+SELECT pso.sales_order_id, 
+        pso.product_id, 
+        pso.quantidade , 
+        p.id,
+        p.nome,
+        p.codigo,
+        p.preco,
+        p.tipo,
+        p.situacao,
+        p.formato,
+        p.descricao_curta,
+        p.imagem_url,
+        p.dataValidade,
+        p.unidade,
+        p.pesoLiquido,
+        p.pesoBruto,
+        p.volumes,
+        p.itensPorCaixa,
+        p.gtin,
+        p.gtinEmbalagem,
+        p.tipoProducao,
+        p.condicao,
+        p.freteGratis,
+        p.marca,
+        p.descricaoComplementar,
+        p.linkExterno,
+        p.observacoes,
+        p.descricaoEmbalagemDiscreta,
+        so.numero,
+        so.numeroloja,
+        so.data,
+        so.datasaida,
+        so.dataprevista,
+        so.totalprodutos,
+        so.totaldescontos,
+        sp.descricao,
+        sp.codigo,
+        sp.preco_custo,
+        sp.preco_compra
+FROM products_sales_orders pso
+LEFT JOIN products p ON p.id = pso.product_id
+LEFT JOIN sales_orders so ON so.id = pso.sales_order_id
+LEFT JOIN supplier_products sp ON pso.product_id = sp.product_id
+WHERE so.datasaida < NOW() - INTERVAL '1 week';
+
 -- name: GetProductBySupplierID :one
 SELECT p.ID,
         p.idProdutoPai,

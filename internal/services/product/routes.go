@@ -23,6 +23,8 @@ func NewHandler(productStore types.ProductStore) *Handler {
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/create_product", h.handleCreateProduct).Methods(http.MethodPost)
 	router.HandleFunc("/get_products", h.handleGetProducts).Methods(http.MethodGet)
+	router.HandleFunc("/get_products_empty_stock", h.handleGetProductsEmptyStock).Methods(http.MethodGet)
+	router.HandleFunc("/get_products_no_movements", h.handleGetProductsNoMovements).Methods(http.MethodGet)
 	router.HandleFunc("/get_product/{productID}", h.handleGetProduct).Methods(http.MethodGet)
 	router.HandleFunc("/update_product", h.handleUpdateProduct).Methods(http.MethodPut)
 	router.HandleFunc("/delete_product/{productID}", h.handleDeleteProduct).Methods(http.MethodDelete)
@@ -73,6 +75,26 @@ func (h *Handler) handleCreateProduct(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(jsonResponse)
+}
+
+func (h *Handler) handleGetProductsNoMovements(w http.ResponseWriter, r *http.Request) {
+	// nome := r.URL.Query().Get("nome")
+	// situacao := r.URL.Query().Get("situacao")
+	product, err := h.productStore.GetProductNoMovements()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erro ao obter os produtos sem movimentação : %v", err), http.StatusInternalServerError)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, product)
+}
+
+func (h *Handler) handleGetProductsEmptyStock(w http.ResponseWriter, r *http.Request) {
+	product, err := h.productStore.GetProductEmptyStock()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erro ao obter os produtos com estoque vazio : %v", err), http.StatusInternalServerError)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, product)
 }
 
 func (h *Handler) handleDeleteProduct(w http.ResponseWriter, r *http.Request) {

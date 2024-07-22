@@ -57,6 +57,86 @@ type Product struct {
 	SupplierID                 NullableInt64 `json:"supplier_id"`
 }
 
+type ProductEmptyStock struct {
+	ID                         int64         `json:"id"`
+	Idprodutopai               int64         `json:"idprodutopai"`
+	Nome                       string        `json:"nome"`
+	Codigo                     string        `json:"codigo"`
+	Preco                      float64       `json:"preco"`
+	Tipo                       string        `json:"tipo"`
+	Situacao                   string        `json:"situacao"`
+	Formato                    string        `json:"formato"`
+	DescricaoCurta             string        `json:"descricao_curta"`
+	ImagemUrl                  string        `json:"imagem_url"`
+	Datavalidade               time.Time     `json:"datavalidade"`
+	Unidade                    string        `json:"unidade"`
+	Pesoliquido                float64       `json:"pesoliquido"`
+	Pesobruto                  float64       `json:"pesobruto"`
+	Volumes                    int32         `json:"volumes"`
+	Itensporcaixa              int32         `json:"itensporcaixa"`
+	Gtin                       string        `json:"gtin"`
+	Gtinembalagem              string        `json:"gtinembalagem"`
+	Tipoproducao               string        `json:"tipoproducao"`
+	Condicao                   int32         `json:"condicao"`
+	Fretegratis                bool          `json:"fretegratis"`
+	Marca                      string        `json:"marca"`
+	Descricaocomplementar      string        `json:"descricaocomplementar"`
+	Linkexterno                string        `json:"linkexterno"`
+	Observacoes                string        `json:"observacoes"`
+	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
+	CreatedAt                  time.Time     `json:"created_at"`
+	UpdatedAt                  time.Time     `json:"updated_at"`
+	SaldoFisicoTotal           NullableInt   `json:"saldo_fisico_total"`
+	SaldoVirtualTotal          NullableInt   `json:"saldo_virtual_total"`
+	SaldoFisico                NullableInt   `json:"saldo_fisico"`
+	SaldoVirtual               NullableInt   `json:"saldo_virtual"`
+	PrecoCusto                 NullableFloat `json:"preco_custo"`
+	PrecoCompra                NullableFloat `json:"preco_compra"`
+	SupplierID                 NullableInt64 `json:"supplier_id"`
+}
+
+type ProductNoMovements struct {
+	SalesOrderID               int64          `json:"sales_order_id"`
+	ProductID                  int64          `json:"product_id"`
+	Quantidade                 int32          `json:"quantidade"`
+	ID                         NullableInt64  `json:"id"`
+	Nome                       sql.NullString `json:"nome"`
+	Codigo                     sql.NullString `json:"codigo"`
+	Preco                      NullableFloat  `json:"preco"`
+	Tipo                       sql.NullString `json:"tipo"`
+	Situacao                   sql.NullString `json:"situacao"`
+	Formato                    sql.NullString `json:"formato"`
+	DescricaoCurta             sql.NullString `json:"descricao_curta"`
+	ImagemUrl                  sql.NullString `json:"imagem_url"`
+	Datavalidade               sql.NullTime   `json:"datavalidade"`
+	Unidade                    sql.NullString `json:"unidade"`
+	Pesoliquido                NullableFloat  `json:"pesoliquido"`
+	Pesobruto                  NullableFloat  `json:"pesobruto"`
+	Volumes                    NullableInt    `json:"volumes"`
+	Itensporcaixa              NullableInt    `json:"itensporcaixa"`
+	Gtin                       sql.NullString `json:"gtin"`
+	Gtinembalagem              sql.NullString `json:"gtinembalagem"`
+	Tipoproducao               sql.NullString `json:"tipoproducao"`
+	Condicao                   NullableInt    `json:"condicao"`
+	Fretegratis                sql.NullBool   `json:"fretegratis"`
+	Marca                      sql.NullString `json:"marca"`
+	Descricaocomplementar      sql.NullString `json:"descricaocomplementar"`
+	Linkexterno                sql.NullString `json:"linkexterno"`
+	Observacoes                sql.NullString `json:"observacoes"`
+	Descricaoembalagemdiscreta sql.NullString `json:"descricaoembalagemdiscreta"`
+	Numero                     NullableInt    `json:"numero"`
+	Numeroloja                 sql.NullString `json:"numeroloja"`
+	Data                       sql.NullTime   `json:"data"`
+	Datasaida                  sql.NullTime   `json:"datasaida"`
+	Dataprevista               sql.NullTime   `json:"dataprevista"`
+	Totalprodutos              NullableFloat  `json:"totalprodutos"`
+	Totaldescontos             NullableFloat  `json:"totaldescontos"`
+	Descricao                  sql.NullString `json:"descricao"`
+	Codigo_2                   NullableInt64  `json:"codigo_2"`
+	PrecoCusto                 NullableFloat  `json:"preco_custo"`
+	PrecoCompra                NullableFloat  `json:"preco_compra"`
+}
+
 type ProductWrapper struct {
 	Produto Product `json:"produto"`
 }
@@ -109,6 +189,8 @@ type ProductStore interface {
 	CreateProduct(ProductPayload) error
 	GetProducts(nome, situacao string) ([]*Product, error)
 	GetProductByID(id int64) (*Product, error)
+	GetProductNoMovements() ([]*ProductNoMovements, error)
+	GetProductEmptyStock() ([]*ProductEmptyStock, error)
 	UpdateProduct(ProductPayload) error
 	DeleteProduct(id int64) error
 }
