@@ -26,6 +26,7 @@ import (
 	"github.com/claudineyveloso/soldim.git/internal/services/store"
 	supplierproduct "github.com/claudineyveloso/soldim.git/internal/services/supplier_product"
 	"github.com/claudineyveloso/soldim.git/internal/services/token"
+	"github.com/claudineyveloso/soldim.git/internal/services/triage"
 	"github.com/claudineyveloso/soldim.git/internal/services/user"
 	"github.com/claudineyveloso/soldim.git/internal/services/webhook"
 	"github.com/gorilla/handlers"
@@ -114,6 +115,10 @@ func (s *APIServer) Run() error {
 	productSalesOrderStore := productssalesorder.NewStore(s.db)
 	productSalesOrderHandler := productssalesorder.NewHandler(productSalesOrderStore)
 	productSalesOrderHandler.RegisterRoutes(r)
+
+	triageStore := triage.NewStore(s.db)
+	triateHandler := triage.NewHandler(triageStore)
+	triateHandler.RegisterRoutes(r)
 
 	fmt.Println("Server started on http://localhost:8080")
 	return http.ListenAndServe("localhost:8080",

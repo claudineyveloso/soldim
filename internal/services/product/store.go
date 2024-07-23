@@ -84,11 +84,15 @@ func (s *Store) GetProducts(nome, situacao string) ([]*types.Product, error) {
 	return products, nil
 }
 
-func (s *Store) GetProductNoMovements() ([]*types.ProductNoMovements, error) {
+func (s *Store) GetProductNoMovements(nome, situacao string) ([]*types.ProductNoMovements, error) {
 	queries := db.New(s.db)
 	ctx := context.Background()
+	params := db.GetProductNoMovementsParams{
+		Column1: nome,
+		Column2: situacao,
+	}
 
-	dbProducts, err := queries.GetProductNoMovements(ctx)
+	dbProducts, err := queries.GetProductNoMovements(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +105,7 @@ func (s *Store) GetProductNoMovements() ([]*types.ProductNoMovements, error) {
 	return products, nil
 }
 
-func (s *Store) GetProductEmptyStock() ([]*types.ProductEmptyStock, error) {
+func (s *Store) GetProductEmptyStock(nome, situacao string) ([]*types.ProductEmptyStock, error) {
 	queries := db.New(s.db)
 	ctx := context.Background()
 	dbProducts, err := queries.GetProductEmptyStock(ctx)

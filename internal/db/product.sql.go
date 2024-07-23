@@ -665,7 +665,14 @@ LEFT JOIN products p ON p.id = pso.product_id
 LEFT JOIN sales_orders so ON so.id = pso.sales_order_id
 LEFT JOIN supplier_products sp ON pso.product_id = sp.product_id
 WHERE so.datasaida < NOW() - INTERVAL '1 week'
+  AND ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
+  AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2)
 `
+
+type GetProductNoMovementsParams struct {
+	Column1 string `json:"column_1"`
+	Column2 string `json:"column_2"`
+}
 
 type GetProductNoMovementsRow struct {
 	SalesOrderID               int64           `json:"sales_order_id"`
@@ -709,8 +716,8 @@ type GetProductNoMovementsRow struct {
 	PrecoCompra                sql.NullFloat64 `json:"preco_compra"`
 }
 
-func (q *Queries) GetProductNoMovements(ctx context.Context) ([]GetProductNoMovementsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getProductNoMovements)
+func (q *Queries) GetProductNoMovements(ctx context.Context, arg GetProductNoMovementsParams) ([]GetProductNoMovementsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getProductNoMovements, arg.Column1, arg.Column2)
 	if err != nil {
 		return nil, err
 	}

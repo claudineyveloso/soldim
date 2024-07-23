@@ -189,6 +189,7 @@ WHERE ('' IS NULL OR '' = '' OR p.nome ILIKE '%' || '' || '%')
   AND dp.saldo_fisico = 0
   AND dp.saldo_virtual = 0;
 
+
 -- name: GetProductNoMovements :many
 SELECT pso.sales_order_id, 
         pso.product_id, 
@@ -233,7 +234,9 @@ FROM products_sales_orders pso
 LEFT JOIN products p ON p.id = pso.product_id
 LEFT JOIN sales_orders so ON so.id = pso.sales_order_id
 LEFT JOIN supplier_products sp ON pso.product_id = sp.product_id
-WHERE so.datasaida < NOW() - INTERVAL '1 week';
+WHERE so.datasaida < NOW() - INTERVAL '1 week'
+  AND ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
+  AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2);
 
 -- name: GetProductBySupplierID :one
 SELECT p.ID,

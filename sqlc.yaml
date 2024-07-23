@@ -20,6 +20,7 @@ sql:
       - "internal/scripts/situation.sql"
       - "internal/scripts/store.sql"
       - "internal/scripts/products_sales_order.sql"
+      - "internal/scripts/triage.sql"
     gen:
       go:
         package: "db"

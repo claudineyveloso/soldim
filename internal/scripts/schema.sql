@@ -294,6 +294,35 @@ ALTER TABLE
 ADD
    FOREIGN KEY ("product_id") REFERENCES "products" ("id"); 
 
+
+DROP TABLE IF EXISTS "triages";
+CREATE TABLE IF NOT EXISTS triages (
+  id                  UUID PRIMARY KEY,
+  type                VARCHAR(100) NOT NULL,
+  grid                VARCHAR(100) NOT NULL,
+  sku_sap             INTEGER NOT NULL,
+  sku_wms             VARCHAR(100) NOT NULL,
+  description         VARCHAR NOT NULL,
+  cust_id             BIGINT NOT NULL,
+  seller              VARCHAR(255) NOT NULL,
+  quantity_supplied   INTEGER NOT NULL,
+  final_quantity      INTEGER NOT NULL,
+  unitary_value       FLOAT NOT NULL,
+  total_value_offered FLOAT NOT NULL,
+  final_total_value   FLOAT NOT NULL,
+  category            VARCHAR(255) NOT NULL,
+  sub_category        VARCHAR(255) NOT NULL,
+  sent_to_batch       BOOLEAN NOT NULL,
+  sent_to_bling       BOOLEAN NOT NULL,
+  defect              BOOLEAN NOT NULL,
+  created_at          TIMESTAMP NOT NULL,
+  updated_at          TIMESTAMP NOT NULL
+);
+
+create unique index sku_sap_idx on triages (sku_sap);
+create unique index cust_id_idx on triages (cust_id);
+create unique index description_triage_idx on triages (description);
+
 DROP TABLE IF EXISTS "tokens";
 CREATE TABLE IF NOT EXISTS tokens (
   id            UUID PRIMARY KEY,

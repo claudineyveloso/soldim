@@ -189,8 +189,8 @@ type ProductStore interface {
 	CreateProduct(ProductPayload) error
 	GetProducts(nome, situacao string) ([]*Product, error)
 	GetProductByID(id int64) (*Product, error)
-	GetProductNoMovements() ([]*ProductNoMovements, error)
-	GetProductEmptyStock() ([]*ProductEmptyStock, error)
+	GetProductNoMovements(nome, situacao string) ([]*ProductNoMovements, error)
+	GetProductEmptyStock(nome, situacao string) ([]*ProductEmptyStock, error)
 	UpdateProduct(ProductPayload) error
 	DeleteProduct(id int64) error
 }

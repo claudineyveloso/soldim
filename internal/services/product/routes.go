@@ -78,9 +78,9 @@ func (h *Handler) handleCreateProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleGetProductsNoMovements(w http.ResponseWriter, r *http.Request) {
-	// nome := r.URL.Query().Get("nome")
-	// situacao := r.URL.Query().Get("situacao")
-	product, err := h.productStore.GetProductNoMovements()
+	nome := r.URL.Query().Get("nome")
+	situacao := r.URL.Query().Get("situacao")
+	product, err := h.productStore.GetProductNoMovements(nome, situacao)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter os produtos sem movimentação : %v", err), http.StatusInternalServerError)
 		return
@@ -89,7 +89,9 @@ func (h *Handler) handleGetProductsNoMovements(w http.ResponseWriter, r *http.Re
 }
 
 func (h *Handler) handleGetProductsEmptyStock(w http.ResponseWriter, r *http.Request) {
-	product, err := h.productStore.GetProductEmptyStock()
+	nome := r.URL.Query().Get("nome")
+	situacao := r.URL.Query().Get("situacao")
+	product, err := h.productStore.GetProductEmptyStock(nome, situacao)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter os produtos com estoque vazio : %v", err), http.StatusInternalServerError)
 		return
