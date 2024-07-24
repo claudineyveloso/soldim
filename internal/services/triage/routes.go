@@ -48,7 +48,7 @@ func (h *Handler) handleGetTriages(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleImportTriage(w http.ResponseWriter, r *http.Request) {
-	filePath := "internal/files/LOTE 188 (JUN24) - BRMG01 - 1P EXTREMA - FINAL.xlsx"
+	filePath := "internal/files/LOTE_188.xlsx"
 	if err := h.triageStore.ImportTriagesFromFile(filePath); err != nil {
 		http.Error(w, "erro ao importar triagens: "+err.Error(), http.StatusInternalServerError)
 		return

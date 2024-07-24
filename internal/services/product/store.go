@@ -76,6 +76,9 @@ func (s *Store) GetProducts(nome, situacao string) ([]*types.Product, error) {
 		return nil, err
 	}
 
+	//	fmt.Println("Esse é o valor de dbProducts", dbProducts)
+	fmt.Println("Esse é o valor de params", params)
+
 	var products []*types.Product
 	for _, dbProduct := range dbProducts {
 		product := convertDBProductToProduct(dbProduct)

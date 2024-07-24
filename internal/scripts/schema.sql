@@ -312,16 +312,15 @@ CREATE TABLE IF NOT EXISTS triages (
   final_total_value   FLOAT NOT NULL,
   category            VARCHAR(255) NOT NULL,
   sub_category        VARCHAR(255) NOT NULL,
-  sent_to_batch       BOOLEAN NOT NULL,
-  sent_to_bling       BOOLEAN NOT NULL,
-  defect              BOOLEAN NOT NULL,
-  created_at          TIMESTAMP NOT NULL,
-  updated_at          TIMESTAMP NOT NULL
+  sent_to_batch       BOOLEAN NOT NULL DEFAULT FALSE,
+  sent_to_bling       BOOLEAN NOT NULL DEFAULT FALSE,
+  defect              BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 create unique index sku_sap_idx on triages (sku_sap);
-create unique index cust_id_idx on triages (cust_id);
-create unique index description_triage_idx on triages (description);
+create unique index sku_wms_idx on triages (sku_wms);
 
 DROP TABLE IF EXISTS "tokens";
 CREATE TABLE IF NOT EXISTS tokens (

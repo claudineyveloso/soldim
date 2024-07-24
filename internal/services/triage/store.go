@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
+	"os"
 	"strconv"
 	"time"
 
@@ -22,43 +24,58 @@ func NewStore(db *sql.DB) *Store {
 }
 
 func (s *Store) ImportTriagesFromFile(filePath string) error {
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return fmt.Errorf("arquivo não encontrado: %s", filePath)
+	}
 	f, err := excelize.OpenFile(filePath)
 	if err != nil {
 		return fmt.Errorf("erro ao abrir o arquivo: %v", err)
 	}
 	defer f.Close()
 
-	rows, err := f.GetRows("Sheet1")
+	// Listar todas as planilhas
+	sheets := f.GetSheetList()
+	fmt.Printf("Planilhas disponíveis: %v\n", sheets)
+
+	// Verificar se "Sheet1" existe
+	sheetName := "BRMG01"
+	if !contains(sheets, sheetName) {
+		return fmt.Errorf("a planilha %s não existe. Planilhas disponíveis: %v", sheetName, sheets)
+	}
+
+	rows, err := f.GetRows(sheetName)
 	if err != nil {
 		return fmt.Errorf("erro ao obter linhas da planilha: %v", err)
 	}
-
 	var triages []*types.Triage
-	for _, row := range rows[1:] { // Pular o cabeçalho
-		id, err := uuid.Parse(row[0])
-		if err != nil {
-			fmt.Printf("Erro ao parsear UUID: %v\n", err)
+	for i, row := range rows { // Loop through all rows
+		if i < 3 {
+			// Pular a primeira linha (cabeçalho)
 			continue
 		}
+		if len(row) < 14 { // Verificar se a linha tem pelo menos 14 colunas
+			log.Printf("Linha %d com dados insuficientes: %v\n", i+1, row)
+			continue
+		}
+
+		// Adicionar log para verificar o número de colunas
+		log.Printf("Processando linha %d com %d colunas\n", i+1, len(row))
+
 		triage := &types.Triage{
-			ID:                id,
-			Type:              row[1],
-			Grid:              row[2],
-			SkuSap:            parseInt32(row[3]),
-			SkuWms:            row[4],
-			Description:       row[5],
-			CustID:            parseInt64(row[6]),
-			Seller:            row[7],
-			QuantitySupplied:  parseInt32(row[8]),
-			FinalQuantity:     parseInt32(row[9]),
-			UnitaryValue:      parseFloat(row[10]),
-			TotalValueOffered: parseFloat(row[11]),
-			FinalTotalValue:   parseFloat(row[12]),
-			Category:          row[13],
-			SubCategory:       row[14],
-			SentToBatch:       parseBool(row[15]),
-			SentToBling:       parseBool(row[16]),
-			Defect:            parseBool(row[17]),
+			Type:              row[0],
+			Grid:              row[1],
+			SkuSap:            parseInt32(row[2]),
+			SkuWms:            row[3],
+			Description:       row[4],
+			CustID:            parseInt64(row[5]),
+			Seller:            row[6],
+			QuantitySupplied:  parseInt32(row[7]),
+			FinalQuantity:     parseInt32(row[8]),
+			UnitaryValue:      parseFloat(row[9]),
+			TotalValueOffered: parseFloat(row[10]),
+			FinalTotalValue:   parseFloat(row[11]),
+			Category:          row[12],
+			SubCategory:       row[13],
 		}
 		triages = append(triages, triage)
 	}
@@ -66,15 +83,30 @@ func (s *Store) ImportTriagesFromFile(filePath string) error {
 	return s.ImportTriages(triages)
 }
 
+// Função para verificar se uma planilha existe na lista
+func contains(slice []string, item string) bool {
+	for _, a := range slice {
+		if a == item {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *Store) ImportTriages(triages []*types.Triage) error {
 	queries := db.New(s.db)
 	ctx := context.Background()
 	for _, triage := range triages {
+		id := uuid.New()
+
 		now := time.Now()
 		triage.CreatedAt = now
 		triage.UpdatedAt = now
+		triage.SentToBatch = false
+		triage.SentToBling = false
+		triage.Defect = false
 		createTriageParams := db.CreateTriageParams{
-			ID:                triage.ID,
+			ID:                id,
 			Type:              triage.Type,
 			Grid:              triage.Grid,
 			SkuSap:            triage.SkuSap,
