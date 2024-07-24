@@ -50,7 +50,7 @@ func (h *Handler) handleCreateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := utils.Validate.Struct(product); err != nil {
 		errors := err.(validator.ValidationErrors)
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("Payload inválido: %v", errors))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("payload inválido: %v", errors))
 		return
 	}
 	err := h.productStore.CreateProduct(product)
@@ -102,13 +102,13 @@ func (h *Handler) handleDeleteProduct(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	productIDStr, ok := vars["productID"]
 	if !ok {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Product ausente!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("id do product ausente"))
 		return
 	}
 
 	productID, err := strconv.ParseInt(productIDStr, 10, 64)
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Product inválido!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("id do product inválido"))
 		return
 	}
 
@@ -136,12 +136,12 @@ func (h *Handler) handleGetProduct(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	productIDStr, ok := vars["productID"]
 	if !ok {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Produto ausente!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("id do produto ausente"))
 		return
 	}
 	parsedDraftsID, err := strconv.ParseInt(productIDStr, 10, 64)
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Rascunho inválido!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("id do rascunho inválido"))
 		return
 	}
 
@@ -161,7 +161,7 @@ func (h *Handler) handleUpdateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := utils.Validate.Struct(product); err != nil {
 		errors := err.(validator.ValidationErrors)
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("Payload inválido: %v", errors))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("payload inválido: %v", errors))
 		return
 	}
 	err := h.productStore.UpdateProduct(product)
