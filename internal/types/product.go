@@ -6,6 +6,17 @@ import (
 	"time"
 )
 
+type NullableString struct {
+	sql.NullString
+}
+
+func (n NullableString) MarshalJSON() ([]byte, error) {
+	if !n.Valid {
+		return json.Marshal(nil)
+	}
+	return json.Marshal(n.String)
+}
+
 type NullableInt struct {
 	sql.NullInt32
 }
@@ -100,38 +111,38 @@ type ProductNoMovements struct {
 	ProductID                  int64          `json:"product_id"`
 	Quantidade                 int32          `json:"quantidade"`
 	ID                         NullableInt64  `json:"id"`
-	Nome                       sql.NullString `json:"nome"`
-	Codigo                     sql.NullString `json:"codigo"`
+	Nome                       NullableString `json:"nome"`
+	Codigo                     NullableString `json:"codigo"`
 	Preco                      NullableFloat  `json:"preco"`
-	Tipo                       sql.NullString `json:"tipo"`
-	Situacao                   sql.NullString `json:"situacao"`
-	Formato                    sql.NullString `json:"formato"`
-	DescricaoCurta             sql.NullString `json:"descricao_curta"`
-	ImagemUrl                  sql.NullString `json:"imagem_url"`
+	Tipo                       NullableString `json:"tipo"`
+	Situacao                   NullableString `json:"situacao"`
+	Formato                    NullableString `json:"formato"`
+	DescricaoCurta             NullableString `json:"descricao_curta"`
+	ImagemUrl                  NullableString `json:"imagem_url"`
 	Datavalidade               sql.NullTime   `json:"datavalidade"`
-	Unidade                    sql.NullString `json:"unidade"`
+	Unidade                    NullableString `json:"unidade"`
 	Pesoliquido                NullableFloat  `json:"pesoliquido"`
 	Pesobruto                  NullableFloat  `json:"pesobruto"`
 	Volumes                    NullableInt    `json:"volumes"`
 	Itensporcaixa              NullableInt    `json:"itensporcaixa"`
-	Gtin                       sql.NullString `json:"gtin"`
-	Gtinembalagem              sql.NullString `json:"gtinembalagem"`
-	Tipoproducao               sql.NullString `json:"tipoproducao"`
+	Gtin                       NullableString `json:"gtin"`
+	Gtinembalagem              NullableString `json:"gtinembalagem"`
+	Tipoproducao               NullableString `json:"tipoproducao"`
 	Condicao                   NullableInt    `json:"condicao"`
 	Fretegratis                sql.NullBool   `json:"fretegratis"`
-	Marca                      sql.NullString `json:"marca"`
-	Descricaocomplementar      sql.NullString `json:"descricaocomplementar"`
-	Linkexterno                sql.NullString `json:"linkexterno"`
-	Observacoes                sql.NullString `json:"observacoes"`
-	Descricaoembalagemdiscreta sql.NullString `json:"descricaoembalagemdiscreta"`
+	Marca                      NullableString `json:"marca"`
+	Descricaocomplementar      NullableString `json:"descricaocomplementar"`
+	Linkexterno                NullableString `json:"linkexterno"`
+	Observacoes                NullableString `json:"observacoes"`
+	Descricaoembalagemdiscreta NullableString `json:"descricaoembalagemdiscreta"`
 	Numero                     NullableInt    `json:"numero"`
-	Numeroloja                 sql.NullString `json:"numeroloja"`
+	Numeroloja                 NullableString `json:"numeroloja"`
 	Data                       sql.NullTime   `json:"data"`
 	Datasaida                  sql.NullTime   `json:"datasaida"`
 	Dataprevista               sql.NullTime   `json:"dataprevista"`
 	Totalprodutos              NullableFloat  `json:"totalprodutos"`
 	Totaldescontos             NullableFloat  `json:"totaldescontos"`
-	Descricao                  sql.NullString `json:"descricao"`
+	Descricao                  NullableString `json:"descricao"`
 	Codigo_2                   NullableInt64  `json:"codigo_2"`
 	PrecoCusto                 NullableFloat  `json:"preco_custo"`
 	PrecoCompra                NullableFloat  `json:"preco_compra"`
