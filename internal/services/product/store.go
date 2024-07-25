@@ -87,17 +87,33 @@ func (s *Store) GetProducts(nome, situacao string) ([]*types.Product, error) {
 	return products, nil
 }
 
-func (s *Store) GetProductNoMovements(nome, situacao string) ([]*types.ProductNoMovements, error) {
+func (s *Store) GetProductNoMovements(nome, situacao string, limit, offset int32) ([]*types.ProductNoMovements, int64, error) {
 	queries := db.New(s.db)
 	ctx := context.Background()
 	params := db.GetProductNoMovementsParams{
 		Column1: nome,
 		Column2: situacao,
+		Limit:   limit,
+		Offset:  offset,
 	}
 
 	dbProducts, err := queries.GetProductNoMovements(ctx, params)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+
+	totalCountParams := db.GetTotalProductNoMovementsParams{
+		Column1: nome,
+		Column2: situacao,
+	}
+	totalCounts, err := queries.GetTotalProductNoMovements(ctx, totalCountParams)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var totalCount int64
+	if len(totalCounts) > 0 {
+		totalCount = totalCounts[0]
 	}
 
 	var products []*types.ProductNoMovements
@@ -105,7 +121,7 @@ func (s *Store) GetProductNoMovements(nome, situacao string) ([]*types.ProductNo
 		search := convertGetProductNoMovementRowToProductNoMovementRow(dbProduct)
 		products = append(products, search)
 	}
-	return products, nil
+	return products, totalCount, nil
 }
 
 func (s *Store) GetProductEmptyStock(nome, situacao string) ([]*types.ProductEmptyStock, error) {

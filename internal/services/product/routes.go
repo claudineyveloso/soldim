@@ -79,12 +79,34 @@ func (h *Handler) handleCreateProduct(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) handleGetProductsNoMovements(w http.ResponseWriter, r *http.Request) {
 	nome := r.URL.Query().Get("nome")
 	situacao := r.URL.Query().Get("situacao")
-	product, err := h.productStore.GetProductNoMovements(nome, situacao)
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit < 1 {
+		limit = 10 // Default limit
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil || offset < 0 {
+		offset = 0 // Default offset
+	}
+
+	products, totalCount, err := h.productStore.GetProductNoMovements(nome, situacao, int32(limit), int32(offset))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter os produtos sem movimentação : %v", err), http.StatusInternalServerError)
 		return
 	}
-	utils.WriteJSON(w, http.StatusOK, product)
+
+	response := struct {
+		Products   []*types.ProductNoMovements `json:"products"`
+		TotalCount int64                       `json:"total_count"`
+	}{
+		Products:   products,
+		TotalCount: totalCount,
+	}
+
+	utils.WriteJSON(w, http.StatusOK, response)
 }
 
 func (h *Handler) handleGetProductsEmptyStock(w http.ResponseWriter, r *http.Request) {

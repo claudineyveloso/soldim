@@ -42,6 +42,11 @@ func (n NullableTime) MarshalJSON() ([]byte, error) {
 	return json.Marshal(n.Time.Format(time.RFC3339))
 }
 
+type GetTotalProductNoMovementsParams struct {
+	Column1 string `json:"column1"`
+	Column2 string `json:"column2"`
+}
+
 type Product struct {
 	ID                         int64         `json:"id"`
 	Idprodutopai               int64         `json:"id_produto_pai"`
@@ -212,7 +217,7 @@ type ProductStore interface {
 	CreateProduct(ProductPayload) error
 	GetProducts(nome, situacao string) ([]*Product, error)
 	GetProductByID(id int64) (*Product, error)
-	GetProductNoMovements(nome, situacao string) ([]*ProductNoMovements, error)
+	GetProductNoMovements(nome, situacao string, limit, offset int32) ([]*ProductNoMovements, int64, error)
 	GetProductEmptyStock(nome, situacao string) ([]*ProductEmptyStock, error)
 	UpdateProduct(ProductPayload) error
 	DeleteProduct(id int64) error
