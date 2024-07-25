@@ -237,7 +237,6 @@ LEFT JOIN supplier_products sp ON pso.product_id = sp.product_id
 WHERE so.datasaida < NOW() - INTERVAL '1 week'
   AND ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
   AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2);
-
 -- name: GetProductBySupplierID :one
 SELECT p.ID,
         p.idProdutoPai,

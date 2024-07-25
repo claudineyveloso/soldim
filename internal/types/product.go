@@ -30,6 +30,18 @@ type NullableFloat struct {
 	sql.NullFloat64
 }
 
+type NullableTime struct {
+	sql.NullTime
+}
+
+func (n NullableTime) MarshalJSON() ([]byte, error) {
+	if !n.Valid {
+		return json.Marshal(nil)
+	}
+	// Format the time as you prefer, for example, RFC3339 format
+	return json.Marshal(n.Time.Format(time.RFC3339))
+}
+
 type Product struct {
 	ID                         int64         `json:"id"`
 	Idprodutopai               int64         `json:"id_produto_pai"`
@@ -119,7 +131,7 @@ type ProductNoMovements struct {
 	Formato                    NullableString `json:"formato"`
 	DescricaoCurta             NullableString `json:"descricao_curta"`
 	ImagemUrl                  NullableString `json:"imagem_url"`
-	Datavalidade               sql.NullTime   `json:"datavalidade"`
+	Datavalidade               NullableTime   `json:"datavalidade"`
 	Unidade                    NullableString `json:"unidade"`
 	Pesoliquido                NullableFloat  `json:"pesoliquido"`
 	Pesobruto                  NullableFloat  `json:"pesobruto"`
@@ -137,9 +149,9 @@ type ProductNoMovements struct {
 	Descricaoembalagemdiscreta NullableString `json:"descricaoembalagemdiscreta"`
 	Numero                     NullableInt    `json:"numero"`
 	Numeroloja                 NullableString `json:"numeroloja"`
-	Data                       sql.NullTime   `json:"data"`
-	Datasaida                  sql.NullTime   `json:"datasaida"`
-	Dataprevista               sql.NullTime   `json:"dataprevista"`
+	Data                       NullableTime   `json:"data"`
+	Datasaida                  NullableTime   `json:"datasaida"`
+	Dataprevista               NullableTime   `json:"dataprevista"`
 	Totalprodutos              NullableFloat  `json:"totalprodutos"`
 	Totaldescontos             NullableFloat  `json:"totaldescontos"`
 	Descricao                  NullableString `json:"descricao"`
