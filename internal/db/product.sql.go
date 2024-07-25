@@ -515,13 +515,21 @@ FROM products p
 LEFT JOIN stocks s ON p.id = s.product_id
 LEFT JOIN deposit_products dp ON p.id = dp.product_id
 LEFT JOIN supplier_products sp ON p.id = sp.product_id
-WHERE ('' IS NULL OR '' = '' OR p.nome ILIKE '%' || '' || '%')
-  AND ('' IS NULL OR '' = '' OR p.situacao = '')
+WHERE ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
+  AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2)
   AND s.saldo_fisico_total = 0
   AND s.saldo_virtual_total = 0
   AND dp.saldo_fisico = 0
   AND dp.saldo_virtual = 0
+  LIMIT $3 OFFSET $4
 `
+
+type GetProductEmptyStockParams struct {
+	Column1 string `json:"column_1"`
+	Column2 string `json:"column_2"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
+}
 
 type GetProductEmptyStockRow struct {
 	ID                         int64           `json:"id"`
@@ -561,8 +569,13 @@ type GetProductEmptyStockRow struct {
 	SupplierID                 sql.NullInt64   `json:"supplier_id"`
 }
 
-func (q *Queries) GetProductEmptyStock(ctx context.Context) ([]GetProductEmptyStockRow, error) {
-	rows, err := q.db.QueryContext(ctx, getProductEmptyStock)
+func (q *Queries) GetProductEmptyStock(ctx context.Context, arg GetProductEmptyStockParams) ([]GetProductEmptyStockRow, error) {
+	rows, err := q.db.QueryContext(ctx, getProductEmptyStock,
+		arg.Column1,
+		arg.Column2,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -833,11 +846,14 @@ LEFT JOIN
     supplier_products sp ON p.id = sp.product_id
 WHERE ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
   AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2)
+  LIMIT $3 OFFSET $4
 `
 
 type GetProductsParams struct {
 	Column1 string `json:"column_1"`
 	Column2 string `json:"column_2"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
 }
 
 type GetProductsRow struct {
@@ -879,7 +895,12 @@ type GetProductsRow struct {
 }
 
 func (q *Queries) GetProducts(ctx context.Context, arg GetProductsParams) ([]GetProductsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getProducts, arg.Column1, arg.Column2)
+	rows, err := q.db.QueryContext(ctx, getProducts,
+		arg.Column1,
+		arg.Column2,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -937,6 +958,48 @@ func (q *Queries) GetProducts(ctx context.Context, arg GetProductsParams) ([]Get
 	return items, nil
 }
 
+const getTotalProductEmptyStock = `-- name: GetTotalProductEmptyStock :many
+SELECT COUNT(*)
+FROM products p
+LEFT JOIN stocks s ON p.id = s.product_id
+LEFT JOIN deposit_products dp ON p.id = dp.product_id
+LEFT JOIN supplier_products sp ON p.id = sp.product_id
+WHERE ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
+  AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2)
+  AND s.saldo_fisico_total = 0
+  AND s.saldo_virtual_total = 0
+  AND dp.saldo_fisico = 0
+  AND dp.saldo_virtual = 0
+`
+
+type GetTotalProductEmptyStockParams struct {
+	Column1 string `json:"column_1"`
+	Column2 string `json:"column_2"`
+}
+
+func (q *Queries) GetTotalProductEmptyStock(ctx context.Context, arg GetTotalProductEmptyStockParams) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, getTotalProductEmptyStock, arg.Column1, arg.Column2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var count int64
+		if err := rows.Scan(&count); err != nil {
+			return nil, err
+		}
+		items = append(items, count)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTotalProductNoMovements = `-- name: GetTotalProductNoMovements :many
 SELECT COUNT(*)
 FROM
@@ -958,6 +1021,48 @@ type GetTotalProductNoMovementsParams struct {
 
 func (q *Queries) GetTotalProductNoMovements(ctx context.Context, arg GetTotalProductNoMovementsParams) ([]int64, error) {
 	rows, err := q.db.QueryContext(ctx, getTotalProductNoMovements, arg.Column1, arg.Column2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var count int64
+		if err := rows.Scan(&count); err != nil {
+			return nil, err
+		}
+		items = append(items, count)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTotalProducts = `-- name: GetTotalProducts :many
+SELECT COUNT(*)
+FROM
+    products p
+LEFT JOIN
+    stocks s ON p.id = s.product_id
+LEFT JOIN
+    deposit_products dp ON p.id = dp.product_id
+LEFT JOIN
+    supplier_products sp ON p.id = sp.product_id
+WHERE ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
+  AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2)
+`
+
+type GetTotalProductsParams struct {
+	Column1 string `json:"column_1"`
+	Column2 string `json:"column_2"`
+}
+
+func (q *Queries) GetTotalProducts(ctx context.Context, arg GetTotalProductsParams) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, getTotalProducts, arg.Column1, arg.Column2)
 	if err != nil {
 		return nil, err
 	}

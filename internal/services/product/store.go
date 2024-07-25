@@ -63,19 +63,34 @@ func (s *Store) CreateProduct(product types.ProductPayload) error {
 	return nil
 }
 
-func (s *Store) GetProducts(nome, situacao string) ([]*types.Product, error) {
+func (s *Store) GetProducts(nome, situacao string, limit, offset int32) ([]*types.Product, int64, error) {
 	queries := db.New(s.db)
 	ctx := context.Background()
 	params := db.GetProductsParams{
 		Column1: nome,
 		Column2: situacao,
+		Limit:   limit,
+		Offset:  offset,
 	}
 
 	dbProducts, err := queries.GetProducts(ctx, params)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
+	totalCountParams := db.GetTotalProductNoMovementsParams{
+		Column1: nome,
+		Column2: situacao,
+	}
+	totalCounts, err := queries.GetTotalProductNoMovements(ctx, totalCountParams)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var totalCount int64
+	if len(totalCounts) > 0 {
+		totalCount = totalCounts[0]
+	}
 	//	fmt.Println("Esse é o valor de dbProducts", dbProducts)
 	fmt.Println("Esse é o valor de params", params)
 
@@ -84,7 +99,7 @@ func (s *Store) GetProducts(nome, situacao string) ([]*types.Product, error) {
 		product := convertDBProductToProduct(dbProduct)
 		products = append(products, product)
 	}
-	return products, nil
+	return products, totalCount, nil
 }
 
 func (s *Store) GetProductNoMovements(nome, situacao string, limit, offset int32) ([]*types.ProductNoMovements, int64, error) {
@@ -118,25 +133,47 @@ func (s *Store) GetProductNoMovements(nome, situacao string, limit, offset int32
 
 	var products []*types.ProductNoMovements
 	for _, dbProduct := range dbProducts {
-		search := convertGetProductNoMovementRowToProductNoMovementRow(dbProduct)
-		products = append(products, search)
+		product := convertGetProductNoMovementRowToProductNoMovementRow(dbProduct)
+		products = append(products, product)
 	}
 	return products, totalCount, nil
 }
 
-func (s *Store) GetProductEmptyStock(nome, situacao string) ([]*types.ProductEmptyStock, error) {
+func (s *Store) GetProductEmptyStock(nome, situacao string, limit, offset int32) ([]*types.ProductEmptyStock, int64, error) {
 	queries := db.New(s.db)
 	ctx := context.Background()
-	dbProducts, err := queries.GetProductEmptyStock(ctx)
-	if err != nil {
-		return nil, err
+	params := db.GetProductEmptyStockParams{
+		Column1: nome,
+		Column2: situacao,
+		Limit:   limit,
+		Offset:  offset,
 	}
+	dbProducts, err := queries.GetProductEmptyStock(ctx, params)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	totalCountParams := db.GetTotalProductEmptyStockParams{
+		Column1: nome,
+		Column2: situacao,
+	}
+
+	totalCounts, err := queries.GetTotalProductEmptyStock(ctx, totalCountParams)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var totalCount int64
+	if len(totalCounts) > 0 {
+		totalCount = totalCounts[0]
+	}
+
 	var products []*types.ProductEmptyStock
 	for _, dbProduct := range dbProducts {
 		product := convertGetProductEmptyStockRowToProductEmptyStockRow(dbProduct)
 		products = append(products, product)
 	}
-	return products, nil
+	return products, totalCount, nil
 }
 
 func (s *Store) UpdateProduct(product types.ProductPayload) error {
