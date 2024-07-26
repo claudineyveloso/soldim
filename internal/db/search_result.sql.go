@@ -60,7 +60,8 @@ const getSearchResult = `-- name: GetSearchResult :one
 SELECT id,
         image_url,
         description,
-        source, price,
+        source,
+        price,
         promotion,
         link,
         search_id,
@@ -92,23 +93,27 @@ const getSearchesResult = `-- name: GetSearchesResult :many
 SELECT id, 
         image_url,
         description,
-        source, price,
+        source,
+        price,
         promotion,
         link,
         search_id,
         created_at,
         updated_at
-FROM searches_result ORDER BY created_at DESC
-LIMIT $1 OFFSET $2
+FROM searches_result
+WHERE ($1::text IS NULL OR $1 = '' OR source = $1 )
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
 `
 
 type GetSearchesResultParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Column1 string `json:"column_1"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
 }
 
 func (q *Queries) GetSearchesResult(ctx context.Context, arg GetSearchesResultParams) ([]SearchesResult, error) {
-	rows, err := q.db.QueryContext(ctx, getSearchesResult, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, getSearchesResult, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -144,10 +149,11 @@ func (q *Queries) GetSearchesResult(ctx context.Context, arg GetSearchesResultPa
 const getTotalSearchesResult = `-- name: GetTotalSearchesResult :one
 SELECT COUNT(*)
 FROM searches_result
+WHERE ($1::text IS NULL OR $1 = '' OR source = $1 )
 `
 
-func (q *Queries) GetTotalSearchesResult(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getTotalSearchesResult)
+func (q *Queries) GetTotalSearchesResult(ctx context.Context, dollar_1 string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getTotalSearchesResult, dollar_1)
 	var count int64
 	err := row.Scan(&count)
 	return count, err

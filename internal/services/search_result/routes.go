@@ -29,6 +29,7 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 }
 
 func (h *Handler) handleGetSearchesResult(w http.ResponseWriter, r *http.Request) {
+	source := r.URL.Query().Get("source")
 	limitStr := r.URL.Query().Get("limit")
 	offsetStr := r.URL.Query().Get("offset")
 
@@ -42,7 +43,7 @@ func (h *Handler) handleGetSearchesResult(w http.ResponseWriter, r *http.Request
 		offset = 0 // Default offset
 	}
 
-	searchesResults, totalCount, err := h.searchresultStore.GetSearchesResult(int32(limit), int32(offset))
+	searchesResults, totalCount, err := h.searchresultStore.GetSearchesResult(source, int32(limit), int32(offset))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter o Resultado da Busca: %v", err), http.StatusInternalServerError)
 		return

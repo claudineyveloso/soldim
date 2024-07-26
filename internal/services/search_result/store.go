@@ -48,19 +48,20 @@ func (s *Store) CreateSearchResult(searchresult types.SearchResultPayload) error
 	return nil
 }
 
-func (s *Store) GetSearchesResult(limit, offset int32) ([]*types.SearchResult, int64, error) {
+func (s *Store) GetSearchesResult(source string, limit, offset int32) ([]*types.SearchResult, int64, error) {
 	queries := db.New(s.db)
 	ctx := context.Background()
 	params := db.GetSearchesResultParams{
-		Limit:  limit,
-		Offset: offset,
+		Column1: source,
+		Limit:   limit,
+		Offset:  offset,
 	}
 	dbSearches, err := queries.GetSearchesResult(ctx, params)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	totalCount, err := queries.GetTotalSearchesResult(ctx)
+	totalCount, err := queries.GetTotalSearchesResult(ctx, "")
 	if err != nil {
 		return nil, 0, err
 	}
