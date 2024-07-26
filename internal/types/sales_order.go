@@ -93,7 +93,7 @@ func (cd CustomDate) MarshalJSON() ([]byte, error) {
 
 type SalesOrderStore interface {
 	CreateSalesOrder(SalesOrder) error
-	GetSalesOrders() ([]*SalesOrder, error)
+	GetSalesOrders(limit, offset int32) ([]*SalesOrder, int64, error)
 	GetSalesOrderByID(id int64) (*SalesOrder, error)
 	GetSalesOrderByNumber(numero int32) (*SalesOrder, error)
 }

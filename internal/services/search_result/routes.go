@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/claudineyveloso/soldim.git/internal/types"
 	"github.com/claudineyveloso/soldim.git/internal/utils"
@@ -28,14 +29,34 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 }
 
 func (h *Handler) handleGetSearchesResult(w http.ResponseWriter, r *http.Request) {
-	// bucketID := auth.GetUserIDFromContext(r.Context())
-	// fmt.Println("Valor de userIDffsadfsda", bucketID)
-	searchesResult, err := h.searchresultStore.GetSearchesResult()
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit < 1 {
+		limit = 10 // Default limit
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil || offset < 0 {
+		offset = 0 // Default offset
+	}
+
+	searchesResults, totalCount, err := h.searchresultStore.GetSearchesResult(int32(limit), int32(offset))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter o Resultado da Busca: %v", err), http.StatusInternalServerError)
 		return
 	}
-	utils.WriteJSON(w, http.StatusOK, searchesResult)
+
+	response := struct {
+		SearchResults []*types.SearchResult `json:"search_results"`
+		TotalCount    int64                 `json:"total_count"`
+	}{
+		SearchResults: searchesResults,
+		TotalCount:    totalCount,
+	}
+
+	utils.WriteJSON(w, http.StatusOK, response)
 }
 
 func (h *Handler) handleGetSearchResult(w http.ResponseWriter, r *http.Request) {

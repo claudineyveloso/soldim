@@ -135,13 +135,31 @@ func (s *Store) ImportTriages(triages []*types.Triage) error {
 	return nil
 }
 
-func (s *Store) GetTriages() ([]*types.Triage, error) {
+func (s *Store) GetTriages(description, sku_wms string, sku_sap int32, limit, offset int32) ([]*types.Triage, int64, error) {
 	queries := db.New(s.db)
 	ctx := context.Background()
+	params := db.GetTriagesParams{
+		Column1: description,
+		Column2: sku_wms,
+		Column3: sku_sap,
+		Limit:   limit,
+		Offset:  offset,
+	}
 
-	dbTriages, err := queries.GetTriages(ctx)
+	totalCountParams := db.GetTotalTriagesParams{
+		Column1: description,
+		Column2: sku_wms,
+		Column3: sku_sap,
+	}
+
+	totalCount, err := queries.GetTotalTriages(ctx, totalCountParams)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+
+	dbTriages, err := queries.GetTriages(ctx, params)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	var triages []*types.Triage
@@ -149,7 +167,7 @@ func (s *Store) GetTriages() ([]*types.Triage, error) {
 		triage := convertDBTriageToTriage(dbTriage)
 		triages = append(triages, triage)
 	}
-	return triages, nil
+	return triages, totalCount, nil
 }
 
 func parseInt32(s string) int32 {

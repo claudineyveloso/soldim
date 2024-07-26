@@ -23,6 +23,16 @@ SELECT id,
         defect,
         created_at,
         updated_at
-FROM triages;
+FROM triages
+WHERE ($1::text IS NULL OR $1 = '' OR description ILIKE '%' || $1 || '%')
+  AND ($2::text IS NULL OR $2 = '' OR sku_wms = $2)
+  AND ($3::int IS NULL OR $3 = 0 OR sku_sap = $3)
+LIMIT $4 OFFSET $5;
 
+-- name: GetTotalTriages :one
+SELECT COUNT(*)
+FROM triages
+WHERE ($1::text IS NULL OR $1 = '' OR description ILIKE '%' || $1 || '%')
+  AND ($2::text IS NULL OR $2 = '' OR sku_wms = $2)
+  AND ($3::int IS NULL OR $3 = 0 OR sku_sap = $3);
 

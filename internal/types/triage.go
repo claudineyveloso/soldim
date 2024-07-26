@@ -32,7 +32,7 @@ type Triage struct {
 type TriageStore interface {
 	ImportTriagesFromFile(filePath string) error
 	CreateTriage(Triage) error
-	GetTriages() ([]*Triage, error)
+	GetTriages(description, sku_wms string, sku_sap int32, limit, offset int32) ([]*Triage, int64, error)
 	// UpdateTriage(Triage) error
 	// DeleteTriage(id uuid.UUID) error
 }

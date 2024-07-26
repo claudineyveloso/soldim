@@ -62,14 +62,34 @@ func (h *Handler) handleCreateSalesOrder(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *Handler) handleGetSalesOrders(w http.ResponseWriter, r *http.Request) {
-	// bucketID := auth.GetUserIDFromContext(r.Context())
-	// fmt.Println("Valor de userIDffsadfsda", bucketID)
-	salesOrder, err := h.salesOrderStore.GetSalesOrders()
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit < 1 {
+		limit = 10 // Default limit
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil || offset < 0 {
+		offset = 0 // Default offset
+	}
+
+	salesOrders, totalCount, err := h.salesOrderStore.GetSalesOrders(int32(limit), int32(offset))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter o Pedido de vendas: %v", err), http.StatusInternalServerError)
 		return
 	}
-	utils.WriteJSON(w, http.StatusOK, salesOrder)
+
+	response := struct {
+		SalesOrders []*types.SalesOrder `json:"sales_orders"`
+		TotalCount  int64               `json:"total_count"`
+	}{
+		SalesOrders: salesOrders,
+		TotalCount:  totalCount,
+	}
+
+	utils.WriteJSON(w, http.StatusOK, response)
 }
 
 func (h *Handler) handleGetSalesOrder(w http.ResponseWriter, r *http.Request) {

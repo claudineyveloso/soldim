@@ -92,7 +92,6 @@ func (s *Store) GetProducts(nome, situacao string, limit, offset int32) ([]*type
 		totalCount = totalCounts[0]
 	}
 	//	fmt.Println("Esse é o valor de dbProducts", dbProducts)
-	fmt.Println("Esse é o valor de params", params)
 
 	var products []*types.Product
 	for _, dbProduct := range dbProducts {

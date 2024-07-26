@@ -15,7 +15,8 @@ SELECT id,
         store_id,
         created_at,
         updated_at
-FROM sales_orders;
+FROM sales_orders
+LIMIT $1 OFFSET $2;
 
 -- name: GetSalesOrder :one
 SELECT id,
@@ -99,4 +100,8 @@ GROUP BY
     DATE_TRUNC('day', datasaida)
 ORDER BY 
     dia;
+
+-- name: GetTotalSalesOrders :one
+SELECT COUNT(*)
+FROM sales_orders;
 

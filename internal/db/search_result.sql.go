@@ -57,7 +57,15 @@ func (q *Queries) DeleteSearchResult(ctx context.Context, id uuid.UUID) error {
 }
 
 const getSearchResult = `-- name: GetSearchResult :one
-SELECT id, image_url, description, source, price, promotion, link, search_id, created_at, updated_at
+SELECT id,
+        image_url,
+        description,
+        source, price,
+        promotion,
+        link,
+        search_id,
+        created_at,
+        updated_at
 FROM searches_result
 WHERE searches_result.id = $1
 `
@@ -81,12 +89,26 @@ func (q *Queries) GetSearchResult(ctx context.Context, id uuid.UUID) (SearchesRe
 }
 
 const getSearchesResult = `-- name: GetSearchesResult :many
-SELECT id, image_url, description, source, price, promotion, link, search_id, created_at, updated_at
+SELECT id, 
+        image_url,
+        description,
+        source, price,
+        promotion,
+        link,
+        search_id,
+        created_at,
+        updated_at
 FROM searches_result ORDER BY created_at DESC
+LIMIT $1 OFFSET $2
 `
 
-func (q *Queries) GetSearchesResult(ctx context.Context) ([]SearchesResult, error) {
-	rows, err := q.db.QueryContext(ctx, getSearchesResult)
+type GetSearchesResultParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) GetSearchesResult(ctx context.Context, arg GetSearchesResultParams) ([]SearchesResult, error) {
+	rows, err := q.db.QueryContext(ctx, getSearchesResult, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -117,4 +139,16 @@ func (q *Queries) GetSearchesResult(ctx context.Context) ([]SearchesResult, erro
 		return nil, err
 	}
 	return items, nil
+}
+
+const getTotalSearchesResult = `-- name: GetTotalSearchesResult :one
+SELECT COUNT(*)
+FROM searches_result
+`
+
+func (q *Queries) GetTotalSearchesResult(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getTotalSearchesResult)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }

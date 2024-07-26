@@ -204,10 +204,16 @@ SELECT id,
         created_at,
         updated_at
 FROM sales_orders
+LIMIT $1 OFFSET $2
 `
 
-func (q *Queries) GetSalesOrders(ctx context.Context) ([]SalesOrder, error) {
-	rows, err := q.db.QueryContext(ctx, getSalesOrders)
+type GetSalesOrdersParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) GetSalesOrders(ctx context.Context, arg GetSalesOrdersParams) ([]SalesOrder, error) {
+	rows, err := q.db.QueryContext(ctx, getSalesOrders, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -352,4 +358,16 @@ func (q *Queries) GetTotalSalesOrderTotalByWeek(ctx context.Context, dollar_1 ti
 		return nil, err
 	}
 	return items, nil
+}
+
+const getTotalSalesOrders = `-- name: GetTotalSalesOrders :one
+SELECT COUNT(*)
+FROM sales_orders
+`
+
+func (q *Queries) GetTotalSalesOrders(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getTotalSalesOrders)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }

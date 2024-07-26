@@ -3,8 +3,10 @@ package triage
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/claudineyveloso/soldim.git/internal/types"
+	"github.com/claudineyveloso/soldim.git/internal/utils"
 	"github.com/gorilla/mux"
 )
 
@@ -36,15 +38,47 @@ func (h *Handler) handleCreateTriage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleGetTriages(w http.ResponseWriter, r *http.Request) {
-	triages, err := h.triageStore.GetTriages()
+	description := r.URL.Query().Get("description")
+	sku_wms := r.URL.Query().Get("sku_wms")
+	sku_sapStr := r.URL.Query().Get("sku_sap")
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit < 1 {
+		limit = 10 // Default limit
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil || offset < 0 {
+		offset = 0 // Default offset
+	}
+
+	var sku_sap int32
+	if sku_sapStr != "" {
+		sku_sapInt, err := strconv.Atoi(sku_sapStr)
+		if err != nil {
+			http.Error(w, "invalid sku_sap value", http.StatusBadRequest)
+			return
+		}
+		sku_sap = int32(sku_sapInt)
+	}
+
+	triages, totalCount, err := h.triageStore.GetTriages(description, sku_wms, sku_sap, int32(limit), int32(offset))
 	if err != nil {
 		http.Error(w, "erro ao buscar triagens", http.StatusInternalServerError)
 		return
 	}
-	if err := json.NewEncoder(w).Encode(triages); err != nil {
-		http.Error(w, "erro ao codificar JSON", http.StatusInternalServerError)
-		return
+
+	response := struct {
+		Triages    []*types.Triage `json:"triage"`
+		TotalCount int64           `json:"total_count"`
+	}{
+		Triages:    triages,
+		TotalCount: totalCount,
 	}
+
+	utils.WriteJSON(w, http.StatusOK, response)
 }
 
 func (h *Handler) handleImportTriage(w http.ResponseWriter, r *http.Request) {
