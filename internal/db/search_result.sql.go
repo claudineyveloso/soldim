@@ -89,19 +89,69 @@ func (q *Queries) GetSearchResult(ctx context.Context, id uuid.UUID) (SearchesRe
 	return i, err
 }
 
+const getSearchResultSources = `-- name: GetSearchResultSources :many
+WITH RankedResults AS (
+    SELECT source,
+           search_id,
+           ROW_NUMBER() OVER (PARTITION BY source ORDER BY source DESC) AS rn
+    FROM searches_result
+    WHERE search_id = $1
+)
+SELECT source,
+       search_id
+FROM RankedResults
+WHERE rn = 1
+ORDER BY source ASC
+`
+
+type GetSearchResultSourcesRow struct {
+	Source   string    `json:"source"`
+	SearchID uuid.UUID `json:"search_id"`
+}
+
+func (q *Queries) GetSearchResultSources(ctx context.Context, searchID uuid.UUID) ([]GetSearchResultSourcesRow, error) {
+	rows, err := q.db.QueryContext(ctx, getSearchResultSources, searchID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetSearchResultSourcesRow
+	for rows.Next() {
+		var i GetSearchResultSourcesRow
+		if err := rows.Scan(&i.Source, &i.SearchID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSearchesResult = `-- name: GetSearchesResult :many
+WITH LatestSearchID AS (
+    SELECT search_id
+    FROM searches_result
+    ORDER BY created_at DESC
+    LIMIT 1
+)
 SELECT id, 
-        image_url,
-        description,
-        source,
-        price,
-        promotion,
-        link,
-        search_id,
-        created_at,
-        updated_at
+       image_url,
+       description,
+       source,
+       price,
+       promotion,
+       link,
+       search_id,
+       created_at,
+       updated_at
 FROM searches_result
-WHERE ($1::text IS NULL OR $1 = '' OR source = $1 )
+WHERE search_id = (SELECT search_id FROM LatestSearchID)
+AND ($1::text IS NULL OR $1 = '' OR source = $1)
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
 `
@@ -147,13 +197,19 @@ func (q *Queries) GetSearchesResult(ctx context.Context, arg GetSearchesResultPa
 }
 
 const getTotalSearchesResult = `-- name: GetTotalSearchesResult :one
+WITH LatestSearchID AS (
+    SELECT search_id
+    FROM searches_result
+    ORDER BY created_at DESC
+    LIMIT 1
+)
 SELECT COUNT(*)
 FROM searches_result
-WHERE ($1::text IS NULL OR $1 = '' OR source = $1 )
+WHERE search_id = (SELECT search_id FROM LatestSearchID)
 `
 
-func (q *Queries) GetTotalSearchesResult(ctx context.Context, dollar_1 string) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getTotalSearchesResult, dollar_1)
+func (q *Queries) GetTotalSearchesResult(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getTotalSearchesResult)
 	var count int64
 	err := row.Scan(&count)
 	return count, err

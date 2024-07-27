@@ -61,7 +61,7 @@ func (s *Store) GetSearchesResult(source string, limit, offset int32) ([]*types.
 		return nil, 0, err
 	}
 
-	totalCount, err := queries.GetTotalSearchesResult(ctx, "")
+	totalCount, err := queries.GetTotalSearchesResult(ctx)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -94,6 +94,27 @@ func (s *Store) DeleteSearchResult(searchID uuid.UUID) error {
 		return err
 	}
 	return nil
+}
+
+func (s *Store) GetSearchResultSources(searchID uuid.UUID) ([]*types.GetSearchResultSources, error) {
+	queries := db.New(s.db)
+	ctx := context.Background()
+
+	// Chamada direta para a função com o searchID
+	dbSearchResultSources, err := queries.GetSearchResultSources(ctx, searchID)
+	if err != nil {
+		return nil, err
+	}
+
+	var searchResultSources []*types.GetSearchResultSources
+	for _, dbSearchResultSource := range dbSearchResultSources {
+		searchResultSource := &types.GetSearchResultSources{
+			Source:   dbSearchResultSource.Source,
+			SearchID: dbSearchResultSource.SearchID,
+		}
+		searchResultSources = append(searchResultSources, searchResultSource)
+	}
+	return searchResultSources, nil
 }
 
 func convertDBSearchResultToSearchResult(dbSearchResult db.SearchesResult) *types.SearchResult {

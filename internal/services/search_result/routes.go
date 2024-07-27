@@ -24,6 +24,7 @@ func NewHandler(searchresultStore types.SearchResultStore) *Handler {
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/get_searches_result", h.handleGetSearchesResult).Methods(http.MethodGet)
 	router.HandleFunc("/get_search_result/{searchResultID}", h.handleGetSearchResult).Methods(http.MethodGet)
+	router.HandleFunc("/get_search_result_sources/{searchID}", h.handleGetSearchResultSources).Methods(http.MethodGet)
 	router.HandleFunc("/create_search_result", h.handleCreateSearchResult).Methods(http.MethodPost)
 	router.HandleFunc("/delete_search_result/{searchID}", h.handleDeleteSearchResult).Methods(http.MethodDelete)
 }
@@ -44,6 +45,8 @@ func (h *Handler) handleGetSearchesResult(w http.ResponseWriter, r *http.Request
 	}
 
 	searchesResults, totalCount, err := h.searchresultStore.GetSearchesResult(source, int32(limit), int32(offset))
+
+	fmt.Println("Esse é o valor de totalCount: ", totalCount)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter o Resultado da Busca: %v", err), http.StatusInternalServerError)
 		return
@@ -79,6 +82,26 @@ func (h *Handler) handleGetSearchResult(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	utils.WriteJSON(w, http.StatusOK, searchResult)
+}
+
+func (h *Handler) handleGetSearchResultSources(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	str, ok := vars["searchID"]
+	if !ok {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID da Busca ausente!"))
+		return
+	}
+	parsedSearchID, err := uuid.Parse(str)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID da Busca inválido!"))
+		return
+	}
+	searchResultSources, err := h.searchresultStore.GetSearchResultSources(parsedSearchID)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, searchResultSources)
 }
 
 func (h *Handler) handleCreateSearchResult(w http.ResponseWriter, r *http.Request) {

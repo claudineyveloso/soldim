@@ -32,9 +32,15 @@ type SearchResultPayload struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
+type GetSearchResultSources struct {
+	Source   string    `json:"source"`
+	SearchID uuid.UUID `json:"search_id"`
+}
+
 type SearchResultStore interface {
 	CreateSearchResult(SearchResultPayload) error
 	GetSearchesResult(source string, limit, offset int32) ([]*SearchResult, int64, error)
 	GetSearchResultByID(id uuid.UUID) (*SearchResult, error)
+	GetSearchResultSources(searchID uuid.UUID) ([]*GetSearchResultSources, error)
 	DeleteSearchResult(id uuid.UUID) error
 }
