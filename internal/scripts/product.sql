@@ -93,8 +93,7 @@ LEFT JOIN
 LEFT JOIN
     supplier_products sp ON p.id = sp.product_id
 WHERE ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
-  AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2)
-  LIMIT $3 OFFSET $4;
+  AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2);
 
 
 -- name: GetProductByName :one
@@ -188,8 +187,7 @@ WHERE ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
   AND s.saldo_fisico_total = 0
   AND s.saldo_virtual_total = 0
   AND dp.saldo_fisico = 0
-  AND dp.saldo_virtual = 0
-  LIMIT $3 OFFSET $4;
+  AND dp.saldo_virtual = 0;
 
 -- name: GetProductNoMovements :many
 SELECT pso.sales_order_id, 
@@ -237,8 +235,7 @@ LEFT JOIN sales_orders so ON so.id = pso.sales_order_id
 LEFT JOIN supplier_products sp ON pso.product_id = sp.product_id
 WHERE so.datasaida < NOW() - INTERVAL '1 week'
   AND ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
-  AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2)
-  LIMIT $3 OFFSET $4;
+  AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2);
 
 -- name: GetProductBySupplierID :one
 SELECT p.ID,
@@ -319,44 +316,3 @@ WHERE products.id = $1;
 DELETE FROM products
 WHERE products.id = $1;
 
--- name: GetTotalProductNoMovements :many
-SELECT COUNT(*)
-FROM
-    products p
-LEFT JOIN
-    stocks s ON p.id = s.product_id
-LEFT JOIN
-    deposit_products dp ON p.id = dp.product_id
-LEFT JOIN
-    supplier_products sp ON p.id = sp.product_id
-WHERE ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
-  AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2);
-
-
--- name: GetTotalProductEmptyStock :many
-SELECT COUNT(*)
-FROM products p
-LEFT JOIN stocks s ON p.id = s.product_id
-LEFT JOIN deposit_products dp ON p.id = dp.product_id
-LEFT JOIN supplier_products sp ON p.id = sp.product_id
-WHERE ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
-  AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2)
-  AND s.saldo_fisico_total = 0
-  AND s.saldo_virtual_total = 0
-  AND dp.saldo_fisico = 0
-  AND dp.saldo_virtual = 0;
-
--- name: GetTotalProducts :many
-SELECT COUNT(*)
-FROM
-    products p
-LEFT JOIN
-    stocks s ON p.id = s.product_id
-LEFT JOIN
-    deposit_products dp ON p.id = dp.product_id
-LEFT JOIN
-    supplier_products sp ON p.id = sp.product_id
-WHERE ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
-  AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2);
-
- 

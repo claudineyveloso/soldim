@@ -215,10 +215,10 @@ type ProductResponse struct {
 
 type ProductStore interface {
 	CreateProduct(ProductPayload) error
-	GetProducts(nome, situacao string, limit, offset int32) ([]*Product, int64, error)
+	GetProducts(nome, situacao string) ([]*Product, error)
 	GetProductByID(id int64) (*Product, error)
-	GetProductNoMovements(nome, situacao string, limit, offset int32) ([]*ProductNoMovements, int64, error)
-	GetProductEmptyStock(nome, situacao string, limit, offset int32) ([]*ProductEmptyStock, int64, error)
+	GetProductNoMovements(nome, situacao string) ([]*ProductNoMovements, error)
+	GetProductEmptyStock(nome, situacao string) ([]*ProductEmptyStock, error)
 	UpdateProduct(ProductPayload) error
 	DeleteProduct(id int64) error
 }
