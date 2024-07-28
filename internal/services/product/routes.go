@@ -34,7 +34,6 @@ func (h *Handler) handleGetProducts(w http.ResponseWriter, r *http.Request) {
 	nome := r.URL.Query().Get("nome")
 	situacao := r.URL.Query().Get("situacao")
 
-	fmt.Printf("Recebido nome: %s, situacao: %s\n", nome, situacao)
 	products, err := h.productStore.GetProducts(nome, situacao)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter os produtos : %v", err), http.StatusInternalServerError)
@@ -45,7 +44,6 @@ func (h *Handler) handleGetProducts(w http.ResponseWriter, r *http.Request) {
 	}{
 		Products: products,
 	}
-
 	utils.WriteJSON(w, http.StatusOK, response)
 }
 
