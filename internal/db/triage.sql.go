@@ -66,27 +66,6 @@ func (q *Queries) CreateTriage(ctx context.Context, arg CreateTriageParams) erro
 	return err
 }
 
-const getTotalTriages = `-- name: GetTotalTriages :one
-SELECT COUNT(*)
-FROM triages
-WHERE ($1::text IS NULL OR $1 = '' OR description ILIKE '%' || $1 || '%')
-  AND ($2::text IS NULL OR $2 = '' OR sku_wms = $2)
-  AND ($3::int IS NULL OR $3 = 0 OR sku_sap = $3)
-`
-
-type GetTotalTriagesParams struct {
-	Column1 string `json:"column_1"`
-	Column2 string `json:"column_2"`
-	Column3 int32  `json:"column_3"`
-}
-
-func (q *Queries) GetTotalTriages(ctx context.Context, arg GetTotalTriagesParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getTotalTriages, arg.Column1, arg.Column2, arg.Column3)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
 const getTriages = `-- name: GetTriages :many
 SELECT id,
         type,
@@ -109,28 +88,10 @@ SELECT id,
         created_at,
         updated_at
 FROM triages
-WHERE ($1::text IS NULL OR $1 = '' OR description ILIKE '%' || $1 || '%')
-  AND ($2::text IS NULL OR $2 = '' OR sku_wms = $2)
-  AND ($3::int IS NULL OR $3 = 0 OR sku_sap = $3)
-LIMIT $4 OFFSET $5
 `
 
-type GetTriagesParams struct {
-	Column1 string `json:"column_1"`
-	Column2 string `json:"column_2"`
-	Column3 int32  `json:"column_3"`
-	Limit   int32  `json:"limit"`
-	Offset  int32  `json:"offset"`
-}
-
-func (q *Queries) GetTriages(ctx context.Context, arg GetTriagesParams) ([]Triage, error) {
-	rows, err := q.db.QueryContext(ctx, getTriages,
-		arg.Column1,
-		arg.Column2,
-		arg.Column3,
-		arg.Limit,
-		arg.Offset,
-	)
+func (q *Queries) GetTriages(ctx context.Context) ([]Triage, error) {
+	rows, err := q.db.QueryContext(ctx, getTriages)
 	if err != nil {
 		return nil, err
 	}
