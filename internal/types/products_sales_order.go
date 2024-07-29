@@ -6,25 +6,25 @@ import (
 )
 
 type ProductSalesOrder struct {
-	ID             int64
-	SalesOrderID   int64
-	ProductID      int64
-	Quantidade     int32
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
-	Numero         int32
-	Numeroloja     string
-	Data           time.Time
-	Datasaida      time.Time
-	Dataprevista   time.Time
-	Totalprodutos  float64
-	Totaldescontos float64
-	SituationID    int64
-	StoreID        int64
-	SupplierID     int64
-	Nome           string
-	Codigo         string
-	Preco          float64
+	ID             int64     `json:"id"`
+	SalesOrderID   int64     `json:"sales_order_id"`
+	ProductID      int64     `json:"product_id"`
+	Quantidade     int32     `json:"quantidade"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+	Numero         int32     `json:"numero"`
+	Numeroloja     string    `json:"numeroloja"`
+	Data           time.Time `json:"data"`
+	Datasaida      time.Time `json:"datasaida"`
+	Dataprevista   time.Time `json:"dataprevista"`
+	Totalprodutos  float64   `json:"totalprodutos"`
+	Totaldescontos float64   `json:"totaldescontos"`
+	SituationID    int64     `json:"situation_id"`
+	StoreID        int64     `json:"store_id"`
+	SupplierID     int64     `json:"supplier_id"`
+	Nome           string    `json:"nome"`
+	Codigo         string    `json:"codigo"`
+	Preco          float64   `json:"preco"`
 }
 
 type ProductSalesOrderPayload struct {

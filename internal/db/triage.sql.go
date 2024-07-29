@@ -66,6 +66,59 @@ func (q *Queries) CreateTriage(ctx context.Context, arg CreateTriageParams) erro
 	return err
 }
 
+const getTriage = `-- name: GetTriage :one
+SELECT id,
+        type,
+        grid,
+        sku_sap,
+        sku_wms,
+        description,
+        cust_id,
+        seller,
+        quantity_supplied,
+        final_quantity,
+        unitary_value,
+        total_value_offered,
+        final_total_value,
+        category,
+        sub_category,
+        sent_to_batch,
+        sent_to_bling,
+        defect,
+        created_at,
+        updated_at
+FROM triages
+WHERE id = $1
+`
+
+func (q *Queries) GetTriage(ctx context.Context, id uuid.UUID) (Triage, error) {
+	row := q.db.QueryRowContext(ctx, getTriage, id)
+	var i Triage
+	err := row.Scan(
+		&i.ID,
+		&i.Type,
+		&i.Grid,
+		&i.SkuSap,
+		&i.SkuWms,
+		&i.Description,
+		&i.CustID,
+		&i.Seller,
+		&i.QuantitySupplied,
+		&i.FinalQuantity,
+		&i.UnitaryValue,
+		&i.TotalValueOffered,
+		&i.FinalTotalValue,
+		&i.Category,
+		&i.SubCategory,
+		&i.SentToBatch,
+		&i.SentToBling,
+		&i.Defect,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getTriages = `-- name: GetTriages :many
 SELECT id,
         type,
