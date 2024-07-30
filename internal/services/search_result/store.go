@@ -48,22 +48,12 @@ func (s *Store) CreateSearchResult(searchresult types.SearchResultPayload) error
 	return nil
 }
 
-func (s *Store) GetSearchesResult(source string, limit, offset int32) ([]*types.SearchResult, int64, error) {
+func (s *Store) GetSearchesResult(source string) ([]*types.SearchResult, error) {
 	queries := db.New(s.db)
 	ctx := context.Background()
-	params := db.GetSearchesResultParams{
-		Column1: source,
-		Limit:   limit,
-		Offset:  offset,
-	}
-	dbSearches, err := queries.GetSearchesResult(ctx, params)
+	dbSearches, err := queries.GetSearchesResult(ctx, source)
 	if err != nil {
-		return nil, 0, err
-	}
-
-	totalCount, err := queries.GetTotalSearchesResult(ctx)
-	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	var searches []*types.SearchResult
@@ -71,7 +61,7 @@ func (s *Store) GetSearchesResult(source string, limit, offset int32) ([]*types.
 		search := convertDBSearchResultToSearchResult(dbSearch)
 		searches = append(searches, search)
 	}
-	return searches, totalCount, nil
+	return searches, nil
 }
 
 func (s *Store) GetSearchResultByID(searchID uuid.UUID) (*types.SearchResult, error) {

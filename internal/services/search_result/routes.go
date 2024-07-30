@@ -44,9 +44,7 @@ func (h *Handler) handleGetSearchesResult(w http.ResponseWriter, r *http.Request
 		offset = 0 // Default offset
 	}
 
-	searchesResults, totalCount, err := h.searchresultStore.GetSearchesResult(source, int32(limit), int32(offset))
-
-	fmt.Println("Esse é o valor de totalCount: ", totalCount)
+	searchesResults, err := h.searchresultStore.GetSearchesResult(source)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter o Resultado da Busca: %v", err), http.StatusInternalServerError)
 		return
@@ -54,10 +52,8 @@ func (h *Handler) handleGetSearchesResult(w http.ResponseWriter, r *http.Request
 
 	response := struct {
 		SearchResults []*types.SearchResult `json:"search_results"`
-		TotalCount    int64                 `json:"total_count"`
 	}{
 		SearchResults: searchesResults,
-		TotalCount:    totalCount,
 	}
 
 	utils.WriteJSON(w, http.StatusOK, response)

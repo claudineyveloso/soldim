@@ -153,17 +153,10 @@ FROM searches_result
 WHERE search_id = (SELECT search_id FROM LatestSearchID)
 AND ($1::text IS NULL OR $1 = '' OR source = $1)
 ORDER BY created_at DESC
-LIMIT $2 OFFSET $3
 `
 
-type GetSearchesResultParams struct {
-	Column1 string `json:"column_1"`
-	Limit   int32  `json:"limit"`
-	Offset  int32  `json:"offset"`
-}
-
-func (q *Queries) GetSearchesResult(ctx context.Context, arg GetSearchesResultParams) ([]SearchesResult, error) {
-	rows, err := q.db.QueryContext(ctx, getSearchesResult, arg.Column1, arg.Limit, arg.Offset)
+func (q *Queries) GetSearchesResult(ctx context.Context, dollar_1 string) ([]SearchesResult, error) {
+	rows, err := q.db.QueryContext(ctx, getSearchesResult, dollar_1)
 	if err != nil {
 		return nil, err
 	}
@@ -194,23 +187,4 @@ func (q *Queries) GetSearchesResult(ctx context.Context, arg GetSearchesResultPa
 		return nil, err
 	}
 	return items, nil
-}
-
-const getTotalSearchesResult = `-- name: GetTotalSearchesResult :one
-WITH LatestSearchID AS (
-    SELECT search_id
-    FROM searches_result
-    ORDER BY created_at DESC
-    LIMIT 1
-)
-SELECT COUNT(*)
-FROM searches_result
-WHERE search_id = (SELECT search_id FROM LatestSearchID)
-`
-
-func (q *Queries) GetTotalSearchesResult(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getTotalSearchesResult)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
 }
