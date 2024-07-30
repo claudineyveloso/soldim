@@ -21,9 +21,7 @@ SELECT id,
        updated_at
 FROM searches_result
 WHERE search_id = (SELECT search_id FROM LatestSearchID)
-AND ($1::text IS NULL OR $1 = '' OR source = $1)
-ORDER BY created_at DESC
-LIMIT $2 OFFSET $3;
+ORDER BY created_at DESC;
 
 -- name: GetSearchResult :one
 SELECT id,
@@ -42,18 +40,6 @@ WHERE searches_result.id = $1;
 -- name: DeleteSearchResult :exec
 DELETE FROM searches_result
 WHERE searches_result.id = $1;
-
-
--- name: GetTotalSearchesResult :one
-WITH LatestSearchID AS (
-    SELECT search_id
-    FROM searches_result
-    ORDER BY created_at DESC
-    LIMIT 1
-)
-SELECT COUNT(*)
-FROM searches_result
-WHERE search_id = (SELECT search_id FROM LatestSearchID);
 
 -- name: GetSearchResultSources :many
 WITH RankedResults AS (
