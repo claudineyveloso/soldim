@@ -18,7 +18,7 @@ import (
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "8a1d4c37b2c724d5536474f2dc11bdb2f9952a1d"
+	bearerToken     = "f9a8f84b64accbd496b7ef051a78267190522468"
 )
 
 func RegisterRoutes(router *mux.Router) {
@@ -108,6 +108,7 @@ func processProductsSalesOrders() error {
 		return fmt.Errorf("erro ao abrir arquivo de log: %v", err)
 	}
 	defer logFile.Close()
+	fmt.Printf("Na linha abaixo, pegar todos os pedidos de venda")
 
 	resp, err := http.Get("http://localhost:8080/get_sales_orders")
 	if err != nil {
@@ -132,6 +133,7 @@ func processProductsSalesOrders() error {
 			utils.LogError(logFile, salesOrder.ID, fmt.Errorf("erro ao obter SalesOrdersIDInBling para ID %d: %v", salesOrder.ID, err))
 			continue
 		}
+		fmt.Printf("Na linha abaixo, pegar todos os pedidos de venda")
 
 		for _, item := range salesOrderData.Itens {
 			productSalesOrder := types.ProductSalesOrderPayload{
@@ -155,6 +157,39 @@ func processProductsSalesOrders() error {
 }
 
 func createProductsSalesOrder(productsalesorder types.ProductSalesOrderPayload) error {
+	productsalesorderJSON, err := json.Marshal(productsalesorder)
+	if err != nil {
+		return fmt.Errorf("error marshalling product sales order: %v", err)
+	}
+
+	req, err := http.NewRequest("POST", "http://localhost:8080/create_products_sales_order", bytes.NewBuffer(productsalesorderJSON))
+	if err != nil {
+		return fmt.Errorf("error creating request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("error sending request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("error reading response body: %v", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to create product sales orders. Status: %v, Response: %s", resp.Status, string(body))
+	}
+
+	fmt.Printf("Product Sales Orders created successfully: %v\n", productsalesorder)
+	fmt.Printf("Response Body: %s\n", string(body))
+	return nil
+}
+
+func createProductsSalesOrder_OLD(productsalesorder types.ProductSalesOrderPayload) error {
 	productsalesorderJSON, err := json.Marshal(productsalesorder)
 	if err != nil {
 		return fmt.Errorf("error marshalling product sales order: %v", err)
