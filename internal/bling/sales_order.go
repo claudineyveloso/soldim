@@ -54,7 +54,7 @@ func GetSalesOrdersFromBling(bearerToken string, page int, limit int) ([]types.S
 	}
 
 	if err := json.Unmarshal(bodyBytes, &responseData); err != nil {
-		return nil, 0, fmt.Errorf("erro ao decodificar resposta: %v", err)
+		return nil, 0, fmt.Errorf("erro ao decodificar resposta em GetSalesOrdersFromBling: %v", err)
 	}
 
 	fmt.Printf("Número de vendas deserializados: %d\n", len(responseData.Data))

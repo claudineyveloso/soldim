@@ -40,7 +40,7 @@ func GetSalesChannelsFromBling(bearerToken string) ([]types.SalesChannel, error)
 		Data []types.SalesChannel `json:"data"`
 	}
 	if err := json.Unmarshal(bodyBytes, &responseData); err != nil {
-		return nil, fmt.Errorf("erro ao decodificar resposta: %v", err)
+		return nil, fmt.Errorf("erro ao decodificar resposta de etSalesChannelsFromBling: %v", err)
 	}
 
 	log.Printf("Número de canais de vendas retornados: %d\n", len(responseData.Data))

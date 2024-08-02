@@ -21,7 +21,7 @@ import (
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "742b9348c095a29840c11fd19064c6c03383b4b0"
+	bearerToken     = "3a1a2228e56718a1e220428cda2b7bce2454281b"
 )
 
 func RegisterRoutes(router *mux.Router) {
@@ -51,6 +51,7 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		criterio = 0 // Valor padrão para criterio se não for fornecido ou inválido
 	}
+	rateLimiter := time.Tick(333 * time.Millisecond)
 
 	fmt.Printf("Requesting page: %d with limit: %d and name: %s\n", page, limit, name)
 
@@ -62,20 +63,20 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fmt.Printf("Processing page: %d with %d products\n", page, len(products))
-		processProducts(products)
+		processProducts(products, rateLimiter)
 
 		var wg sync.WaitGroup
 		wg.Add(1)
 
 		go func() {
 			defer wg.Done()
-			processStocks(products, bearerToken)
+			processStocks(products, bearerToken, rateLimiter)
 		}()
 
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			processSuppliers(products, bearerToken)
+			processSuppliers(products, bearerToken, rateLimiter)
 		}()
 
 		wg.Wait()
@@ -216,8 +217,9 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(jsonResponse)
 }
 
-func processProducts(products []types.Product) {
+func processProducts(products []types.Product, rateLimiter <-chan time.Time) {
 	for _, product := range products {
+		<-rateLimiter
 		productJSON, err := json.Marshal(product)
 		if err != nil {
 			fmt.Printf("Error marshalling product: %v\n", err)
@@ -248,9 +250,9 @@ func processProducts(products []types.Product) {
 	}
 }
 
-func processStocks(products []types.Product, bearerToken string) {
+func processStocks(products []types.Product, bearerToken string, rateLimiter <-chan time.Time) {
 	var wg sync.WaitGroup
-
+	<-rateLimiter
 	// Criar um rate limiter que permite 3 requisições por segundo
 	limiter := rate.NewLimiter(rate.Every(time.Second/3), 1)
 
@@ -266,14 +268,15 @@ func processStocks(products []types.Product, bearerToken string) {
 				return
 			}
 
-			processStockForProduct(product, bearerToken)
+			processStockForProduct(product, bearerToken, rateLimiter)
 		}(product)
 	}
 
 	wg.Wait()
 }
 
-func processStockForProduct(product types.Product, bearerToken string) {
+func processStockForProduct(product types.Product, bearerToken string, rateLimiter <-chan time.Time) {
+	<-rateLimiter
 	stockResponse, err := bling.GetStockProductFromBling(bearerToken, product.ID)
 	if err != nil {
 		fmt.Printf("Error fetching stock for product %d: %v\n", product.ID, err)
@@ -343,9 +346,9 @@ func processStockForProduct(product types.Product, bearerToken string) {
 	}
 }
 
-func processSuppliers(products []types.Product, bearerToken string) {
+func processSuppliers(products []types.Product, bearerToken string, rateLimiter <-chan time.Time) {
 	var wg sync.WaitGroup
-
+	<-rateLimiter
 	// Criar um rate limiter que permite 3 requisições por segundo
 	limiter := rate.NewLimiter(rate.Every(time.Second/3), 1)
 
@@ -361,15 +364,16 @@ func processSuppliers(products []types.Product, bearerToken string) {
 				return
 			}
 
-			processSupplierForProduct(product, bearerToken)
+			processSupplierForProduct(product, bearerToken, rateLimiter)
 		}(product)
 	}
 
 	wg.Wait()
 }
 
-func processSupplierForProduct(product types.Product, bearerToken string) {
-	supplierResponse, err := bling.GetSupplierProductFromBling(bearerToken, product.ID)
+func processSupplierForProduct(product types.Product, bearerToken string, rateLimiter <-chan time.Time) {
+	<-rateLimiter
+	supplierResponse, err := bling.GetSupplierProductFromBling(bearerToken, product.ID, rateLimiter)
 	if err != nil {
 		fmt.Printf("Error fetching supplier for product %d: %v\n", product.ID, err)
 		return
@@ -394,7 +398,7 @@ func processSupplierForProduct(product types.Product, bearerToken string) {
 		}
 
 		fmt.Printf("Sending supplier product data for product %d: %s\n", product.ID, string(supplierProductJSON))
-
+		<-rateLimiter
 		supplierProductResp, err := http.Post("http://localhost:8080/create_supplier_product", "application/json", bytes.NewBuffer(supplierProductJSON))
 		if err != nil {
 			fmt.Printf("Error sending supplier product data for product %d: %v\n", product.ID, err)

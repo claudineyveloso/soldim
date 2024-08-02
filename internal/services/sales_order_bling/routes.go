@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -17,7 +18,7 @@ import (
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "b6d394f2f6a284f09a39cd3c2f4b788737d4a3c0"
+	bearerToken     = "3a1a2228e56718a1e220428cda2b7bce2454281b"
 )
 
 func RegisterRoutes(router *mux.Router) {
@@ -92,16 +93,17 @@ func processSales(sales []types.SalesOrder) {
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			fmt.Printf("Failed to create sales orders. Status: %v\n", resp.Status)
+			body, _ := io.ReadAll(resp.Body)
+			fmt.Printf("Failed to create sales orders. Status: %v, Response: %s\n", resp.Status, string(body))
 			continue
 		}
 
-		fmt.Printf("Sales Orders created successfully: %v\n", sale)
+		fmt.Printf("Sales Orders created successfully em processSales: %v\n", sale)
 	}
 }
 
 func processProductsSalesOrders() error {
-	logFile, err := os.OpenFile("error_import_sales_orders_log.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	logFile, err := os.OpenFile("error_import_sales_orders_log.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		return fmt.Errorf("erro ao abrir arquivo de log: %v", err)
 	}

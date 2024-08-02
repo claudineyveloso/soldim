@@ -41,7 +41,7 @@ func (h *Handler) handleCreateSalesOrder(w http.ResponseWriter, r *http.Request)
 	err := h.salesOrderStore.CreateSalesOrder(salesOrder)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
-		return
+		// return
 	}
 
 	response := map[string]interface{}{
