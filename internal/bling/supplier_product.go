@@ -10,8 +10,8 @@ import (
 	"github.com/claudineyveloso/soldim.git/internal/types"
 )
 
-func GetSupplierProductFromBling(bearerToken string, productID int64, rateLimiter <-chan time.Time) (*types.SupplierResponse, error) {
-	<-rateLimiter
+func GetSupplierProductFromBling(bearerToken string, productID int64, rateLimiter *time.Ticker) (*types.SupplierResponse, error) {
+	<-rateLimiter.C
 	url := fmt.Sprintf("https://bling.com.br/Api/v3/produtos/fornecedores?idProduto=%d", productID)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

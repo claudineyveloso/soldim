@@ -92,88 +92,114 @@ func (q *Queries) DeleteProduct(ctx context.Context, id int64) error {
 }
 
 const getProduct = `-- name: GetProduct :one
-SELECT p.ID,
-        p.idProdutoPai,
-        p.nome,
-        p.codigo,
-        p.preco,
-        p.tipo,
-        p.situacao,
-        p.formato,
-        p.descricao_curta,
-        p.imagem_url,
-        p.dataValidade,
-        p.unidade,
-        p.pesoLiquido,
-        p.pesoBruto,
-        p.volumes,
-        p.itensPorCaixa,
-        p.gtin,
-        p.gtinEmbalagem,
-        p.tipoProducao,
-        p.condicao,
-        p.freteGratis,
-        p.marca,
-        p.descricaoComplementar,
-        p.linkExterno,
-        p.observacoes,
-        p.descricaoEmbalagemDiscreta,
-        p.created_at,
-        p.updated_at,
-        s.saldo_fisico_total,
-        s.saldo_virtual_total,
-        dp.saldo_fisico,
-        dp.saldo_virtual,
-        sp.preco_custo,
-        sp.preco_compra,
-        sp.supplier_id
-FROM
+WITH aggregated_stocks AS (
+    SELECT product_id, 
+           SUM(saldo_fisico_total) AS saldo_fisico_total, 
+           SUM(saldo_virtual_total) AS saldo_virtual_total
+    FROM stocks 
+    GROUP BY product_id
+),
+aggregated_deposit_products AS (
+    SELECT product_id, 
+           SUM(saldo_fisico) AS saldo_fisico, 
+           SUM(saldo_virtual) AS saldo_virtual
+    FROM deposit_products 
+    GROUP BY product_id
+),
+aggregated_supplier_products AS (
+    SELECT product_id, 
+           AVG(preco_custo) AS preco_custo, 
+           AVG(preco_compra) AS preco_compra, 
+           supplier_id
+    FROM supplier_products 
+    GROUP BY product_id, supplier_id
+)
+SELECT 
+    p.ID,
+    p.idProdutoPai,
+    p.nome,
+    p.codigo,
+    p.preco,
+    p.tipo,
+    p.situacao,
+    p.formato,
+    p.descricao_curta,
+    p.imagem_url,
+    p.dataValidade,
+    p.unidade,
+    p.pesoLiquido,
+    p.pesoBruto,
+    p.volumes,
+    p.itensPorCaixa,
+    p.gtin,
+    p.gtinEmbalagem,
+    p.tipoProducao,
+    p.condicao,
+    p.freteGratis,
+    p.marca,
+    p.descricaoComplementar,
+    p.linkExterno,
+    p.observacoes,
+    p.descricaoEmbalagemDiscreta,
+    p.created_at,
+    p.updated_at,
+    COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
+    COALESCE(s.saldo_virtual_total, 0) AS saldo_virtual_total,
+    COALESCE(dp.saldo_fisico, 0) AS saldo_fisico,
+    COALESCE(dp.saldo_virtual, 0) AS saldo_virtual,
+    COALESCE(sp.preco_custo, 0) AS preco_custo,
+    COALESCE(sp.preco_compra, 0) AS preco_compra,
+    sp.supplier_id
+FROM 
     products p
-LEFT JOIN
-    stocks s ON p.id = s.product_id
-LEFT JOIN
-    deposit_products dp ON p.id = dp.product_id
-LEFT JOIN
-    supplier_products sp ON p.id = sp.product_id
+LEFT JOIN 
+    aggregated_stocks s 
+    ON p.id = s.product_id
+LEFT JOIN 
+    aggregated_deposit_products dp 
+    ON p.id = dp.product_id
+LEFT JOIN 
+    aggregated_supplier_products sp 
+    ON p.id = sp.product_id
 WHERE p.id = $1
 `
 
 type GetProductRow struct {
-	ID                         int64           `json:"id"`
-	Idprodutopai               int64           `json:"idprodutopai"`
-	Nome                       string          `json:"nome"`
-	Codigo                     string          `json:"codigo"`
-	Preco                      float64         `json:"preco"`
-	Tipo                       string          `json:"tipo"`
-	Situacao                   string          `json:"situacao"`
-	Formato                    string          `json:"formato"`
-	DescricaoCurta             string          `json:"descricao_curta"`
-	ImagemUrl                  string          `json:"imagem_url"`
-	Datavalidade               time.Time       `json:"datavalidade"`
-	Unidade                    string          `json:"unidade"`
-	Pesoliquido                float64         `json:"pesoliquido"`
-	Pesobruto                  float64         `json:"pesobruto"`
-	Volumes                    int32           `json:"volumes"`
-	Itensporcaixa              int32           `json:"itensporcaixa"`
-	Gtin                       string          `json:"gtin"`
-	Gtinembalagem              string          `json:"gtinembalagem"`
-	Tipoproducao               string          `json:"tipoproducao"`
-	Condicao                   int32           `json:"condicao"`
-	Fretegratis                bool            `json:"fretegratis"`
-	Marca                      string          `json:"marca"`
-	Descricaocomplementar      string          `json:"descricaocomplementar"`
-	Linkexterno                string          `json:"linkexterno"`
-	Observacoes                string          `json:"observacoes"`
-	Descricaoembalagemdiscreta string          `json:"descricaoembalagemdiscreta"`
-	CreatedAt                  time.Time       `json:"created_at"`
-	UpdatedAt                  time.Time       `json:"updated_at"`
-	SaldoFisicoTotal           sql.NullInt32   `json:"saldo_fisico_total"`
-	SaldoVirtualTotal          sql.NullInt32   `json:"saldo_virtual_total"`
-	SaldoFisico                sql.NullInt32   `json:"saldo_fisico"`
-	SaldoVirtual               sql.NullInt32   `json:"saldo_virtual"`
-	PrecoCusto                 sql.NullFloat64 `json:"preco_custo"`
-	PrecoCompra                sql.NullFloat64 `json:"preco_compra"`
-	SupplierID                 sql.NullInt64   `json:"supplier_id"`
+	ID                         int64         `json:"id"`
+	Idprodutopai               int64         `json:"idprodutopai"`
+	Nome                       string        `json:"nome"`
+	Codigo                     string        `json:"codigo"`
+	Preco                      float64       `json:"preco"`
+	Tipo                       string        `json:"tipo"`
+	Situacao                   string        `json:"situacao"`
+	Formato                    string        `json:"formato"`
+	DescricaoCurta             string        `json:"descricao_curta"`
+	ImagemUrl                  string        `json:"imagem_url"`
+	Datavalidade               time.Time     `json:"datavalidade"`
+	Unidade                    string        `json:"unidade"`
+	Pesoliquido                float64       `json:"pesoliquido"`
+	Pesobruto                  float64       `json:"pesobruto"`
+	Volumes                    int32         `json:"volumes"`
+	Itensporcaixa              int32         `json:"itensporcaixa"`
+	Gtin                       string        `json:"gtin"`
+	Gtinembalagem              string        `json:"gtinembalagem"`
+	Tipoproducao               string        `json:"tipoproducao"`
+	Condicao                   int32         `json:"condicao"`
+	Fretegratis                bool          `json:"fretegratis"`
+	Marca                      string        `json:"marca"`
+	Descricaocomplementar      string        `json:"descricaocomplementar"`
+	Linkexterno                string        `json:"linkexterno"`
+	Observacoes                string        `json:"observacoes"`
+	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
+	CreatedAt                  time.Time     `json:"created_at"`
+	UpdatedAt                  time.Time     `json:"updated_at"`
+	SaldoFisicoTotal           int64         `json:"saldo_fisico_total"`
+	SaldoVirtualTotal          int64         `json:"saldo_virtual_total"`
+	SaldoFisico                int64         `json:"saldo_fisico"`
+	SaldoVirtual               int64         `json:"saldo_virtual"`
+	PrecoCusto                 float64       `json:"preco_custo"`
+	PrecoCompra                float64       `json:"preco_compra"`
+	SupplierID                 sql.NullInt64 `json:"supplier_id"`
 }
 
 func (q *Queries) GetProduct(ctx context.Context, id int64) (GetProductRow, error) {
@@ -220,88 +246,114 @@ func (q *Queries) GetProduct(ctx context.Context, id int64) (GetProductRow, erro
 }
 
 const getProductByName = `-- name: GetProductByName :one
-SELECT p.ID,
-        p.idProdutoPai,
-        p.nome,
-        p.codigo,
-        p.preco,
-        p.tipo,
-        p.situacao,
-        p.formato,
-        p.descricao_curta,
-        p.imagem_url,
-        p.dataValidade,
-        p.unidade,
-        p.pesoLiquido,
-        p.pesoBruto,
-        p.volumes,
-        p.itensPorCaixa,
-        p.gtin,
-        p.gtinEmbalagem,
-        p.tipoProducao,
-        p.condicao,
-        p.freteGratis,
-        p.marca,
-        p.descricaoComplementar,
-        p.linkExterno,
-        p.observacoes,
-        p.descricaoEmbalagemDiscreta,
-        p.created_at,
-        p.updated_at,
-        s.saldo_fisico_total,
-        s.saldo_virtual_total,
-        dp.saldo_fisico,
-        dp.saldo_virtual,
-        sp.preco_custo,
-        sp.preco_compra,
-        sp.supplier_id
-FROM
+WITH aggregated_stocks AS (
+    SELECT product_id, 
+           SUM(saldo_fisico_total) AS saldo_fisico_total, 
+           SUM(saldo_virtual_total) AS saldo_virtual_total
+    FROM stocks 
+    GROUP BY product_id
+),
+aggregated_deposit_products AS (
+    SELECT product_id, 
+           SUM(saldo_fisico) AS saldo_fisico, 
+           SUM(saldo_virtual) AS saldo_virtual
+    FROM deposit_products 
+    GROUP BY product_id
+),
+aggregated_supplier_products AS (
+    SELECT product_id, 
+           AVG(preco_custo) AS preco_custo, 
+           AVG(preco_compra) AS preco_compra, 
+           supplier_id
+    FROM supplier_products 
+    GROUP BY product_id, supplier_id
+)
+SELECT 
+    p.ID,
+    p.idProdutoPai,
+    p.nome,
+    p.codigo,
+    p.preco,
+    p.tipo,
+    p.situacao,
+    p.formato,
+    p.descricao_curta,
+    p.imagem_url,
+    p.dataValidade,
+    p.unidade,
+    p.pesoLiquido,
+    p.pesoBruto,
+    p.volumes,
+    p.itensPorCaixa,
+    p.gtin,
+    p.gtinEmbalagem,
+    p.tipoProducao,
+    p.condicao,
+    p.freteGratis,
+    p.marca,
+    p.descricaoComplementar,
+    p.linkExterno,
+    p.observacoes,
+    p.descricaoEmbalagemDiscreta,
+    p.created_at,
+    p.updated_at,
+    COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
+    COALESCE(s.saldo_virtual_total, 0) AS saldo_virtual_total,
+    COALESCE(dp.saldo_fisico, 0) AS saldo_fisico,
+    COALESCE(dp.saldo_virtual, 0) AS saldo_virtual,
+    COALESCE(sp.preco_custo, 0) AS preco_custo,
+    COALESCE(sp.preco_compra, 0) AS preco_compra,
+    sp.supplier_id
+FROM 
     products p
-LEFT JOIN
-    stocks s ON p.id = s.product_id
-LEFT JOIN
-    deposit_products dp ON p.id = dp.product_id
-LEFT JOIN
-    supplier_products sp ON p.id = sp.product_id
+LEFT JOIN 
+    aggregated_stocks s 
+    ON p.id = s.product_id
+LEFT JOIN 
+    aggregated_deposit_products dp 
+    ON p.id = dp.product_id
+LEFT JOIN 
+    aggregated_supplier_products sp 
+    ON p.id = sp.product_id
 WHERE p.nome = $1
 `
 
 type GetProductByNameRow struct {
-	ID                         int64           `json:"id"`
-	Idprodutopai               int64           `json:"idprodutopai"`
-	Nome                       string          `json:"nome"`
-	Codigo                     string          `json:"codigo"`
-	Preco                      float64         `json:"preco"`
-	Tipo                       string          `json:"tipo"`
-	Situacao                   string          `json:"situacao"`
-	Formato                    string          `json:"formato"`
-	DescricaoCurta             string          `json:"descricao_curta"`
-	ImagemUrl                  string          `json:"imagem_url"`
-	Datavalidade               time.Time       `json:"datavalidade"`
-	Unidade                    string          `json:"unidade"`
-	Pesoliquido                float64         `json:"pesoliquido"`
-	Pesobruto                  float64         `json:"pesobruto"`
-	Volumes                    int32           `json:"volumes"`
-	Itensporcaixa              int32           `json:"itensporcaixa"`
-	Gtin                       string          `json:"gtin"`
-	Gtinembalagem              string          `json:"gtinembalagem"`
-	Tipoproducao               string          `json:"tipoproducao"`
-	Condicao                   int32           `json:"condicao"`
-	Fretegratis                bool            `json:"fretegratis"`
-	Marca                      string          `json:"marca"`
-	Descricaocomplementar      string          `json:"descricaocomplementar"`
-	Linkexterno                string          `json:"linkexterno"`
-	Observacoes                string          `json:"observacoes"`
-	Descricaoembalagemdiscreta string          `json:"descricaoembalagemdiscreta"`
-	CreatedAt                  time.Time       `json:"created_at"`
-	UpdatedAt                  time.Time       `json:"updated_at"`
-	SaldoFisicoTotal           sql.NullInt32   `json:"saldo_fisico_total"`
-	SaldoVirtualTotal          sql.NullInt32   `json:"saldo_virtual_total"`
-	SaldoFisico                sql.NullInt32   `json:"saldo_fisico"`
-	SaldoVirtual               sql.NullInt32   `json:"saldo_virtual"`
-	PrecoCusto                 sql.NullFloat64 `json:"preco_custo"`
-	PrecoCompra                sql.NullFloat64 `json:"preco_compra"`
-	SupplierID                 sql.NullInt64   `json:"supplier_id"`
+	ID                         int64         `json:"id"`
+	Idprodutopai               int64         `json:"idprodutopai"`
+	Nome                       string        `json:"nome"`
+	Codigo                     string        `json:"codigo"`
+	Preco                      float64       `json:"preco"`
+	Tipo                       string        `json:"tipo"`
+	Situacao                   string        `json:"situacao"`
+	Formato                    string        `json:"formato"`
+	DescricaoCurta             string        `json:"descricao_curta"`
+	ImagemUrl                  string        `json:"imagem_url"`
+	Datavalidade               time.Time     `json:"datavalidade"`
+	Unidade                    string        `json:"unidade"`
+	Pesoliquido                float64       `json:"pesoliquido"`
+	Pesobruto                  float64       `json:"pesobruto"`
+	Volumes                    int32         `json:"volumes"`
+	Itensporcaixa              int32         `json:"itensporcaixa"`
+	Gtin                       string        `json:"gtin"`
+	Gtinembalagem              string        `json:"gtinembalagem"`
+	Tipoproducao               string        `json:"tipoproducao"`
+	Condicao                   int32         `json:"condicao"`
+	Fretegratis                bool          `json:"fretegratis"`
+	Marca                      string        `json:"marca"`
+	Descricaocomplementar      string        `json:"descricaocomplementar"`
+	Linkexterno                string        `json:"linkexterno"`
+	Observacoes                string        `json:"observacoes"`
+	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
+	CreatedAt                  time.Time     `json:"created_at"`
+	UpdatedAt                  time.Time     `json:"updated_at"`
+	SaldoFisicoTotal           int64         `json:"saldo_fisico_total"`
+	SaldoVirtualTotal          int64         `json:"saldo_virtual_total"`
+	SaldoFisico                int64         `json:"saldo_fisico"`
+	SaldoVirtual               int64         `json:"saldo_virtual"`
+	PrecoCusto                 float64       `json:"preco_custo"`
+	PrecoCompra                float64       `json:"preco_compra"`
+	SupplierID                 sql.NullInt64 `json:"supplier_id"`
 }
 
 func (q *Queries) GetProductByName(ctx context.Context, nome string) (GetProductByNameRow, error) {
@@ -348,88 +400,95 @@ func (q *Queries) GetProductByName(ctx context.Context, nome string) (GetProduct
 }
 
 const getProductBySupplierID = `-- name: GetProductBySupplierID :one
-SELECT p.ID,
-        p.idProdutoPai,
-        p.nome,
-        p.codigo,
-        p.preco,
-        p.tipo,
-        p.situacao,
-        p.formato,
-        p.descricao_curta,
-        p.imagem_url,
-        p.dataValidade,
-        p.unidade,
-        p.pesoLiquido,
-        p.pesoBruto,
-        p.volumes,
-        p.itensPorCaixa,
-        p.gtin,
-        p.gtinEmbalagem,
-        p.tipoProducao,
-        p.condicao,
-        p.freteGratis,
-        p.marca,
-        p.descricaoComplementar,
-        p.linkExterno,
-        p.observacoes,
-        p.descricaoEmbalagemDiscreta,
-        p.created_at,
-        p.updated_at,
-        s.saldo_fisico_total,
-        s.saldo_virtual_total,
-        dp.saldo_fisico,
-        dp.saldo_virtual,
-        sp.preco_custo,
-        sp.preco_compra,
-        sp.supplier_id
-FROM
+SELECT 
+    p.ID,
+    p.idProdutoPai,
+    p.nome,
+    p.codigo,
+    p.preco,
+    p.tipo,
+    p.situacao,
+    p.formato,
+    p.descricao_curta,
+    p.imagem_url,
+    p.dataValidade,
+    p.unidade,
+    p.pesoLiquido,
+    p.pesoBruto,
+    p.volumes,
+    p.itensPorCaixa,
+    p.gtin,
+    p.gtinEmbalagem,
+    p.tipoProducao,
+    p.condicao,
+    p.freteGratis,
+    p.marca,
+    p.descricaoComplementar,
+    p.linkExterno,
+    p.observacoes,
+    p.descricaoEmbalagemDiscreta,
+    p.created_at,
+    p.updated_at,
+    COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
+    COALESCE(s.saldo_virtual_total, 0) AS saldo_virtual_total,
+    COALESCE(dp.saldo_fisico, 0) AS saldo_fisico,
+    COALESCE(dp.saldo_virtual, 0) AS saldo_virtual,
+    COALESCE(sp.preco_custo, 0) AS preco_custo,
+    COALESCE(sp.preco_compra, 0) AS preco_compra,
+    sp.supplier_id
+FROM 
     products p
-LEFT JOIN
-    stocks s ON p.id = s.product_id
-LEFT JOIN
-    deposit_products dp ON p.id = dp.product_id
-LEFT JOIN
-    supplier_products sp ON p.id = sp.product_id
-WHERE sp.supplier_id = $1
+LEFT JOIN 
+    (SELECT product_id, SUM(saldo_fisico_total) as saldo_fisico_total, SUM(saldo_virtual_total) as saldo_virtual_total FROM stocks GROUP BY product_id) s 
+    ON p.id = s.product_id
+LEFT JOIN 
+    (SELECT product_id, SUM(saldo_fisico) as saldo_fisico, SUM(saldo_virtual) as saldo_virtual FROM deposit_products GROUP BY product_id) dp 
+    ON p.id = dp.product_id
+LEFT JOIN 
+    (SELECT product_id, AVG(preco_custo) as preco_custo, AVG(preco_compra) as preco_compra, supplier_id 
+     FROM supplier_products 
+     WHERE supplier_id = $1 
+     GROUP BY product_id, supplier_id) sp 
+    ON p.id = sp.product_id
+WHERE sp.supplier_id IS NOT NULL
 `
 
 type GetProductBySupplierIDRow struct {
-	ID                         int64           `json:"id"`
-	Idprodutopai               int64           `json:"idprodutopai"`
-	Nome                       string          `json:"nome"`
-	Codigo                     string          `json:"codigo"`
-	Preco                      float64         `json:"preco"`
-	Tipo                       string          `json:"tipo"`
-	Situacao                   string          `json:"situacao"`
-	Formato                    string          `json:"formato"`
-	DescricaoCurta             string          `json:"descricao_curta"`
-	ImagemUrl                  string          `json:"imagem_url"`
-	Datavalidade               time.Time       `json:"datavalidade"`
-	Unidade                    string          `json:"unidade"`
-	Pesoliquido                float64         `json:"pesoliquido"`
-	Pesobruto                  float64         `json:"pesobruto"`
-	Volumes                    int32           `json:"volumes"`
-	Itensporcaixa              int32           `json:"itensporcaixa"`
-	Gtin                       string          `json:"gtin"`
-	Gtinembalagem              string          `json:"gtinembalagem"`
-	Tipoproducao               string          `json:"tipoproducao"`
-	Condicao                   int32           `json:"condicao"`
-	Fretegratis                bool            `json:"fretegratis"`
-	Marca                      string          `json:"marca"`
-	Descricaocomplementar      string          `json:"descricaocomplementar"`
-	Linkexterno                string          `json:"linkexterno"`
-	Observacoes                string          `json:"observacoes"`
-	Descricaoembalagemdiscreta string          `json:"descricaoembalagemdiscreta"`
-	CreatedAt                  time.Time       `json:"created_at"`
-	UpdatedAt                  time.Time       `json:"updated_at"`
-	SaldoFisicoTotal           sql.NullInt32   `json:"saldo_fisico_total"`
-	SaldoVirtualTotal          sql.NullInt32   `json:"saldo_virtual_total"`
-	SaldoFisico                sql.NullInt32   `json:"saldo_fisico"`
-	SaldoVirtual               sql.NullInt32   `json:"saldo_virtual"`
-	PrecoCusto                 sql.NullFloat64 `json:"preco_custo"`
-	PrecoCompra                sql.NullFloat64 `json:"preco_compra"`
-	SupplierID                 sql.NullInt64   `json:"supplier_id"`
+	ID                         int64     `json:"id"`
+	Idprodutopai               int64     `json:"idprodutopai"`
+	Nome                       string    `json:"nome"`
+	Codigo                     string    `json:"codigo"`
+	Preco                      float64   `json:"preco"`
+	Tipo                       string    `json:"tipo"`
+	Situacao                   string    `json:"situacao"`
+	Formato                    string    `json:"formato"`
+	DescricaoCurta             string    `json:"descricao_curta"`
+	ImagemUrl                  string    `json:"imagem_url"`
+	Datavalidade               time.Time `json:"datavalidade"`
+	Unidade                    string    `json:"unidade"`
+	Pesoliquido                float64   `json:"pesoliquido"`
+	Pesobruto                  float64   `json:"pesobruto"`
+	Volumes                    int32     `json:"volumes"`
+	Itensporcaixa              int32     `json:"itensporcaixa"`
+	Gtin                       string    `json:"gtin"`
+	Gtinembalagem              string    `json:"gtinembalagem"`
+	Tipoproducao               string    `json:"tipoproducao"`
+	Condicao                   int32     `json:"condicao"`
+	Fretegratis                bool      `json:"fretegratis"`
+	Marca                      string    `json:"marca"`
+	Descricaocomplementar      string    `json:"descricaocomplementar"`
+	Linkexterno                string    `json:"linkexterno"`
+	Observacoes                string    `json:"observacoes"`
+	Descricaoembalagemdiscreta string    `json:"descricaoembalagemdiscreta"`
+	CreatedAt                  time.Time `json:"created_at"`
+	UpdatedAt                  time.Time `json:"updated_at"`
+	SaldoFisicoTotal           int64     `json:"saldo_fisico_total"`
+	SaldoVirtualTotal          int64     `json:"saldo_virtual_total"`
+	SaldoFisico                int64     `json:"saldo_fisico"`
+	SaldoVirtual               int64     `json:"saldo_virtual"`
+	PrecoCusto                 float64   `json:"preco_custo"`
+	PrecoCompra                float64   `json:"preco_compra"`
+	SupplierID                 int64     `json:"supplier_id"`
 }
 
 func (q *Queries) GetProductBySupplierID(ctx context.Context, supplierID int64) (GetProductBySupplierIDRow, error) {
@@ -476,51 +535,82 @@ func (q *Queries) GetProductBySupplierID(ctx context.Context, supplierID int64) 
 }
 
 const getProductEmptyStock = `-- name: GetProductEmptyStock :many
-SELECT p.ID,
-       p.idProdutoPai,
-       p.nome,
-       p.codigo,
-       p.preco,
-       p.tipo,
-       p.situacao,
-       p.formato,
-       p.descricao_curta,
-       p.imagem_url,
-       p.dataValidade,
-       p.unidade,
-       p.pesoLiquido,
-       p.pesoBruto,
-       p.volumes,
-       p.itensPorCaixa,
-       p.gtin,
-       p.gtinEmbalagem,
-       p.tipoProducao,
-       p.condicao,
-       p.freteGratis,
-       p.marca,
-       p.descricaoComplementar,
-       p.linkExterno,
-       p.observacoes,
-       p.descricaoEmbalagemDiscreta,
-       p.created_at,
-       p.updated_at,
-       s.saldo_fisico_total,
-       s.saldo_virtual_total,
-       dp.saldo_fisico,
-       dp.saldo_virtual,
-       sp.preco_custo,
-       sp.preco_compra,
-       sp.supplier_id
-FROM products p
-LEFT JOIN stocks s ON p.id = s.product_id
-LEFT JOIN deposit_products dp ON p.id = dp.product_id
-LEFT JOIN supplier_products sp ON p.id = sp.product_id
+WITH aggregated_stocks AS (
+    SELECT product_id, 
+           SUM(saldo_fisico_total) AS saldo_fisico_total, 
+           SUM(saldo_virtual_total) AS saldo_virtual_total
+    FROM stocks 
+    GROUP BY product_id
+),
+aggregated_deposit_products AS (
+    SELECT product_id, 
+           SUM(saldo_fisico) AS saldo_fisico, 
+           SUM(saldo_virtual) AS saldo_virtual
+    FROM deposit_products 
+    GROUP BY product_id
+),
+aggregated_supplier_products AS (
+    SELECT product_id, 
+           AVG(preco_custo) AS preco_custo, 
+           AVG(preco_compra) AS preco_compra, 
+           supplier_id
+    FROM supplier_products 
+    GROUP BY product_id, supplier_id
+)
+SELECT 
+    p.ID,
+    p.idProdutoPai,
+    p.nome,
+    p.codigo,
+    p.preco,
+    p.tipo,
+    p.situacao,
+    p.formato,
+    p.descricao_curta,
+    p.imagem_url,
+    p.dataValidade,
+    p.unidade,
+    p.pesoLiquido,
+    p.pesoBruto,
+    p.volumes,
+    p.itensPorCaixa,
+    p.gtin,
+    p.gtinEmbalagem,
+    p.tipoProducao,
+    p.condicao,
+    p.freteGratis,
+    p.marca,
+    p.descricaoComplementar,
+    p.linkExterno,
+    p.observacoes,
+    p.descricaoEmbalagemDiscreta,
+    p.created_at,
+    p.updated_at,
+    COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
+    COALESCE(s.saldo_virtual_total, 0) AS saldo_virtual_total,
+    COALESCE(dp.saldo_fisico, 0) AS saldo_fisico,
+    COALESCE(dp.saldo_virtual, 0) AS saldo_virtual,
+    COALESCE(sp.preco_custo, 0) AS preco_custo,
+    COALESCE(sp.preco_compra, 0) AS preco_compra,
+    sp.supplier_id
+FROM 
+    products p
+LEFT JOIN 
+    (SELECT product_id, SUM(saldo_fisico_total) as saldo_fisico_total, SUM(saldo_virtual_total) as saldo_virtual_total FROM stocks GROUP BY product_id) s 
+    ON p.id = s.product_id
+LEFT JOIN 
+    (SELECT product_id, SUM(saldo_fisico) as saldo_fisico, SUM(saldo_virtual) as saldo_virtual FROM deposit_products GROUP BY product_id) dp 
+    ON p.id = dp.product_id
+LEFT JOIN 
+    (SELECT product_id, AVG(preco_custo) as preco_custo, AVG(preco_compra) as preco_compra, supplier_id FROM supplier_products GROUP BY product_id, supplier_id) sp 
+    ON p.id = sp.product_id
 WHERE ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
   AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2)
   AND s.saldo_fisico_total = 0
   AND s.saldo_virtual_total = 0
   AND dp.saldo_fisico = 0
   AND dp.saldo_virtual = 0
+  ORDER BY p.nome
 `
 
 type GetProductEmptyStockParams struct {
@@ -529,41 +619,41 @@ type GetProductEmptyStockParams struct {
 }
 
 type GetProductEmptyStockRow struct {
-	ID                         int64           `json:"id"`
-	Idprodutopai               int64           `json:"idprodutopai"`
-	Nome                       string          `json:"nome"`
-	Codigo                     string          `json:"codigo"`
-	Preco                      float64         `json:"preco"`
-	Tipo                       string          `json:"tipo"`
-	Situacao                   string          `json:"situacao"`
-	Formato                    string          `json:"formato"`
-	DescricaoCurta             string          `json:"descricao_curta"`
-	ImagemUrl                  string          `json:"imagem_url"`
-	Datavalidade               time.Time       `json:"datavalidade"`
-	Unidade                    string          `json:"unidade"`
-	Pesoliquido                float64         `json:"pesoliquido"`
-	Pesobruto                  float64         `json:"pesobruto"`
-	Volumes                    int32           `json:"volumes"`
-	Itensporcaixa              int32           `json:"itensporcaixa"`
-	Gtin                       string          `json:"gtin"`
-	Gtinembalagem              string          `json:"gtinembalagem"`
-	Tipoproducao               string          `json:"tipoproducao"`
-	Condicao                   int32           `json:"condicao"`
-	Fretegratis                bool            `json:"fretegratis"`
-	Marca                      string          `json:"marca"`
-	Descricaocomplementar      string          `json:"descricaocomplementar"`
-	Linkexterno                string          `json:"linkexterno"`
-	Observacoes                string          `json:"observacoes"`
-	Descricaoembalagemdiscreta string          `json:"descricaoembalagemdiscreta"`
-	CreatedAt                  time.Time       `json:"created_at"`
-	UpdatedAt                  time.Time       `json:"updated_at"`
-	SaldoFisicoTotal           sql.NullInt32   `json:"saldo_fisico_total"`
-	SaldoVirtualTotal          sql.NullInt32   `json:"saldo_virtual_total"`
-	SaldoFisico                sql.NullInt32   `json:"saldo_fisico"`
-	SaldoVirtual               sql.NullInt32   `json:"saldo_virtual"`
-	PrecoCusto                 sql.NullFloat64 `json:"preco_custo"`
-	PrecoCompra                sql.NullFloat64 `json:"preco_compra"`
-	SupplierID                 sql.NullInt64   `json:"supplier_id"`
+	ID                         int64     `json:"id"`
+	Idprodutopai               int64     `json:"idprodutopai"`
+	Nome                       string    `json:"nome"`
+	Codigo                     string    `json:"codigo"`
+	Preco                      float64   `json:"preco"`
+	Tipo                       string    `json:"tipo"`
+	Situacao                   string    `json:"situacao"`
+	Formato                    string    `json:"formato"`
+	DescricaoCurta             string    `json:"descricao_curta"`
+	ImagemUrl                  string    `json:"imagem_url"`
+	Datavalidade               time.Time `json:"datavalidade"`
+	Unidade                    string    `json:"unidade"`
+	Pesoliquido                float64   `json:"pesoliquido"`
+	Pesobruto                  float64   `json:"pesobruto"`
+	Volumes                    int32     `json:"volumes"`
+	Itensporcaixa              int32     `json:"itensporcaixa"`
+	Gtin                       string    `json:"gtin"`
+	Gtinembalagem              string    `json:"gtinembalagem"`
+	Tipoproducao               string    `json:"tipoproducao"`
+	Condicao                   int32     `json:"condicao"`
+	Fretegratis                bool      `json:"fretegratis"`
+	Marca                      string    `json:"marca"`
+	Descricaocomplementar      string    `json:"descricaocomplementar"`
+	Linkexterno                string    `json:"linkexterno"`
+	Observacoes                string    `json:"observacoes"`
+	Descricaoembalagemdiscreta string    `json:"descricaoembalagemdiscreta"`
+	CreatedAt                  time.Time `json:"created_at"`
+	UpdatedAt                  time.Time `json:"updated_at"`
+	SaldoFisicoTotal           int64     `json:"saldo_fisico_total"`
+	SaldoVirtualTotal          int64     `json:"saldo_virtual_total"`
+	SaldoFisico                int64     `json:"saldo_fisico"`
+	SaldoVirtual               int64     `json:"saldo_virtual"`
+	PrecoCusto                 float64   `json:"preco_custo"`
+	PrecoCompra                float64   `json:"preco_compra"`
+	SupplierID                 int64     `json:"supplier_id"`
 }
 
 func (q *Queries) GetProductEmptyStock(ctx context.Context, arg GetProductEmptyStockParams) ([]GetProductEmptyStockRow, error) {
@@ -626,52 +716,98 @@ func (q *Queries) GetProductEmptyStock(ctx context.Context, arg GetProductEmptyS
 }
 
 const getProductNoMovements = `-- name: GetProductNoMovements :many
-SELECT pso.sales_order_id, 
-        pso.product_id, 
-        pso.quantidade , 
-        p.id,
-        p.nome,
-        p.codigo,
-        p.preco,
-        p.tipo,
-        p.situacao,
-        p.formato,
-        p.descricao_curta,
-        p.imagem_url,
-        p.dataValidade,
-        p.unidade,
-        p.pesoLiquido,
-        p.pesoBruto,
-        p.volumes,
-        p.itensPorCaixa,
-        p.gtin,
-        p.gtinEmbalagem,
-        p.tipoProducao,
-        p.condicao,
-        p.freteGratis,
-        p.marca,
-        p.descricaoComplementar,
-        p.linkExterno,
-        p.observacoes,
-        p.descricaoEmbalagemDiscreta,
-        so.numero,
-        so.numeroloja,
-        so.data,
-        so.datasaida,
-        so.dataprevista,
-        so.totalprodutos,
-        so.totaldescontos,
-        sp.descricao,
-        sp.codigo,
-        sp.preco_custo,
-        sp.preco_compra
-FROM products_sales_orders pso
-LEFT JOIN products p ON p.id = pso.product_id
-LEFT JOIN sales_orders so ON so.id = pso.sales_order_id
-LEFT JOIN supplier_products sp ON pso.product_id = sp.product_id
-WHERE so.datasaida < NOW() - INTERVAL '1 week'
-  AND ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
-  AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2)
+WITH aggregated_stocks AS (
+    SELECT product_id, 
+           SUM(saldo_fisico_total) AS saldo_fisico_total, 
+           SUM(saldo_virtual_total) AS saldo_virtual_total
+    FROM stocks 
+    GROUP BY product_id
+),
+aggregated_deposit_products AS (
+    SELECT product_id, 
+           SUM(saldo_fisico) AS saldo_fisico, 
+           SUM(saldo_virtual) AS saldo_virtual
+    FROM deposit_products 
+    GROUP BY product_id
+),
+aggregated_supplier_products AS (
+    SELECT product_id, 
+           AVG(preco_custo) AS preco_custo, 
+           AVG(preco_compra) AS preco_compra, 
+           supplier_id,
+           MAX(descricao) AS descricao,
+           MAX(codigo) AS codigo
+    FROM supplier_products 
+    GROUP BY product_id, supplier_id
+)
+SELECT 
+    p.ID,
+    p.idProdutoPai,
+    p.nome,
+    p.codigo,
+    p.preco,
+    p.tipo,
+    p.situacao,
+    p.formato,
+    p.descricao_curta,
+    p.imagem_url,
+    p.dataValidade,
+    p.unidade,
+    p.pesoLiquido,
+    p.pesoBruto,
+    p.volumes,
+    p.itensPorCaixa,
+    p.gtin,
+    p.gtinEmbalagem,
+    p.tipoProducao,
+    p.condicao,
+    p.freteGratis,
+    p.marca,
+    p.descricaoComplementar,
+    p.linkExterno,
+    p.observacoes,
+    p.descricaoEmbalagemDiscreta,
+    p.created_at,
+    p.updated_at,
+    COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
+    COALESCE(s.saldo_virtual_total, 0) AS saldo_virtual_total,
+    COALESCE(dp.saldo_fisico, 0) AS saldo_fisico,
+    COALESCE(dp.saldo_virtual, 0) AS saldo_virtual,
+    COALESCE(sp.preco_custo, 0) AS preco_custo,
+    COALESCE(sp.preco_compra, 0) AS preco_compra,
+    sp.supplier_id,
+    so.numero,
+    so.numeroloja,
+    so.data,
+    so.datasaida,
+    so.dataprevista,
+    COALESCE(so.totalprodutos, 0) AS totalprodutos,
+    COALESCE(so.totaldescontos, 0) AS totaldescontos
+FROM 
+    products p
+LEFT JOIN 
+    (SELECT product_id, SUM(saldo_fisico_total) AS saldo_fisico_total, SUM(saldo_virtual_total) AS saldo_virtual_total 
+     FROM stocks 
+     GROUP BY product_id) s 
+    ON p.id = s.product_id
+LEFT JOIN 
+    (SELECT product_id, SUM(saldo_fisico) AS saldo_fisico, SUM(saldo_virtual) AS saldo_virtual 
+     FROM deposit_products 
+     GROUP BY product_id) dp 
+    ON p.id = dp.product_id
+LEFT JOIN 
+    aggregated_supplier_products sp 
+    ON p.id = sp.product_id
+LEFT JOIN
+    products_sales_orders pso
+    ON p.id = pso.product_id
+LEFT JOIN
+    sales_orders so
+    ON pso.sales_order_id = so.id
+WHERE 
+    so.datasaida < NOW() - INTERVAL '1 week'
+    AND ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
+    AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2::text)
 `
 
 type GetProductNoMovementsParams struct {
@@ -680,45 +816,48 @@ type GetProductNoMovementsParams struct {
 }
 
 type GetProductNoMovementsRow struct {
-	SalesOrderID               int64           `json:"sales_order_id"`
-	ProductID                  int64           `json:"product_id"`
-	Quantidade                 int32           `json:"quantidade"`
-	ID                         sql.NullInt64   `json:"id"`
-	Nome                       sql.NullString  `json:"nome"`
-	Codigo                     sql.NullString  `json:"codigo"`
-	Preco                      sql.NullFloat64 `json:"preco"`
-	Tipo                       sql.NullString  `json:"tipo"`
-	Situacao                   sql.NullString  `json:"situacao"`
-	Formato                    sql.NullString  `json:"formato"`
-	DescricaoCurta             sql.NullString  `json:"descricao_curta"`
-	ImagemUrl                  sql.NullString  `json:"imagem_url"`
-	Datavalidade               sql.NullTime    `json:"datavalidade"`
-	Unidade                    sql.NullString  `json:"unidade"`
-	Pesoliquido                sql.NullFloat64 `json:"pesoliquido"`
-	Pesobruto                  sql.NullFloat64 `json:"pesobruto"`
-	Volumes                    sql.NullInt32   `json:"volumes"`
-	Itensporcaixa              sql.NullInt32   `json:"itensporcaixa"`
-	Gtin                       sql.NullString  `json:"gtin"`
-	Gtinembalagem              sql.NullString  `json:"gtinembalagem"`
-	Tipoproducao               sql.NullString  `json:"tipoproducao"`
-	Condicao                   sql.NullInt32   `json:"condicao"`
-	Fretegratis                sql.NullBool    `json:"fretegratis"`
-	Marca                      sql.NullString  `json:"marca"`
-	Descricaocomplementar      sql.NullString  `json:"descricaocomplementar"`
-	Linkexterno                sql.NullString  `json:"linkexterno"`
-	Observacoes                sql.NullString  `json:"observacoes"`
-	Descricaoembalagemdiscreta sql.NullString  `json:"descricaoembalagemdiscreta"`
-	Numero                     sql.NullInt32   `json:"numero"`
-	Numeroloja                 sql.NullString  `json:"numeroloja"`
-	Data                       sql.NullTime    `json:"data"`
-	Datasaida                  sql.NullTime    `json:"datasaida"`
-	Dataprevista               sql.NullTime    `json:"dataprevista"`
-	Totalprodutos              sql.NullFloat64 `json:"totalprodutos"`
-	Totaldescontos             sql.NullFloat64 `json:"totaldescontos"`
-	Descricao                  sql.NullString  `json:"descricao"`
-	Codigo_2                   sql.NullInt64   `json:"codigo_2"`
-	PrecoCusto                 sql.NullFloat64 `json:"preco_custo"`
-	PrecoCompra                sql.NullFloat64 `json:"preco_compra"`
+	ID                         int64          `json:"id"`
+	Idprodutopai               int64          `json:"idprodutopai"`
+	Nome                       string         `json:"nome"`
+	Codigo                     string         `json:"codigo"`
+	Preco                      float64        `json:"preco"`
+	Tipo                       string         `json:"tipo"`
+	Situacao                   string         `json:"situacao"`
+	Formato                    string         `json:"formato"`
+	DescricaoCurta             string         `json:"descricao_curta"`
+	ImagemUrl                  string         `json:"imagem_url"`
+	Datavalidade               time.Time      `json:"datavalidade"`
+	Unidade                    string         `json:"unidade"`
+	Pesoliquido                float64        `json:"pesoliquido"`
+	Pesobruto                  float64        `json:"pesobruto"`
+	Volumes                    int32          `json:"volumes"`
+	Itensporcaixa              int32          `json:"itensporcaixa"`
+	Gtin                       string         `json:"gtin"`
+	Gtinembalagem              string         `json:"gtinembalagem"`
+	Tipoproducao               string         `json:"tipoproducao"`
+	Condicao                   int32          `json:"condicao"`
+	Fretegratis                bool           `json:"fretegratis"`
+	Marca                      string         `json:"marca"`
+	Descricaocomplementar      string         `json:"descricaocomplementar"`
+	Linkexterno                string         `json:"linkexterno"`
+	Observacoes                string         `json:"observacoes"`
+	Descricaoembalagemdiscreta string         `json:"descricaoembalagemdiscreta"`
+	CreatedAt                  time.Time      `json:"created_at"`
+	UpdatedAt                  time.Time      `json:"updated_at"`
+	SaldoFisicoTotal           int64          `json:"saldo_fisico_total"`
+	SaldoVirtualTotal          int64          `json:"saldo_virtual_total"`
+	SaldoFisico                int64          `json:"saldo_fisico"`
+	SaldoVirtual               int64          `json:"saldo_virtual"`
+	PrecoCusto                 float64        `json:"preco_custo"`
+	PrecoCompra                float64        `json:"preco_compra"`
+	SupplierID                 sql.NullInt64  `json:"supplier_id"`
+	Numero                     sql.NullInt32  `json:"numero"`
+	Numeroloja                 sql.NullString `json:"numeroloja"`
+	Data                       sql.NullTime   `json:"data"`
+	Datasaida                  sql.NullTime   `json:"datasaida"`
+	Dataprevista               sql.NullTime   `json:"dataprevista"`
+	Totalprodutos              float64        `json:"totalprodutos"`
+	Totaldescontos             float64        `json:"totaldescontos"`
 }
 
 func (q *Queries) GetProductNoMovements(ctx context.Context, arg GetProductNoMovementsParams) ([]GetProductNoMovementsRow, error) {
@@ -731,10 +870,8 @@ func (q *Queries) GetProductNoMovements(ctx context.Context, arg GetProductNoMov
 	for rows.Next() {
 		var i GetProductNoMovementsRow
 		if err := rows.Scan(
-			&i.SalesOrderID,
-			&i.ProductID,
-			&i.Quantidade,
 			&i.ID,
+			&i.Idprodutopai,
 			&i.Nome,
 			&i.Codigo,
 			&i.Preco,
@@ -759,6 +896,15 @@ func (q *Queries) GetProductNoMovements(ctx context.Context, arg GetProductNoMov
 			&i.Linkexterno,
 			&i.Observacoes,
 			&i.Descricaoembalagemdiscreta,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.SaldoFisicoTotal,
+			&i.SaldoVirtualTotal,
+			&i.SaldoFisico,
+			&i.SaldoVirtual,
+			&i.PrecoCusto,
+			&i.PrecoCompra,
+			&i.SupplierID,
 			&i.Numero,
 			&i.Numeroloja,
 			&i.Data,
@@ -766,10 +912,6 @@ func (q *Queries) GetProductNoMovements(ctx context.Context, arg GetProductNoMov
 			&i.Dataprevista,
 			&i.Totalprodutos,
 			&i.Totaldescontos,
-			&i.Descricao,
-			&i.Codigo_2,
-			&i.PrecoCusto,
-			&i.PrecoCompra,
 		); err != nil {
 			return nil, err
 		}
@@ -785,98 +927,128 @@ func (q *Queries) GetProductNoMovements(ctx context.Context, arg GetProductNoMov
 }
 
 const getProducts = `-- name: GetProducts :many
-SELECT p.ID,
-        p.idProdutoPai,
-        p.nome,
-        p.codigo,
-        p.preco,
-        p.tipo,
-        p.situacao,
-        p.formato,
-        p.descricao_curta,
-        p.imagem_url,
-        p.dataValidade,
-        p.unidade,
-        p.pesoLiquido,
-        p.pesoBruto,
-        p.volumes,
-        p.itensPorCaixa,
-        p.gtin,
-        p.gtinEmbalagem,
-        p.tipoProducao,
-        p.condicao,
-        p.freteGratis,
-        p.marca,
-        p.descricaoComplementar,
-        p.linkExterno,
-        p.observacoes,
-        p.descricaoEmbalagemDiscreta,
-        p.created_at,
-        p.updated_at,
-        s.saldo_fisico_total,
-        s.saldo_virtual_total,
-        dp.saldo_fisico,
-        dp.saldo_virtual,
-        sp.preco_custo,
-        sp.preco_compra,
-        sp.supplier_id
-FROM
+WITH aggregated_stocks AS (
+    SELECT product_id, 
+           SUM(saldo_fisico_total) AS saldo_fisico_total, 
+           SUM(saldo_virtual_total) AS saldo_virtual_total
+    FROM stocks 
+    GROUP BY product_id
+),
+aggregated_deposit_products AS (
+    SELECT product_id, 
+           SUM(saldo_fisico) AS saldo_fisico, 
+           SUM(saldo_virtual) AS saldo_virtual
+    FROM deposit_products 
+    GROUP BY product_id
+),
+aggregated_supplier_products AS (
+    SELECT product_id, 
+           AVG(preco_custo) AS preco_custo, 
+           AVG(preco_compra) AS preco_compra, 
+           supplier_id
+    FROM supplier_products 
+    GROUP BY product_id, supplier_id
+)
+SELECT 
+    p.ID,
+    p.idProdutoPai,
+    p.nome,
+    p.codigo,
+    p.preco,
+    p.tipo,
+    p.situacao,
+    p.formato,
+    p.descricao_curta,
+    p.imagem_url,
+    p.dataValidade,
+    p.unidade,
+    p.pesoLiquido,
+    p.pesoBruto,
+    p.volumes,
+    p.itensPorCaixa,
+    p.gtin,
+    p.gtinEmbalagem,
+    p.tipoProducao,
+    p.condicao,
+    p.freteGratis,
+    p.marca,
+    p.descricaoComplementar,
+    p.linkExterno,
+    p.observacoes,
+    p.descricaoEmbalagemDiscreta,
+    p.created_at,
+    p.updated_at,
+    COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
+    COALESCE(s.saldo_virtual_total, 0) AS saldo_virtual_total,
+    COALESCE(dp.saldo_fisico, 0) AS saldo_fisico,
+    COALESCE(dp.saldo_virtual, 0) AS saldo_virtual,
+    COALESCE(sp.preco_custo, 0) AS preco_custo,
+    COALESCE(sp.preco_compra, 0) AS preco_compra,
+    sp.supplier_id
+FROM 
     products p
-LEFT JOIN
-    stocks s ON p.id = s.product_id
-LEFT JOIN
-    deposit_products dp ON p.id = dp.product_id
-LEFT JOIN
-    supplier_products sp ON p.id = sp.product_id
-WHERE ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
-  AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2)
+LEFT JOIN 
+    aggregated_stocks s 
+    ON p.id = s.product_id
+LEFT JOIN 
+    aggregated_deposit_products dp 
+    ON p.id = dp.product_id
+LEFT JOIN 
+    aggregated_supplier_products sp 
+    ON p.id = sp.product_id
+WHERE 
+    ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
+    AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2::text)
+    AND ($3::text IS NULL OR $3 = '' OR sp.supplier_id = $3::int)
+    ORDER BY p.nome
 `
 
 type GetProductsParams struct {
 	Column1 string `json:"column_1"`
 	Column2 string `json:"column_2"`
+	Column3 string `json:"column_3"`
 }
 
 type GetProductsRow struct {
-	ID                         int64           `json:"id"`
-	Idprodutopai               int64           `json:"idprodutopai"`
-	Nome                       string          `json:"nome"`
-	Codigo                     string          `json:"codigo"`
-	Preco                      float64         `json:"preco"`
-	Tipo                       string          `json:"tipo"`
-	Situacao                   string          `json:"situacao"`
-	Formato                    string          `json:"formato"`
-	DescricaoCurta             string          `json:"descricao_curta"`
-	ImagemUrl                  string          `json:"imagem_url"`
-	Datavalidade               time.Time       `json:"datavalidade"`
-	Unidade                    string          `json:"unidade"`
-	Pesoliquido                float64         `json:"pesoliquido"`
-	Pesobruto                  float64         `json:"pesobruto"`
-	Volumes                    int32           `json:"volumes"`
-	Itensporcaixa              int32           `json:"itensporcaixa"`
-	Gtin                       string          `json:"gtin"`
-	Gtinembalagem              string          `json:"gtinembalagem"`
-	Tipoproducao               string          `json:"tipoproducao"`
-	Condicao                   int32           `json:"condicao"`
-	Fretegratis                bool            `json:"fretegratis"`
-	Marca                      string          `json:"marca"`
-	Descricaocomplementar      string          `json:"descricaocomplementar"`
-	Linkexterno                string          `json:"linkexterno"`
-	Observacoes                string          `json:"observacoes"`
-	Descricaoembalagemdiscreta string          `json:"descricaoembalagemdiscreta"`
-	CreatedAt                  time.Time       `json:"created_at"`
-	UpdatedAt                  time.Time       `json:"updated_at"`
-	SaldoFisicoTotal           sql.NullInt32   `json:"saldo_fisico_total"`
-	SaldoVirtualTotal          sql.NullInt32   `json:"saldo_virtual_total"`
-	SaldoFisico                sql.NullInt32   `json:"saldo_fisico"`
-	SaldoVirtual               sql.NullInt32   `json:"saldo_virtual"`
-	PrecoCusto                 sql.NullFloat64 `json:"preco_custo"`
-	PrecoCompra                sql.NullFloat64 `json:"preco_compra"`
-	SupplierID                 sql.NullInt64   `json:"supplier_id"`
+	ID                         int64         `json:"id"`
+	Idprodutopai               int64         `json:"idprodutopai"`
+	Nome                       string        `json:"nome"`
+	Codigo                     string        `json:"codigo"`
+	Preco                      float64       `json:"preco"`
+	Tipo                       string        `json:"tipo"`
+	Situacao                   string        `json:"situacao"`
+	Formato                    string        `json:"formato"`
+	DescricaoCurta             string        `json:"descricao_curta"`
+	ImagemUrl                  string        `json:"imagem_url"`
+	Datavalidade               time.Time     `json:"datavalidade"`
+	Unidade                    string        `json:"unidade"`
+	Pesoliquido                float64       `json:"pesoliquido"`
+	Pesobruto                  float64       `json:"pesobruto"`
+	Volumes                    int32         `json:"volumes"`
+	Itensporcaixa              int32         `json:"itensporcaixa"`
+	Gtin                       string        `json:"gtin"`
+	Gtinembalagem              string        `json:"gtinembalagem"`
+	Tipoproducao               string        `json:"tipoproducao"`
+	Condicao                   int32         `json:"condicao"`
+	Fretegratis                bool          `json:"fretegratis"`
+	Marca                      string        `json:"marca"`
+	Descricaocomplementar      string        `json:"descricaocomplementar"`
+	Linkexterno                string        `json:"linkexterno"`
+	Observacoes                string        `json:"observacoes"`
+	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
+	CreatedAt                  time.Time     `json:"created_at"`
+	UpdatedAt                  time.Time     `json:"updated_at"`
+	SaldoFisicoTotal           int64         `json:"saldo_fisico_total"`
+	SaldoVirtualTotal          int64         `json:"saldo_virtual_total"`
+	SaldoFisico                int64         `json:"saldo_fisico"`
+	SaldoVirtual               int64         `json:"saldo_virtual"`
+	PrecoCusto                 float64       `json:"preco_custo"`
+	PrecoCompra                float64       `json:"preco_compra"`
+	SupplierID                 sql.NullInt64 `json:"supplier_id"`
 }
 
 func (q *Queries) GetProducts(ctx context.Context, arg GetProductsParams) ([]GetProductsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getProducts, arg.Column1, arg.Column2)
+	rows, err := q.db.QueryContext(ctx, getProducts, arg.Column1, arg.Column2, arg.Column3)
 	if err != nil {
 		return nil, err
 	}
