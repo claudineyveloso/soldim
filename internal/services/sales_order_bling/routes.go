@@ -18,7 +18,7 @@ import (
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "8134a23139321b4914519db424112334c646c526"
+	bearerToken     = "5b448d9e01186bb9a72f8deebb68037680e6623e"
 )
 
 func RegisterRoutes(router *mux.Router) {
