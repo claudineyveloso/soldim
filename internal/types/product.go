@@ -211,9 +211,9 @@ type ProductPayload struct {
 }
 
 type ProductResponse struct {
-	Data  []Product `json:"data"`
-	Total int       `json:"total"`
-	Limit int       `json:"limit"`
+	Products []Product `json:"products"`
+	Total    int       `json:"total"`
+	Limit    int       `json:"limit"`
 }
 
 type ProductStore interface {

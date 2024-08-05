@@ -21,7 +21,7 @@ import (
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "6c09a4baf387b20a75c8ce3d0f03cecfdd894ed7"
+	bearerToken     = "315fa82da3f589f36eea5b056ea55699db25864f"
 )
 
 func RegisterRoutes(router *mux.Router) {
@@ -111,32 +111,21 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Raw response body:", string(bodyStr))
 
 	var response types.ProductResponse
-	fmt.Println("***********************************************************************************")
-	fmt.Println("Response: ", response)
-	fmt.Println("body: ", bodyStr)
-	fmt.Println("***********************************************************************************")
-
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error unmarshalling JSON: %v", err), http.StatusInternalServerError)
 		return
 	}
-
-	// Log dos dados desserializados
+	fmt.Println("***********************************************************************************")
 	fmt.Printf("Deserialized response: %+v\n", response)
 	fmt.Printf("Number of products: %d\n", len(response.Products))
-
+	fmt.Println("***********************************************************************************")
 	products := response.Products
-
-	fmt.Println("***********************************************************************************")
-	fmt.Println("products: ", products)
-	fmt.Println("response: ", response)
-	fmt.Println("response.Products: ", response.Products)
-	fmt.Println("***********************************************************************************")
-
+	const maxRetries = 5
 	for _, product := range products {
+		<-rateLimiter.C
 		url := fmt.Sprintf("http://localhost:8080/get_product_id_bling?productID=%d", product.ID)
-		resp, err := http.Get(url)
+		resp, err := fetchWithRetries(url, maxRetries)
 		if err != nil {
 			fmt.Printf("Error getting product from Bling: %v\n", err)
 			continue
@@ -661,4 +650,23 @@ func handleGetProductId(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+func fetchWithRetries(url string, retries int) (*http.Response, error) {
+	for i := 0; i < retries; i++ {
+		resp, err := http.Get(url)
+		if err == nil && resp.StatusCode != http.StatusTooManyRequests {
+			return resp, err
+		}
+
+		// Close the response body to prevent resource leakage
+		if resp != nil {
+			resp.Body.Close()
+		}
+
+		// Exponential backoff
+		time.Sleep(time.Duration((1<<i)*100) * time.Millisecond)
+	}
+
+	return nil, fmt.Errorf("failed to get product from Bling after %d retries", retries)
 }

@@ -186,8 +186,11 @@ func DeleteProductInBling(bearerToken string, productID int64) error {
 
 func GetProductIDInBling(bearerToken string, productID int64) (types.Product, error) {
 	var product types.Product
-
+	rateLimiter := time.NewTicker(1 * time.Second)
+	defer rateLimiter.Stop()
 	url := fmt.Sprintf("https://bling.com.br/Api/v3/produtos/%d", productID)
+	<-rateLimiter.C
+
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return product, fmt.Errorf("error creating request: %v", err)
