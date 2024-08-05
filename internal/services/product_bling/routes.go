@@ -21,7 +21,7 @@ import (
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "5b448d9e01186bb9a72f8deebb68037680e6623e"
+	bearerToken     = "6c09a4baf387b20a75c8ce3d0f03cecfdd894ed7"
 )
 
 func RegisterRoutes(router *mux.Router) {
@@ -56,6 +56,8 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 	defer rateLimiter.Stop()
 
 	fmt.Printf("Requesting page: %d with limit: %d and name: %s\n", page, limit, name)
+	page = 1
+	limit = 100
 
 	for {
 		products, totalPages, err := bling.GetProductsFromBling(bearerToken, page, limit, name, criterio)
@@ -72,22 +74,25 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 
 		go func() {
 			defer wg.Done()
-			processStocks(products, bearerToken, rateLimiter)
+			// processStocks(products, bearerToken, rateLimiter)
 		}()
 
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			processSuppliers(products, bearerToken, rateLimiter)
+			// processSuppliers(products, bearerToken, rateLimiter)
 		}()
 
 		wg.Wait()
 
-		if page >= totalPages {
+		//if page >= totalPages {
+		//	brea
+		//}
+		if page == totalPages {
 			break
 		}
 
-		page++
+		// page++
 	}
 
 	resp, err := http.Get("http://localhost:8080/get_products")
@@ -102,13 +107,32 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	bodyStr := string(body)
+	fmt.Println("Raw response body:", string(bodyStr))
 
-	var products []types.Product
-	err = json.Unmarshal(body, &products)
+	var response types.ProductResponse
+	fmt.Println("***********************************************************************************")
+	fmt.Println("Response: ", response)
+	fmt.Println("body: ", bodyStr)
+	fmt.Println("***********************************************************************************")
+
+	err = json.Unmarshal(body, &response)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Error unmarshalling JSON: %v", err), http.StatusInternalServerError)
 		return
 	}
+
+	// Log dos dados desserializados
+	fmt.Printf("Deserialized response: %+v\n", response)
+	fmt.Printf("Number of products: %d\n", len(response.Products))
+
+	products := response.Products
+
+	fmt.Println("***********************************************************************************")
+	fmt.Println("products: ", products)
+	fmt.Println("response: ", response)
+	fmt.Println("response.Products: ", response.Products)
+	fmt.Println("***********************************************************************************")
 
 	for _, product := range products {
 		url := fmt.Sprintf("http://localhost:8080/get_product_id_bling?productID=%d", product.ID)
@@ -139,14 +163,15 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 		// Mapear BlingProduct para a estrutura necessária
 		updateProduct := types.Product{
 			ID:                         blingProduct.ID,
+			Idprodutopai:               blingProduct.Idprodutopai,
 			Nome:                       blingProduct.Nome,
 			Codigo:                     blingProduct.Codigo,
 			Preco:                      blingProduct.Preco,
+			ImagemUrl:                  blingProduct.ImagemUrl,
 			Tipo:                       blingProduct.Tipo,
 			Situacao:                   blingProduct.Situacao,
 			Formato:                    blingProduct.Formato,
 			DescricaoCurta:             blingProduct.DescricaoCurta,
-			Datavalidade:               blingProduct.Datavalidade,
 			Unidade:                    blingProduct.Unidade,
 			Pesoliquido:                blingProduct.Pesoliquido,
 			Pesobruto:                  blingProduct.Pesobruto,
@@ -162,6 +187,40 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 			Linkexterno:                blingProduct.Linkexterno,
 			Observacoes:                blingProduct.Observacoes,
 			Descricaoembalagemdiscreta: blingProduct.Descricaoembalagemdiscreta,
+			SaldoFisicoTotal:           blingProduct.SaldoFisicoTotal,
+			SaldoVirtualTotal:          blingProduct.SaldoVirtualTotal,
+			SaldoFisico:                blingProduct.SaldoFisico,
+			SaldoVirtual:               blingProduct.SaldoVirtual,
+			PrecoCusto:                 blingProduct.PrecoCusto,
+			PrecoCompra:                blingProduct.PrecoCompra,
+			SupplierID:                 blingProduct.SupplierID,
+
+			// ID:                         blingProduct.ID,
+			// Nome:                       blingProduct.Nome,
+			// Codigo:                     blingProduct.Codigo,
+			// Preco:                      blingProduct.Preco,
+			// Tipo:                       blingProduct.Tipo,
+			// Situacao:                   blingProduct.Situacao,
+			// Formato:                    blingProduct.Formato,
+			// DescricaoCurta:             blingProduct.DescricaoCurta,
+			// Datavalidade:               blingProduct.Datavalidade,
+			// Unidade:                    blingProduct.Unidade,
+			// Pesoliquido:                blingProduct.Pesoliquido,
+			// Pesobruto:                  blingProduct.Pesobruto,
+			// Volumes:                    blingProduct.Volumes,
+			// Itensporcaixa:              blingProduct.Itensporcaixa,
+			// Gtin:                       blingProduct.Gtin,
+			// Gtinembalagem:              blingProduct.Gtinembalagem,
+			// Tipoproducao:               blingProduct.Tipoproducao,
+			// Condicao:                   blingProduct.Condicao,
+			// Fretegratis:                blingProduct.Fretegratis,
+			// Marca:                      blingProduct.Marca,
+			// Descricaocomplementar:      blingProduct.Descricaocomplementar,
+			// Linkexterno:                blingProduct.Linkexterno,
+			// Observacoes:                blingProduct.Observacoes,
+			// Descricaoembalagemdiscreta: blingProduct.Descricaoembalagemdiscreta,
+			// SaldoFisicoTotal:           blingProduct.SaldoFisicoTotal,
+			// SupplierID:                 blingProduct.SupplierID,
 		}
 
 		// Adicionar log detalhado do updateProduct
@@ -205,15 +264,16 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Product updated successfully: %v\n", updateProduct)
 	}
 
-	response := map[string]interface{}{
+	responseMessage := map[string]interface{}{
 		"message": "Registros importados e atualizados com sucesso",
 		"status":  http.StatusOK,
 	}
-	jsonResponse, err := json.Marshal(response)
+	jsonResponse, err := json.Marshal(responseMessage)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error marshalling response: %v", err), http.StatusInternalServerError)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(jsonResponse)
