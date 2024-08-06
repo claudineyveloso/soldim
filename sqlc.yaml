@@ -21,6 +21,9 @@ sql:
       - "internal/scripts/store.sql"
       - "internal/scripts/products_sales_order.sql"
       - "internal/scripts/triage.sql"
+      - "internal/scripts/contact.sql"
+      - "internal/scripts/supplier_user.sql"
+
     gen:
       go:
         package: "db"

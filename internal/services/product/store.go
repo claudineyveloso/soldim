@@ -347,7 +347,7 @@ func convertGetProductEmptyStockRowToProductEmptyStockRow(dbProductEmptyStock db
 		SaldoVirtual:               dbProductEmptyStock.SaldoVirtual,
 		PrecoCusto:                 dbProductEmptyStock.PrecoCusto,
 		PrecoCompra:                dbProductEmptyStock.PrecoCompra,
-		SupplierID:                 dbProductEmptyStock.SupplierID,
+		SupplierID:                 types.NullableInt64{NullInt64: dbProductEmptyStock.SupplierID},
 	}
 	return ProductEmptyStock
 }

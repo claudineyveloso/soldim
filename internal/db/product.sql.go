@@ -93,28 +93,28 @@ func (q *Queries) DeleteProduct(ctx context.Context, id int64) error {
 
 const getProduct = `-- name: GetProduct :one
 WITH aggregated_stocks AS (
-    SELECT product_id, 
-           SUM(saldo_fisico_total) AS saldo_fisico_total, 
+    SELECT product_id,
+           SUM(saldo_fisico_total) AS saldo_fisico_total,
            SUM(saldo_virtual_total) AS saldo_virtual_total
-    FROM stocks 
+    FROM stocks
     GROUP BY product_id
 ),
 aggregated_deposit_products AS (
-    SELECT product_id, 
-           SUM(saldo_fisico) AS saldo_fisico, 
+    SELECT product_id,
+           SUM(saldo_fisico) AS saldo_fisico,
            SUM(saldo_virtual) AS saldo_virtual
-    FROM deposit_products 
+    FROM deposit_products
     GROUP BY product_id
 ),
 aggregated_supplier_products AS (
-    SELECT product_id, 
-           AVG(preco_custo) AS preco_custo, 
-           AVG(preco_compra) AS preco_compra, 
+    SELECT product_id,
+           AVG(preco_custo) AS preco_custo,
+           AVG(preco_compra) AS preco_compra,
            supplier_id
-    FROM supplier_products 
+    FROM supplier_products
     GROUP BY product_id, supplier_id
 )
-SELECT 
+SELECT
     p.ID,
     p.idProdutoPai,
     p.nome,
@@ -150,16 +150,16 @@ SELECT
     COALESCE(sp.preco_custo, 0) AS preco_custo,
     COALESCE(sp.preco_compra, 0) AS preco_compra,
     sp.supplier_id
-FROM 
+FROM
     products p
-LEFT JOIN 
-    aggregated_stocks s 
+LEFT JOIN
+    aggregated_stocks s
     ON p.id = s.product_id
-LEFT JOIN 
-    aggregated_deposit_products dp 
+LEFT JOIN
+    aggregated_deposit_products dp
     ON p.id = dp.product_id
-LEFT JOIN 
-    aggregated_supplier_products sp 
+LEFT JOIN
+    aggregated_supplier_products sp
     ON p.id = sp.product_id
 WHERE p.id = $1
 `
@@ -247,28 +247,28 @@ func (q *Queries) GetProduct(ctx context.Context, id int64) (GetProductRow, erro
 
 const getProductByName = `-- name: GetProductByName :one
 WITH aggregated_stocks AS (
-    SELECT product_id, 
-           SUM(saldo_fisico_total) AS saldo_fisico_total, 
+    SELECT product_id,
+           SUM(saldo_fisico_total) AS saldo_fisico_total,
            SUM(saldo_virtual_total) AS saldo_virtual_total
-    FROM stocks 
+    FROM stocks
     GROUP BY product_id
 ),
 aggregated_deposit_products AS (
-    SELECT product_id, 
-           SUM(saldo_fisico) AS saldo_fisico, 
+    SELECT product_id,
+           SUM(saldo_fisico) AS saldo_fisico,
            SUM(saldo_virtual) AS saldo_virtual
-    FROM deposit_products 
+    FROM deposit_products
     GROUP BY product_id
 ),
 aggregated_supplier_products AS (
-    SELECT product_id, 
-           AVG(preco_custo) AS preco_custo, 
-           AVG(preco_compra) AS preco_compra, 
+    SELECT product_id,
+           AVG(preco_custo) AS preco_custo,
+           AVG(preco_compra) AS preco_compra,
            supplier_id
-    FROM supplier_products 
+    FROM supplier_products
     GROUP BY product_id, supplier_id
 )
-SELECT 
+SELECT
     p.ID,
     p.idProdutoPai,
     p.nome,
@@ -304,16 +304,16 @@ SELECT
     COALESCE(sp.preco_custo, 0) AS preco_custo,
     COALESCE(sp.preco_compra, 0) AS preco_compra,
     sp.supplier_id
-FROM 
+FROM
     products p
-LEFT JOIN 
-    aggregated_stocks s 
+LEFT JOIN
+    aggregated_stocks s
     ON p.id = s.product_id
-LEFT JOIN 
-    aggregated_deposit_products dp 
+LEFT JOIN
+    aggregated_deposit_products dp
     ON p.id = dp.product_id
-LEFT JOIN 
-    aggregated_supplier_products sp 
+LEFT JOIN
+    aggregated_supplier_products sp
     ON p.id = sp.product_id
 WHERE p.nome = $1
 `
@@ -400,7 +400,7 @@ func (q *Queries) GetProductByName(ctx context.Context, nome string) (GetProduct
 }
 
 const getProductBySupplierID = `-- name: GetProductBySupplierID :one
-SELECT 
+SELECT
     p.ID,
     p.idProdutoPai,
     p.nome,
@@ -436,19 +436,19 @@ SELECT
     COALESCE(sp.preco_custo, 0) AS preco_custo,
     COALESCE(sp.preco_compra, 0) AS preco_compra,
     sp.supplier_id
-FROM 
+FROM
     products p
-LEFT JOIN 
-    (SELECT product_id, SUM(saldo_fisico_total) as saldo_fisico_total, SUM(saldo_virtual_total) as saldo_virtual_total FROM stocks GROUP BY product_id) s 
+LEFT JOIN
+    (SELECT product_id, SUM(saldo_fisico_total) as saldo_fisico_total, SUM(saldo_virtual_total) as saldo_virtual_total FROM stocks GROUP BY product_id) s
     ON p.id = s.product_id
-LEFT JOIN 
-    (SELECT product_id, SUM(saldo_fisico) as saldo_fisico, SUM(saldo_virtual) as saldo_virtual FROM deposit_products GROUP BY product_id) dp 
+LEFT JOIN
+    (SELECT product_id, SUM(saldo_fisico) as saldo_fisico, SUM(saldo_virtual) as saldo_virtual FROM deposit_products GROUP BY product_id) dp
     ON p.id = dp.product_id
-LEFT JOIN 
-    (SELECT product_id, AVG(preco_custo) as preco_custo, AVG(preco_compra) as preco_compra, supplier_id 
-     FROM supplier_products 
-     WHERE supplier_id = $1 
-     GROUP BY product_id, supplier_id) sp 
+LEFT JOIN
+    (SELECT product_id, AVG(preco_custo) as preco_custo, AVG(preco_compra) as preco_compra, supplier_id
+     FROM supplier_products
+     WHERE supplier_id = $1
+     GROUP BY product_id, supplier_id) sp
     ON p.id = sp.product_id
 WHERE sp.supplier_id IS NOT NULL
 `
@@ -536,28 +536,28 @@ func (q *Queries) GetProductBySupplierID(ctx context.Context, supplierID int64) 
 
 const getProductEmptyStock = `-- name: GetProductEmptyStock :many
 WITH aggregated_stocks AS (
-    SELECT product_id, 
-           SUM(saldo_fisico_total) AS saldo_fisico_total, 
+    SELECT product_id,
+           SUM(saldo_fisico_total) AS saldo_fisico_total,
            SUM(saldo_virtual_total) AS saldo_virtual_total
-    FROM stocks 
+    FROM stocks
     GROUP BY product_id
 ),
 aggregated_deposit_products AS (
-    SELECT product_id, 
-           SUM(saldo_fisico) AS saldo_fisico, 
+    SELECT product_id,
+           SUM(saldo_fisico) AS saldo_fisico,
            SUM(saldo_virtual) AS saldo_virtual
-    FROM deposit_products 
+    FROM deposit_products
     GROUP BY product_id
 ),
 aggregated_supplier_products AS (
-    SELECT product_id, 
-           AVG(preco_custo) AS preco_custo, 
-           AVG(preco_compra) AS preco_compra, 
+    SELECT product_id,
+           AVG(preco_custo) AS preco_custo,
+           AVG(preco_compra) AS preco_compra,
            supplier_id
-    FROM supplier_products 
+    FROM supplier_products
     GROUP BY product_id, supplier_id
 )
-SELECT 
+SELECT
     p.ID,
     p.idProdutoPai,
     p.nome,
@@ -593,24 +593,26 @@ SELECT
     COALESCE(sp.preco_custo, 0) AS preco_custo,
     COALESCE(sp.preco_compra, 0) AS preco_compra,
     sp.supplier_id
-FROM 
+FROM
     products p
-LEFT JOIN 
-    (SELECT product_id, SUM(saldo_fisico_total) as saldo_fisico_total, SUM(saldo_virtual_total) as saldo_virtual_total FROM stocks GROUP BY product_id) s 
+LEFT JOIN
+    aggregated_stocks s
     ON p.id = s.product_id
-LEFT JOIN 
-    (SELECT product_id, SUM(saldo_fisico) as saldo_fisico, SUM(saldo_virtual) as saldo_virtual FROM deposit_products GROUP BY product_id) dp 
+LEFT JOIN
+    aggregated_deposit_products dp
     ON p.id = dp.product_id
-LEFT JOIN 
-    (SELECT product_id, AVG(preco_custo) as preco_custo, AVG(preco_compra) as preco_compra, supplier_id FROM supplier_products GROUP BY product_id, supplier_id) sp 
+LEFT JOIN
+    aggregated_supplier_products sp
     ON p.id = sp.product_id
-WHERE ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
-  AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2)
-  AND s.saldo_fisico_total = 0
-  AND s.saldo_virtual_total = 0
-  AND dp.saldo_fisico = 0
-  AND dp.saldo_virtual = 0
-  ORDER BY p.nome
+WHERE
+    ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
+    AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2::text)
+    AND s.saldo_fisico_total = 0
+    AND s.saldo_virtual_total = 0
+    AND dp.saldo_fisico = 0
+    AND dp.saldo_virtual = 0
+ORDER BY
+    p.nome
 `
 
 type GetProductEmptyStockParams struct {
@@ -619,41 +621,41 @@ type GetProductEmptyStockParams struct {
 }
 
 type GetProductEmptyStockRow struct {
-	ID                         int64     `json:"id"`
-	Idprodutopai               int64     `json:"idprodutopai"`
-	Nome                       string    `json:"nome"`
-	Codigo                     string    `json:"codigo"`
-	Preco                      float64   `json:"preco"`
-	Tipo                       string    `json:"tipo"`
-	Situacao                   string    `json:"situacao"`
-	Formato                    string    `json:"formato"`
-	DescricaoCurta             string    `json:"descricao_curta"`
-	ImagemUrl                  string    `json:"imagem_url"`
-	Datavalidade               time.Time `json:"datavalidade"`
-	Unidade                    string    `json:"unidade"`
-	Pesoliquido                float64   `json:"pesoliquido"`
-	Pesobruto                  float64   `json:"pesobruto"`
-	Volumes                    int32     `json:"volumes"`
-	Itensporcaixa              int32     `json:"itensporcaixa"`
-	Gtin                       string    `json:"gtin"`
-	Gtinembalagem              string    `json:"gtinembalagem"`
-	Tipoproducao               string    `json:"tipoproducao"`
-	Condicao                   int32     `json:"condicao"`
-	Fretegratis                bool      `json:"fretegratis"`
-	Marca                      string    `json:"marca"`
-	Descricaocomplementar      string    `json:"descricaocomplementar"`
-	Linkexterno                string    `json:"linkexterno"`
-	Observacoes                string    `json:"observacoes"`
-	Descricaoembalagemdiscreta string    `json:"descricaoembalagemdiscreta"`
-	CreatedAt                  time.Time `json:"created_at"`
-	UpdatedAt                  time.Time `json:"updated_at"`
-	SaldoFisicoTotal           int64     `json:"saldo_fisico_total"`
-	SaldoVirtualTotal          int64     `json:"saldo_virtual_total"`
-	SaldoFisico                int64     `json:"saldo_fisico"`
-	SaldoVirtual               int64     `json:"saldo_virtual"`
-	PrecoCusto                 float64   `json:"preco_custo"`
-	PrecoCompra                float64   `json:"preco_compra"`
-	SupplierID                 int64     `json:"supplier_id"`
+	ID                         int64         `json:"id"`
+	Idprodutopai               int64         `json:"idprodutopai"`
+	Nome                       string        `json:"nome"`
+	Codigo                     string        `json:"codigo"`
+	Preco                      float64       `json:"preco"`
+	Tipo                       string        `json:"tipo"`
+	Situacao                   string        `json:"situacao"`
+	Formato                    string        `json:"formato"`
+	DescricaoCurta             string        `json:"descricao_curta"`
+	ImagemUrl                  string        `json:"imagem_url"`
+	Datavalidade               time.Time     `json:"datavalidade"`
+	Unidade                    string        `json:"unidade"`
+	Pesoliquido                float64       `json:"pesoliquido"`
+	Pesobruto                  float64       `json:"pesobruto"`
+	Volumes                    int32         `json:"volumes"`
+	Itensporcaixa              int32         `json:"itensporcaixa"`
+	Gtin                       string        `json:"gtin"`
+	Gtinembalagem              string        `json:"gtinembalagem"`
+	Tipoproducao               string        `json:"tipoproducao"`
+	Condicao                   int32         `json:"condicao"`
+	Fretegratis                bool          `json:"fretegratis"`
+	Marca                      string        `json:"marca"`
+	Descricaocomplementar      string        `json:"descricaocomplementar"`
+	Linkexterno                string        `json:"linkexterno"`
+	Observacoes                string        `json:"observacoes"`
+	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
+	CreatedAt                  time.Time     `json:"created_at"`
+	UpdatedAt                  time.Time     `json:"updated_at"`
+	SaldoFisicoTotal           int64         `json:"saldo_fisico_total"`
+	SaldoVirtualTotal          int64         `json:"saldo_virtual_total"`
+	SaldoFisico                int64         `json:"saldo_fisico"`
+	SaldoVirtual               int64         `json:"saldo_virtual"`
+	PrecoCusto                 float64       `json:"preco_custo"`
+	PrecoCompra                float64       `json:"preco_compra"`
+	SupplierID                 sql.NullInt64 `json:"supplier_id"`
 }
 
 func (q *Queries) GetProductEmptyStock(ctx context.Context, arg GetProductEmptyStockParams) ([]GetProductEmptyStockRow, error) {
@@ -717,30 +719,43 @@ func (q *Queries) GetProductEmptyStock(ctx context.Context, arg GetProductEmptyS
 
 const getProductNoMovements = `-- name: GetProductNoMovements :many
 WITH aggregated_stocks AS (
-    SELECT product_id, 
-           SUM(saldo_fisico_total) AS saldo_fisico_total, 
+    SELECT product_id,
+           SUM(saldo_fisico_total) AS saldo_fisico_total,
            SUM(saldo_virtual_total) AS saldo_virtual_total
-    FROM stocks 
+    FROM stocks
     GROUP BY product_id
 ),
 aggregated_deposit_products AS (
-    SELECT product_id, 
-           SUM(saldo_fisico) AS saldo_fisico, 
+    SELECT product_id,
+           SUM(saldo_fisico) AS saldo_fisico,
            SUM(saldo_virtual) AS saldo_virtual
-    FROM deposit_products 
+    FROM deposit_products
     GROUP BY product_id
 ),
 aggregated_supplier_products AS (
-    SELECT product_id, 
-           AVG(preco_custo) AS preco_custo, 
-           AVG(preco_compra) AS preco_compra, 
+    SELECT product_id,
+           AVG(preco_custo) AS preco_custo,
+           AVG(preco_compra) AS preco_compra,
            supplier_id,
            MAX(descricao) AS descricao,
            MAX(codigo) AS codigo
-    FROM supplier_products 
+    FROM supplier_products
     GROUP BY product_id, supplier_id
+),
+aggregated_sales_orders AS (
+    SELECT pso.product_id,
+           so.numero,
+           so.numeroloja,
+           so.data,
+           so.datasaida,
+           so.dataprevista,
+           COALESCE(so.totalprodutos, 0) AS totalprodutos,
+           COALESCE(so.totaldescontos, 0) AS totaldescontos
+    FROM products_sales_orders pso
+    JOIN sales_orders so ON pso.sales_order_id = so.id
+    WHERE so.datasaida < NOW() - INTERVAL '1 week'
 )
-SELECT 
+SELECT
     p.ID,
     p.idProdutoPai,
     p.nome,
@@ -783,30 +798,18 @@ SELECT
     so.dataprevista,
     COALESCE(so.totalprodutos, 0) AS totalprodutos,
     COALESCE(so.totaldescontos, 0) AS totaldescontos
-FROM 
+FROM
     products p
-LEFT JOIN 
-    (SELECT product_id, SUM(saldo_fisico_total) AS saldo_fisico_total, SUM(saldo_virtual_total) AS saldo_virtual_total 
-     FROM stocks 
-     GROUP BY product_id) s 
-    ON p.id = s.product_id
-LEFT JOIN 
-    (SELECT product_id, SUM(saldo_fisico) AS saldo_fisico, SUM(saldo_virtual) AS saldo_virtual 
-     FROM deposit_products 
-     GROUP BY product_id) dp 
-    ON p.id = dp.product_id
-LEFT JOIN 
-    aggregated_supplier_products sp 
-    ON p.id = sp.product_id
 LEFT JOIN
-    products_sales_orders pso
-    ON p.id = pso.product_id
+    aggregated_stocks s ON p.id = s.product_id
 LEFT JOIN
-    sales_orders so
-    ON pso.sales_order_id = so.id
-WHERE 
-    so.datasaida < NOW() - INTERVAL '1 week'
-    AND ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
+    aggregated_deposit_products dp ON p.id = dp.product_id
+LEFT JOIN
+    aggregated_supplier_products sp ON p.id = sp.product_id
+LEFT JOIN
+    aggregated_sales_orders so ON p.id = so.product_id
+WHERE
+    ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
     AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2::text)
 `
 
@@ -928,28 +931,28 @@ func (q *Queries) GetProductNoMovements(ctx context.Context, arg GetProductNoMov
 
 const getProducts = `-- name: GetProducts :many
 WITH aggregated_stocks AS (
-    SELECT product_id, 
-           SUM(saldo_fisico_total) AS saldo_fisico_total, 
+    SELECT product_id,
+           SUM(saldo_fisico_total) AS saldo_fisico_total,
            SUM(saldo_virtual_total) AS saldo_virtual_total
-    FROM stocks 
+    FROM stocks
     GROUP BY product_id
 ),
 aggregated_deposit_products AS (
-    SELECT product_id, 
-           SUM(saldo_fisico) AS saldo_fisico, 
+    SELECT product_id,
+           SUM(saldo_fisico) AS saldo_fisico,
            SUM(saldo_virtual) AS saldo_virtual
-    FROM deposit_products 
+    FROM deposit_products
     GROUP BY product_id
 ),
 aggregated_supplier_products AS (
-    SELECT product_id, 
-           AVG(preco_custo) AS preco_custo, 
-           AVG(preco_compra) AS preco_compra, 
+    SELECT product_id,
+           AVG(preco_custo) AS preco_custo,
+           AVG(preco_compra) AS preco_compra,
            supplier_id
-    FROM supplier_products 
+    FROM supplier_products
     GROUP BY product_id, supplier_id
 )
-SELECT 
+SELECT
     p.ID,
     p.idProdutoPai,
     p.nome,
@@ -985,18 +988,18 @@ SELECT
     COALESCE(sp.preco_custo, 0) AS preco_custo,
     COALESCE(sp.preco_compra, 0) AS preco_compra,
     sp.supplier_id
-FROM 
+FROM
     products p
-LEFT JOIN 
-    aggregated_stocks s 
+LEFT JOIN
+    aggregated_stocks s
     ON p.id = s.product_id
-LEFT JOIN 
-    aggregated_deposit_products dp 
+LEFT JOIN
+    aggregated_deposit_products dp
     ON p.id = dp.product_id
-LEFT JOIN 
-    aggregated_supplier_products sp 
+LEFT JOIN
+    aggregated_supplier_products sp
     ON p.id = sp.product_id
-WHERE 
+WHERE
     ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
     AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2::text)
     AND ($3::text IS NULL OR $3 = '' OR sp.supplier_id = $3::int)
@@ -1107,8 +1110,8 @@ func (q *Queries) GetProducts(ctx context.Context, arg GetProductsParams) ([]Get
 }
 
 const updateProduct = `-- name: UpdateProduct :exec
-UPDATE products SET idProdutoPai = $2, 
-  nome = $3, 
+UPDATE products SET idProdutoPai = $2,
+  nome = $3,
   codigo = $4,
   preco = $5,
   tipo  = $6,

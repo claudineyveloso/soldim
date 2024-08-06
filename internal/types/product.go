@@ -86,41 +86,41 @@ type Product struct {
 }
 
 type ProductEmptyStock struct {
-	ID                         int64     `json:"id"`
-	Idprodutopai               int64     `json:"idprodutopai"`
-	Nome                       string    `json:"nome"`
-	Codigo                     string    `json:"codigo"`
-	Preco                      float64   `json:"preco"`
-	Tipo                       string    `json:"tipo"`
-	Situacao                   string    `json:"situacao"`
-	Formato                    string    `json:"formato"`
-	DescricaoCurta             string    `json:"descricao_curta"`
-	ImagemUrl                  string    `json:"imagem_url"`
-	Datavalidade               time.Time `json:"datavalidade"`
-	Unidade                    string    `json:"unidade"`
-	Pesoliquido                float64   `json:"pesoliquido"`
-	Pesobruto                  float64   `json:"pesobruto"`
-	Volumes                    int32     `json:"volumes"`
-	Itensporcaixa              int32     `json:"itensporcaixa"`
-	Gtin                       string    `json:"gtin"`
-	Gtinembalagem              string    `json:"gtinembalagem"`
-	Tipoproducao               string    `json:"tipoproducao"`
-	Condicao                   int32     `json:"condicao"`
-	Fretegratis                bool      `json:"fretegratis"`
-	Marca                      string    `json:"marca"`
-	Descricaocomplementar      string    `json:"descricaocomplementar"`
-	Linkexterno                string    `json:"linkexterno"`
-	Observacoes                string    `json:"observacoes"`
-	Descricaoembalagemdiscreta string    `json:"descricaoembalagemdiscreta"`
-	CreatedAt                  time.Time `json:"created_at"`
-	UpdatedAt                  time.Time `json:"updated_at"`
-	SaldoFisicoTotal           int64     `json:"saldo_fisico_total"`
-	SaldoVirtualTotal          int64     `json:"saldo_virtual_total"`
-	SaldoFisico                int64     `json:"saldo_fisico"`
-	SaldoVirtual               int64     `json:"saldo_virtual"`
-	PrecoCusto                 float64   `json:"preco_custo"`
-	PrecoCompra                float64   `json:"preco_compra"`
-	SupplierID                 int64     `json:"supplier_id"`
+	ID                         int64         `json:"id"`
+	Idprodutopai               int64         `json:"idprodutopai"`
+	Nome                       string        `json:"nome"`
+	Codigo                     string        `json:"codigo"`
+	Preco                      float64       `json:"preco"`
+	Tipo                       string        `json:"tipo"`
+	Situacao                   string        `json:"situacao"`
+	Formato                    string        `json:"formato"`
+	DescricaoCurta             string        `json:"descricao_curta"`
+	ImagemUrl                  string        `json:"imagem_url"`
+	Datavalidade               time.Time     `json:"datavalidade"`
+	Unidade                    string        `json:"unidade"`
+	Pesoliquido                float64       `json:"pesoliquido"`
+	Pesobruto                  float64       `json:"pesobruto"`
+	Volumes                    int32         `json:"volumes"`
+	Itensporcaixa              int32         `json:"itensporcaixa"`
+	Gtin                       string        `json:"gtin"`
+	Gtinembalagem              string        `json:"gtinembalagem"`
+	Tipoproducao               string        `json:"tipoproducao"`
+	Condicao                   int32         `json:"condicao"`
+	Fretegratis                bool          `json:"fretegratis"`
+	Marca                      string        `json:"marca"`
+	Descricaocomplementar      string        `json:"descricaocomplementar"`
+	Linkexterno                string        `json:"linkexterno"`
+	Observacoes                string        `json:"observacoes"`
+	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
+	CreatedAt                  time.Time     `json:"created_at"`
+	UpdatedAt                  time.Time     `json:"updated_at"`
+	SaldoFisicoTotal           int64         `json:"saldo_fisico_total"`
+	SaldoVirtualTotal          int64         `json:"saldo_virtual_total"`
+	SaldoFisico                int64         `json:"saldo_fisico"`
+	SaldoVirtual               int64         `json:"saldo_virtual"`
+	PrecoCusto                 float64       `json:"preco_custo"`
+	PrecoCompra                float64       `json:"preco_compra"`
+	SupplierID                 NullableInt64 `json:"supplier_id"`
 }
 
 type ProductNoMovements struct {
@@ -158,7 +158,7 @@ type ProductNoMovements struct {
 	SaldoVirtual               int64          `json:"saldo_virtual"`
 	PrecoCusto                 float64        `json:"preco_custo"`
 	PrecoCompra                float64        `json:"preco_compra"`
-	SupplierID                 sql.NullInt64  `json:"supplier_id"`
+	SupplierID                 NullableInt64  `json:"supplier_id"`
 	Numero                     sql.NullInt32  `json:"numero"`
 	Numeroloja                 sql.NullString `json:"numeroloja"`
 	Data                       sql.NullTime   `json:"data"`

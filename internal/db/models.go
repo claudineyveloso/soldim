@@ -25,6 +25,18 @@ type Address struct {
 	UpdatedAt       time.Time      `json:"updated_at"`
 }
 
+type Contact struct {
+	ID              int64     `json:"id"`
+	Nome            string    `json:"nome"`
+	Codigo          string    `json:"codigo"`
+	Situacao        string    `json:"situacao"`
+	Numerodocumento string    `json:"numerodocumento"`
+	Telefone        string    `json:"telefone"`
+	Celular         string    `json:"celular"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
+}
+
 type Deposit struct {
 	ID                 int64     `json:"id"`
 	Descricao          string    `json:"descricao"`
@@ -205,6 +217,13 @@ type SupplierProduct struct {
 	ProductID   int64     `json:"product_id"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type SuppliersUser struct {
+	SupplierID int64     `json:"supplier_id"`
+	UserID     uuid.UUID `json:"user_id"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
 }
 
 type Token struct {

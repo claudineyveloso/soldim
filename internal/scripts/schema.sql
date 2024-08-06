@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS searches_result (
   created_at  timestamp not null,
   updated_at  timestamp not null,
   CONSTRAINT fk_search
-    FOREIGN KEY (search_id) 
+    FOREIGN KEY (search_id)
     REFERENCES searches (id)
     ON DELETE CASCADE
 );
@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS drafts (
 ALTER TABLE
    "drafts"
 ADD
-   FOREIGN KEY ("search_id") REFERENCES "searches" ("id"); 
+   FOREIGN KEY ("search_id") REFERENCES "searches" ("id");
 
 DROP TABLE IF EXISTS "parameters";
 CREATE TABLE IF NOT EXISTS parameters (
@@ -158,7 +158,7 @@ CREATE TABLE IF NOT EXISTS suppliers (
 ALTER TABLE
   "suppliers"
 ADD
-   FOREIGN KEY ("product_id") REFERENCES "products" ("id"); 
+   FOREIGN KEY ("product_id") REFERENCES "products" ("id");
 
 DROP TABLE IF EXISTS "deposits";
 CREATE TABLE IF NOT EXISTS deposits (
@@ -184,12 +184,12 @@ CREATE TABLE IF NOT EXISTS deposit_products (
 ALTER TABLE
   "deposit_products"
 ADD
-    FOREIGN KEY ("deposit_id") REFERENCES "deposits" ("id"); 
+    FOREIGN KEY ("deposit_id") REFERENCES "deposits" ("id");
 
 ALTER TABLE
   "deposit_products"
 ADD
-   FOREIGN KEY ("product_id") REFERENCES "products" ("id"); 
+   FOREIGN KEY ("product_id") REFERENCES "products" ("id");
 
 DROP TABLE IF EXISTS "stocks";
 CREATE TABLE IF NOT EXISTS stocks (
@@ -212,25 +212,25 @@ CREATE TABLE IF NOT EXISTS supplier_products (
   preco_custo    FLOAT NOT NULL DEFAULT 0,
   preco_compra   FLOAT NOT NULL DEFAULT 0,
   padrao        BOOLEAN NOT NULL DEFAULT TRUE,
-  supplier_id   BIGINT NOT NULL,
-  product_id    BIGINT NOT NULL,
+  supplier_id   BIGINT NOT NULL DEFAULT 0,
+  product_id    BIGINT NOT NULL DEFAULT 0,
   created_at    TIMESTAMP NOT NULL,
   updated_at    TIMESTAMP NOT NULL
 );
 ALTER TABLE
   "supplier_products"
 ADD
-   FOREIGN KEY ("product_id") REFERENCES "products" ("id"); 
+   FOREIGN KEY ("product_id") REFERENCES "products" ("id");
 
 ALTER TABLE
   "supplier_products"
 ADD
-    FOREIGN KEY ("supplier_id") REFERENCES "suppliers" ("id"); 
+    FOREIGN KEY ("supplier_id") REFERENCES "suppliers" ("id");
 
 ALTER TABLE
   "supplier_products"
 ADD
-   FOREIGN KEY ("product_id") REFERENCES "products" ("id"); 
+   FOREIGN KEY ("product_id") REFERENCES "products" ("id");
 
 DROP TABLE IF EXISTS "situations";
 CREATE TABLE IF NOT EXISTS situations (
@@ -268,12 +268,12 @@ CREATE TABLE IF NOT EXISTS sales_orders (
 ALTER TABLE
   "sales_orders"
 ADD
-   FOREIGN KEY ("situation_id") REFERENCES "situations" ("id"); 
+   FOREIGN KEY ("situation_id") REFERENCES "situations" ("id");
 
 ALTER TABLE
   "sales_orders"
 ADD
-   FOREIGN KEY ("store_id") REFERENCES "stores" ("id"); 
+   FOREIGN KEY ("store_id") REFERENCES "stores" ("id");
 
 DROP TABLE IF EXISTS "products_sales_orders";
 CREATE TABLE IF NOT EXISTS products_sales_orders (
@@ -287,12 +287,12 @@ CREATE TABLE IF NOT EXISTS products_sales_orders (
 ALTER TABLE
   "products_sales_orders"
 ADD
-   FOREIGN KEY ("sales_order_id") REFERENCES "sales_orders" ("id"); 
+   FOREIGN KEY ("sales_order_id") REFERENCES "sales_orders" ("id");
 
 ALTER TABLE
   "products_sales_orders"
 ADD
-   FOREIGN KEY ("product_id") REFERENCES "products" ("id"); 
+   FOREIGN KEY ("product_id") REFERENCES "products" ("id");
 
 
 DROP TABLE IF EXISTS "triages";
@@ -340,8 +340,8 @@ create unique index name_contact_idx on triages (name);
 
 DROP TABLE IF EXISTS "suppliers_users";
 CREATE TABLE suppliers_users (
-  supplier_id BIGINT NOT NULL,
-  user_id     UUID NOT NULL,
+  supplier_id BIGINT NOT NULL DEFAULT 0,
+  user_id     UUID NOT NULL DEFAULT 0,
   created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

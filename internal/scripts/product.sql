@@ -4,28 +4,28 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $
 
 -- name: GetProduct :one
 WITH aggregated_stocks AS (
-    SELECT product_id, 
-           SUM(saldo_fisico_total) AS saldo_fisico_total, 
+    SELECT product_id,
+           SUM(saldo_fisico_total) AS saldo_fisico_total,
            SUM(saldo_virtual_total) AS saldo_virtual_total
-    FROM stocks 
+    FROM stocks
     GROUP BY product_id
 ),
 aggregated_deposit_products AS (
-    SELECT product_id, 
-           SUM(saldo_fisico) AS saldo_fisico, 
+    SELECT product_id,
+           SUM(saldo_fisico) AS saldo_fisico,
            SUM(saldo_virtual) AS saldo_virtual
-    FROM deposit_products 
+    FROM deposit_products
     GROUP BY product_id
 ),
 aggregated_supplier_products AS (
-    SELECT product_id, 
-           AVG(preco_custo) AS preco_custo, 
-           AVG(preco_compra) AS preco_compra, 
+    SELECT product_id,
+           AVG(preco_custo) AS preco_custo,
+           AVG(preco_compra) AS preco_compra,
            supplier_id
-    FROM supplier_products 
+    FROM supplier_products
     GROUP BY product_id, supplier_id
 )
-SELECT 
+SELECT
     p.ID,
     p.idProdutoPai,
     p.nome,
@@ -61,43 +61,43 @@ SELECT
     COALESCE(sp.preco_custo, 0) AS preco_custo,
     COALESCE(sp.preco_compra, 0) AS preco_compra,
     sp.supplier_id
-FROM 
+FROM
     products p
-LEFT JOIN 
-    aggregated_stocks s 
+LEFT JOIN
+    aggregated_stocks s
     ON p.id = s.product_id
-LEFT JOIN 
-    aggregated_deposit_products dp 
+LEFT JOIN
+    aggregated_deposit_products dp
     ON p.id = dp.product_id
-LEFT JOIN 
-    aggregated_supplier_products sp 
+LEFT JOIN
+    aggregated_supplier_products sp
     ON p.id = sp.product_id
 WHERE p.id = $1;
 
 -- name: GetProducts :many
 WITH aggregated_stocks AS (
-    SELECT product_id, 
-           SUM(saldo_fisico_total) AS saldo_fisico_total, 
+    SELECT product_id,
+           SUM(saldo_fisico_total) AS saldo_fisico_total,
            SUM(saldo_virtual_total) AS saldo_virtual_total
-    FROM stocks 
+    FROM stocks
     GROUP BY product_id
 ),
 aggregated_deposit_products AS (
-    SELECT product_id, 
-           SUM(saldo_fisico) AS saldo_fisico, 
+    SELECT product_id,
+           SUM(saldo_fisico) AS saldo_fisico,
            SUM(saldo_virtual) AS saldo_virtual
-    FROM deposit_products 
+    FROM deposit_products
     GROUP BY product_id
 ),
 aggregated_supplier_products AS (
-    SELECT product_id, 
-           AVG(preco_custo) AS preco_custo, 
-           AVG(preco_compra) AS preco_compra, 
+    SELECT product_id,
+           AVG(preco_custo) AS preco_custo,
+           AVG(preco_compra) AS preco_compra,
            supplier_id
-    FROM supplier_products 
+    FROM supplier_products
     GROUP BY product_id, supplier_id
 )
-SELECT 
+SELECT
     p.ID,
     p.idProdutoPai,
     p.nome,
@@ -133,18 +133,18 @@ SELECT
     COALESCE(sp.preco_custo, 0) AS preco_custo,
     COALESCE(sp.preco_compra, 0) AS preco_compra,
     sp.supplier_id
-FROM 
+FROM
     products p
-LEFT JOIN 
-    aggregated_stocks s 
+LEFT JOIN
+    aggregated_stocks s
     ON p.id = s.product_id
-LEFT JOIN 
-    aggregated_deposit_products dp 
+LEFT JOIN
+    aggregated_deposit_products dp
     ON p.id = dp.product_id
-LEFT JOIN 
-    aggregated_supplier_products sp 
+LEFT JOIN
+    aggregated_supplier_products sp
     ON p.id = sp.product_id
-WHERE 
+WHERE
     ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
     AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2::text)
     AND ($3::text IS NULL OR $3 = '' OR sp.supplier_id = $3::int)
@@ -152,28 +152,28 @@ WHERE
 
 -- name: GetProductByName :one
 WITH aggregated_stocks AS (
-    SELECT product_id, 
-           SUM(saldo_fisico_total) AS saldo_fisico_total, 
+    SELECT product_id,
+           SUM(saldo_fisico_total) AS saldo_fisico_total,
            SUM(saldo_virtual_total) AS saldo_virtual_total
-    FROM stocks 
+    FROM stocks
     GROUP BY product_id
 ),
 aggregated_deposit_products AS (
-    SELECT product_id, 
-           SUM(saldo_fisico) AS saldo_fisico, 
+    SELECT product_id,
+           SUM(saldo_fisico) AS saldo_fisico,
            SUM(saldo_virtual) AS saldo_virtual
-    FROM deposit_products 
+    FROM deposit_products
     GROUP BY product_id
 ),
 aggregated_supplier_products AS (
-    SELECT product_id, 
-           AVG(preco_custo) AS preco_custo, 
-           AVG(preco_compra) AS preco_compra, 
+    SELECT product_id,
+           AVG(preco_custo) AS preco_custo,
+           AVG(preco_compra) AS preco_compra,
            supplier_id
-    FROM supplier_products 
+    FROM supplier_products
     GROUP BY product_id, supplier_id
 )
-SELECT 
+SELECT
     p.ID,
     p.idProdutoPai,
     p.nome,
@@ -209,43 +209,43 @@ SELECT
     COALESCE(sp.preco_custo, 0) AS preco_custo,
     COALESCE(sp.preco_compra, 0) AS preco_compra,
     sp.supplier_id
-FROM 
+FROM
     products p
-LEFT JOIN 
-    aggregated_stocks s 
+LEFT JOIN
+    aggregated_stocks s
     ON p.id = s.product_id
-LEFT JOIN 
-    aggregated_deposit_products dp 
+LEFT JOIN
+    aggregated_deposit_products dp
     ON p.id = dp.product_id
-LEFT JOIN 
-    aggregated_supplier_products sp 
+LEFT JOIN
+    aggregated_supplier_products sp
     ON p.id = sp.product_id
 WHERE p.nome = $1;
 
 -- name: GetProductEmptyStock :many
 WITH aggregated_stocks AS (
-    SELECT product_id, 
-           SUM(saldo_fisico_total) AS saldo_fisico_total, 
+    SELECT product_id,
+           SUM(saldo_fisico_total) AS saldo_fisico_total,
            SUM(saldo_virtual_total) AS saldo_virtual_total
-    FROM stocks 
+    FROM stocks
     GROUP BY product_id
 ),
 aggregated_deposit_products AS (
-    SELECT product_id, 
-           SUM(saldo_fisico) AS saldo_fisico, 
+    SELECT product_id,
+           SUM(saldo_fisico) AS saldo_fisico,
            SUM(saldo_virtual) AS saldo_virtual
-    FROM deposit_products 
+    FROM deposit_products
     GROUP BY product_id
 ),
 aggregated_supplier_products AS (
-    SELECT product_id, 
-           AVG(preco_custo) AS preco_custo, 
-           AVG(preco_compra) AS preco_compra, 
+    SELECT product_id,
+           AVG(preco_custo) AS preco_custo,
+           AVG(preco_compra) AS preco_compra,
            supplier_id
-    FROM supplier_products 
+    FROM supplier_products
     GROUP BY product_id, supplier_id
 )
-SELECT 
+SELECT
     p.ID,
     p.idProdutoPai,
     p.nome,
@@ -281,51 +281,66 @@ SELECT
     COALESCE(sp.preco_custo, 0) AS preco_custo,
     COALESCE(sp.preco_compra, 0) AS preco_compra,
     sp.supplier_id
-FROM 
+FROM
     products p
-LEFT JOIN 
-    (SELECT product_id, SUM(saldo_fisico_total) as saldo_fisico_total, SUM(saldo_virtual_total) as saldo_virtual_total FROM stocks GROUP BY product_id) s 
+LEFT JOIN
+    aggregated_stocks s
     ON p.id = s.product_id
-LEFT JOIN 
-    (SELECT product_id, SUM(saldo_fisico) as saldo_fisico, SUM(saldo_virtual) as saldo_virtual FROM deposit_products GROUP BY product_id) dp 
+LEFT JOIN
+    aggregated_deposit_products dp
     ON p.id = dp.product_id
-LEFT JOIN 
-    (SELECT product_id, AVG(preco_custo) as preco_custo, AVG(preco_compra) as preco_compra, supplier_id FROM supplier_products GROUP BY product_id, supplier_id) sp 
+LEFT JOIN
+    aggregated_supplier_products sp
     ON p.id = sp.product_id
-WHERE ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
-  AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2)
-  AND s.saldo_fisico_total = 0
-  AND s.saldo_virtual_total = 0
-  AND dp.saldo_fisico = 0
-  AND dp.saldo_virtual = 0
-  ORDER BY p.nome;
+WHERE
+    ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
+    AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2::text)
+    AND s.saldo_fisico_total = 0
+    AND s.saldo_virtual_total = 0
+    AND dp.saldo_fisico = 0
+    AND dp.saldo_virtual = 0
+ORDER BY
+    p.nome;
 
 -- name: GetProductNoMovements :many
 WITH aggregated_stocks AS (
-    SELECT product_id, 
-           SUM(saldo_fisico_total) AS saldo_fisico_total, 
+    SELECT product_id,
+           SUM(saldo_fisico_total) AS saldo_fisico_total,
            SUM(saldo_virtual_total) AS saldo_virtual_total
-    FROM stocks 
+    FROM stocks
     GROUP BY product_id
 ),
 aggregated_deposit_products AS (
-    SELECT product_id, 
-           SUM(saldo_fisico) AS saldo_fisico, 
+    SELECT product_id,
+           SUM(saldo_fisico) AS saldo_fisico,
            SUM(saldo_virtual) AS saldo_virtual
-    FROM deposit_products 
+    FROM deposit_products
     GROUP BY product_id
 ),
 aggregated_supplier_products AS (
-    SELECT product_id, 
-           AVG(preco_custo) AS preco_custo, 
-           AVG(preco_compra) AS preco_compra, 
+    SELECT product_id,
+           AVG(preco_custo) AS preco_custo,
+           AVG(preco_compra) AS preco_compra,
            supplier_id,
            MAX(descricao) AS descricao,
            MAX(codigo) AS codigo
-    FROM supplier_products 
+    FROM supplier_products
     GROUP BY product_id, supplier_id
+),
+aggregated_sales_orders AS (
+    SELECT pso.product_id,
+           so.numero,
+           so.numeroloja,
+           so.data,
+           so.datasaida,
+           so.dataprevista,
+           COALESCE(so.totalprodutos, 0) AS totalprodutos,
+           COALESCE(so.totaldescontos, 0) AS totaldescontos
+    FROM products_sales_orders pso
+    JOIN sales_orders so ON pso.sales_order_id = so.id
+    WHERE so.datasaida < NOW() - INTERVAL '1 week'
 )
-SELECT 
+SELECT
     p.ID,
     p.idProdutoPai,
     p.nome,
@@ -368,33 +383,22 @@ SELECT
     so.dataprevista,
     COALESCE(so.totalprodutos, 0) AS totalprodutos,
     COALESCE(so.totaldescontos, 0) AS totaldescontos
-FROM 
+FROM
     products p
-LEFT JOIN 
-    (SELECT product_id, SUM(saldo_fisico_total) AS saldo_fisico_total, SUM(saldo_virtual_total) AS saldo_virtual_total 
-     FROM stocks 
-     GROUP BY product_id) s 
-    ON p.id = s.product_id
-LEFT JOIN 
-    (SELECT product_id, SUM(saldo_fisico) AS saldo_fisico, SUM(saldo_virtual) AS saldo_virtual 
-     FROM deposit_products 
-     GROUP BY product_id) dp 
-    ON p.id = dp.product_id
-LEFT JOIN 
-    aggregated_supplier_products sp 
-    ON p.id = sp.product_id
 LEFT JOIN
-    products_sales_orders pso
-    ON p.id = pso.product_id
+    aggregated_stocks s ON p.id = s.product_id
 LEFT JOIN
-    sales_orders so
-    ON pso.sales_order_id = so.id
-WHERE 
-    so.datasaida < NOW() - INTERVAL '1 week'
-    AND ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
+    aggregated_deposit_products dp ON p.id = dp.product_id
+LEFT JOIN
+    aggregated_supplier_products sp ON p.id = sp.product_id
+LEFT JOIN
+    aggregated_sales_orders so ON p.id = so.product_id
+WHERE
+    ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
     AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2::text);
+
 -- name: GetProductBySupplierID :one
-SELECT 
+SELECT
     p.ID,
     p.idProdutoPai,
     p.nome,
@@ -430,25 +434,25 @@ SELECT
     COALESCE(sp.preco_custo, 0) AS preco_custo,
     COALESCE(sp.preco_compra, 0) AS preco_compra,
     sp.supplier_id
-FROM 
+FROM
     products p
-LEFT JOIN 
-    (SELECT product_id, SUM(saldo_fisico_total) as saldo_fisico_total, SUM(saldo_virtual_total) as saldo_virtual_total FROM stocks GROUP BY product_id) s 
+LEFT JOIN
+    (SELECT product_id, SUM(saldo_fisico_total) as saldo_fisico_total, SUM(saldo_virtual_total) as saldo_virtual_total FROM stocks GROUP BY product_id) s
     ON p.id = s.product_id
-LEFT JOIN 
-    (SELECT product_id, SUM(saldo_fisico) as saldo_fisico, SUM(saldo_virtual) as saldo_virtual FROM deposit_products GROUP BY product_id) dp 
+LEFT JOIN
+    (SELECT product_id, SUM(saldo_fisico) as saldo_fisico, SUM(saldo_virtual) as saldo_virtual FROM deposit_products GROUP BY product_id) dp
     ON p.id = dp.product_id
-LEFT JOIN 
-    (SELECT product_id, AVG(preco_custo) as preco_custo, AVG(preco_compra) as preco_compra, supplier_id 
-     FROM supplier_products 
-     WHERE supplier_id = $1 
-     GROUP BY product_id, supplier_id) sp 
+LEFT JOIN
+    (SELECT product_id, AVG(preco_custo) as preco_custo, AVG(preco_compra) as preco_compra, supplier_id
+     FROM supplier_products
+     WHERE supplier_id = $1
+     GROUP BY product_id, supplier_id) sp
     ON p.id = sp.product_id
 WHERE sp.supplier_id IS NOT NULL;
 
 -- name: UpdateProduct :exec
-UPDATE products SET idProdutoPai = $2, 
-  nome = $3, 
+UPDATE products SET idProdutoPai = $2,
+  nome = $3,
   codigo = $4,
   preco = $5,
   tipo  = $6,
@@ -478,4 +482,3 @@ WHERE products.id = $1;
 -- name: DeleteProduct :exec
 DELETE FROM products
 WHERE products.id = $1;
-

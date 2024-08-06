@@ -11,7 +11,7 @@ WHERE contacts.id = $1;
 SELECT *
 FROM contacts;
 
--- name: GetUserByName:one
+-- name: GetContactByName :one
 SELECT *
 FROM contacts
 WHERE contacts.nome = $1;
