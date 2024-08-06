@@ -74,25 +74,22 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 
 		go func() {
 			defer wg.Done()
-			// processStocks(products, bearerToken, rateLimiter)
+			processStocks(products, bearerToken, rateLimiter)
 		}()
 
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			// processSuppliers(products, bearerToken, rateLimiter)
+			processSuppliers(products, bearerToken, rateLimiter)
 		}()
 
 		wg.Wait()
 
-		//if page >= totalPages {
-		//	brea
-		//}
-		if page == totalPages {
+		if page >= totalPages {
 			break
 		}
 
-		// page++
+		page++
 	}
 
 	resp, err := http.Get("http://localhost:8080/get_products")
@@ -145,9 +142,9 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		fmt.Println("***********************************************************************************")
+		fmt.Println("**********************************************************************************************************************************************")
 		fmt.Printf("Updating product with ID: %d\n", blingProduct.ID)
-		fmt.Println("***********************************************************************************")
+		fmt.Println("**********************************************************************************************************************************************")
 
 		// Mapear BlingProduct para a estrutura necessária
 		updateProduct := types.Product{
@@ -183,41 +180,13 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 			PrecoCusto:                 blingProduct.PrecoCusto,
 			PrecoCompra:                blingProduct.PrecoCompra,
 			SupplierID:                 blingProduct.SupplierID,
-
-			// ID:                         blingProduct.ID,
-			// Nome:                       blingProduct.Nome,
-			// Codigo:                     blingProduct.Codigo,
-			// Preco:                      blingProduct.Preco,
-			// Tipo:                       blingProduct.Tipo,
-			// Situacao:                   blingProduct.Situacao,
-			// Formato:                    blingProduct.Formato,
-			// DescricaoCurta:             blingProduct.DescricaoCurta,
-			// Datavalidade:               blingProduct.Datavalidade,
-			// Unidade:                    blingProduct.Unidade,
-			// Pesoliquido:                blingProduct.Pesoliquido,
-			// Pesobruto:                  blingProduct.Pesobruto,
-			// Volumes:                    blingProduct.Volumes,
-			// Itensporcaixa:              blingProduct.Itensporcaixa,
-			// Gtin:                       blingProduct.Gtin,
-			// Gtinembalagem:              blingProduct.Gtinembalagem,
-			// Tipoproducao:               blingProduct.Tipoproducao,
-			// Condicao:                   blingProduct.Condicao,
-			// Fretegratis:                blingProduct.Fretegratis,
-			// Marca:                      blingProduct.Marca,
-			// Descricaocomplementar:      blingProduct.Descricaocomplementar,
-			// Linkexterno:                blingProduct.Linkexterno,
-			// Observacoes:                blingProduct.Observacoes,
-			// Descricaoembalagemdiscreta: blingProduct.Descricaoembalagemdiscreta,
-			// SaldoFisicoTotal:           blingProduct.SaldoFisicoTotal,
-			// SupplierID:                 blingProduct.SupplierID,
 		}
 
 		// Adicionar log detalhado do updateProduct
 
-		fmt.Println("***********************************************************************************")
+		fmt.Println("**********************************************************************************************************************************************")
 		fmt.Printf("Update product details: %+v\n", updateProduct)
-		fmt.Println("***********************************************************************************")
-
+		fmt.Println("**********************************************************************************************************************************************")
 		// Atualize o produto em localhost com os dados obtidos do Bling
 		updateURL := fmt.Sprintf("http://localhost:8080/update_product?productID=%d", updateProduct.ID)
 		productJSON, err := json.Marshal(updateProduct)

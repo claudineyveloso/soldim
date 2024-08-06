@@ -280,8 +280,8 @@ CREATE TABLE IF NOT EXISTS products_sales_orders (
   sales_order_id  BIGINT NOT NULL,
   product_id      BIGINT NOT NULL,
   quantidade      INT NOT NULL DEFAULT 0,
-  created_at          TIMESTAMP NOT NULL,
-  updated_at          TIMESTAMP NOT NULL
+  created_at      TIMESTAMP NOT NULL,
+  updated_at      TIMESTAMP NOT NULL
 );
 
 ALTER TABLE
@@ -321,6 +321,30 @@ CREATE TABLE IF NOT EXISTS triages (
 
 create unique index sku_sap_idx on triages (sku_sap);
 create unique index sku_wms_idx on triages (sku_wms);
+
+
+DROP TABLE IF EXISTS "contacts";
+CREATE TABLE contacts (
+  id              BIGINT PRIMARY KEY,
+  nome            VARCHAR(100) NOT NULL DEFAULT '',
+  codigo          VARCHAR(100) NOT NULL DEFAULT '',
+  situacao        VARCHAR(100) NOT NULL DEFAULT '',
+  numeroDocumento VARCHAR(100) NOT NULL DEFAULT '',
+  telefone        VARCHAR(100) NOT NULL DEFAULT '',
+  celular         VARCHAR(100) NOT NULL DEFAULT '',
+  created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+create unique index name_contact_idx on triages (name);
+
+DROP TABLE IF EXISTS "suppliers_users";
+CREATE TABLE suppliers_users (
+  supplier_id BIGINT NOT NULL,
+  user_id     UUID NOT NULL,
+  created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
 DROP TABLE IF EXISTS "tokens";
 CREATE TABLE IF NOT EXISTS tokens (
