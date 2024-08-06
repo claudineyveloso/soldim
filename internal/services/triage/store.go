@@ -206,6 +206,18 @@ func (s *Store) CreateTriage(triage types.Triage) error {
 	return nil
 }
 
+func (s *Store) GetTriageByID(triageID uuid.UUID) (*types.Triage, error) {
+	queries := db.New(s.db)
+	ctx := context.Background()
+	dbTriage, err := queries.GetTriage(ctx, triageID)
+	if err != nil {
+		return nil, err
+	}
+	triage := convertDBTriageToTriage(dbTriage)
+
+	return triage, nil
+}
+
 func convertDBTriageToTriage(dbTriage db.Triage) *types.Triage {
 	triage := &types.Triage{
 		ID:                dbTriage.ID,

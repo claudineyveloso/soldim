@@ -33,6 +33,7 @@ type TriageStore interface {
 	ImportTriagesFromFile(filePath string) error
 	CreateTriage(Triage) error
 	GetTriages() ([]*Triage, error)
+	GetTriageByID(id uuid.UUID) (*Triage, error)
 	// UpdateTriage(Triage) error
 	// DeleteTriage(id uuid.UUID) error
 }

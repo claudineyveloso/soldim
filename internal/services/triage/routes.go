@@ -2,10 +2,12 @@ package triage
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/claudineyveloso/soldim.git/internal/types"
 	"github.com/claudineyveloso/soldim.git/internal/utils"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -20,6 +22,7 @@ func NewHandler(triageStore types.TriageStore) *Handler {
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/create_triage", h.handleCreateTriage).Methods(http.MethodPost)
 	router.HandleFunc("/get_triages", h.handleGetTriages).Methods(http.MethodGet)
+	router.HandleFunc("/get_triage/{triageID}", h.handleGetTriage).Methods(http.MethodGet)
 	router.HandleFunc("/import_triages", h.handleImportTriage).Methods(http.MethodGet)
 }
 
@@ -50,6 +53,27 @@ func (h *Handler) handleGetTriages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.WriteJSON(w, http.StatusOK, response)
+}
+
+func (h *Handler) handleGetTriage(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	str, ok := vars["triageID"]
+	if !ok {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID da Triagem ausente!"))
+		return
+	}
+	parsedTriageID, err := uuid.Parse(str)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Triagem inválido!"))
+		return
+	}
+
+	triage, err := h.triageStore.GetTriageByID(parsedTriageID)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, triage)
 }
 
 func (h *Handler) handleImportTriage(w http.ResponseWriter, r *http.Request) {
