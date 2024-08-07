@@ -22,18 +22,18 @@ func RegisterRoutes(router *mux.Router) {
 }
 
 func handleImportBlingContactsToSoldim(w http.ResponseWriter, r *http.Request) {
-	// Obtenha os depositos do Bling
-	channels, err := bling.GetDepositsFromBling(bearerToken)
+	// Obtenha os contatos do Bling
+	channels, err := bling.GetContactsFromBling(bearerToken)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error getting deposits from Bling: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Error getting contacts from Bling: %v", err), http.StatusInternalServerError)
 		return
 	}
 
-	// Para cada deposito, faça uma requisição para criar o deposito no sistema local
+	// Para cada contato, faça uma requisição para criar o contato no sistema local
 	for _, channel := range channels {
 		channelJSON, err := json.Marshal(channel)
 		if err != nil {
-			fmt.Printf("Error marshalling deposits: %v\n", err)
+			fmt.Printf("Error marshalling contacts: %v\n", err)
 			continue
 		}
 
@@ -62,7 +62,7 @@ func handleImportBlingContactsToSoldim(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := map[string]interface{}{
-		"message": "Depositos importados e cadastrados com sucesso",
+		"message": "Contatos importados e cadastrados com sucesso",
 		"status":  http.StatusOK,
 	}
 	jsonResponse, err := json.Marshal(response)

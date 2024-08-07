@@ -7,7 +7,7 @@ type Contact struct {
 	Nome            string    `json:"descricao"`
 	Codigo          string    `json:"codigo"`
 	Situacao        string    `json:"situacao"`
-	NumeroDocumento string    `json:"numeroDocumento"`
+	NumeroDocumento string    `json:"numero_documento"`
 	Telefone        string    `json:"telefone"`
 	Celular         string    `json:"celular"`
 	CreatedAt       time.Time `json:"created_at"`
