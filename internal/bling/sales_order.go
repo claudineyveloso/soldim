@@ -71,37 +71,50 @@ func GetSalesOrdersFromBling(bearerToken string, page int, limit int) ([]types.S
 	return responseData.Data, totalPages, nil
 }
 
-func GetSalesOrdersIDInBling(bearerToken string, salesOrderID int64) (types.SalesOrder, error) {
-	var salesOrder types.SalesOrder
+func GetSalesOrdersIDInBling(bearerToken string, salesOrderID int64) ([]types.SalesOrder, error) {
+	url := fmt.Sprintf("https://api.bling.com.br/Api/v2/pedido/%d/json", salesOrderID)
 
-	url := fmt.Sprintf("https://bling.com.br/Api/v3/pedidos/vendas/%d", salesOrderID)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return salesOrder, fmt.Errorf("error creating request: %v", err)
+		return nil, err
 	}
+
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", bearerToken))
+	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return salesOrder, fmt.Errorf("error sending request: %v", err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return salesOrder, fmt.Errorf("failed to get salesOrder from Bling. Status: %v", resp.Status)
+		return nil, fmt.Errorf("failed to get sales order: %s", resp.Status)
+	}
+
+	var result struct {
+		Retorno struct {
+			Pedidos []struct {
+				Pedido types.SalesOrder `json:"pedido"`
+			} `json:"pedidos"`
+		} `json:"retorno"`
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return salesOrder, fmt.Errorf("error reading response body: %v", err)
+		return nil, err
 	}
 
-	var blingResponse types.SalesOrderResponse
-	err = json.Unmarshal(body, &blingResponse)
+	err = json.Unmarshal(body, &result)
 	if err != nil {
-		return salesOrder, fmt.Errorf("error unmarshalling Bling salesOrder: %v", err)
+		return nil, err
 	}
 
-	return blingResponse.Data, nil
+	var salesOrders []types.SalesOrder
+	for _, p := range result.Retorno.Pedidos {
+		salesOrders = append(salesOrders, p.Pedido)
+	}
+
+	return salesOrders, nil
 }

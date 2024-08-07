@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/claudineyveloso/soldim.git/internal/bling"
 	"github.com/claudineyveloso/soldim.git/internal/types"
@@ -57,7 +56,8 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 		page++
 	}
 
-	err = processProductsSalesOrders()
+	// err = processProductsSalesOrders()
+	err = updateSalesOrder()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -102,13 +102,31 @@ func processSales(sales []types.SalesOrder) {
 	}
 }
 
+func updateSalesOrder() error {
+	logFile, err := os.OpenFile("error_import_sales_orders_log.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	if err != nil {
+		return fmt.Errorf("erro ao abrir arquivo de log: %v", err)
+	}
+	defer logFile.Close()
+
+	resp, err := http.Get("http://localhost:8080/get_sales_orders")
+	if err != nil {
+		return fmt.Errorf("erro ao chamar get_sales_orders: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("falha na requisição para get_sales_orders: %s", resp.Status)
+	}
+	return nil
+}
+
 func processProductsSalesOrders() error {
 	logFile, err := os.OpenFile("error_import_sales_orders_log.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		return fmt.Errorf("erro ao abrir arquivo de log: %v", err)
 	}
 	defer logFile.Close()
-	fmt.Printf("Na linha abaixo, pegar todos os pedidos de venda")
 
 	resp, err := http.Get("http://localhost:8080/get_sales_orders")
 	if err != nil {
@@ -120,38 +138,32 @@ func processProductsSalesOrders() error {
 		return fmt.Errorf("falha na requisição para get_sales_orders: %s", resp.Status)
 	}
 
-	var salesOrders []types.SalesOrder
-	err = json.NewDecoder(resp.Body).Decode(&salesOrders)
-	if err != nil {
-		return fmt.Errorf("erro ao decodificar resposta: %v", err)
-	}
-
-	for _, salesOrder := range salesOrders {
-		salesOrderData, err := bling.GetSalesOrdersIDInBling(bearerToken, salesOrder.ID)
-		if err != nil {
-			// return fmt.Errorf("erro ao obter SalesOrdersIDInBling para ID %d: %v", salesOrder.ID, err)
-			utils.LogError(logFile, salesOrder.ID, fmt.Errorf("erro ao obter SalesOrdersIDInBling para ID %d: %v", salesOrder.ID, err))
-			continue
-		}
-		fmt.Printf("Na linha abaixo, pegar todos os pedidos de venda")
-
-		for _, item := range salesOrderData.Itens {
-			productSalesOrder := types.ProductSalesOrderPayload{
-				SalesOrderID: salesOrderData.ID,
-				ProductID:    item.Produto.ID,
-				Quantidade:   int32(item.Quantidade), // Converte quantidade para int32
-				CreatedAt:    time.Now(),
-				UpdatedAt:    time.Now(),
-			}
-
-			err = createProductsSalesOrder(productSalesOrder)
-			if err != nil {
-				utils.LogError(logFile, salesOrder.ID, fmt.Errorf("erro ao criar ProductSalesOrder para SalesOrder ID %d e Item ID %d: %v", salesOrder.ID, item.ID, err))
-				continue
-				// return fmt.Errorf("erro ao criar ProductSalesOrder para SalesOrder ID %d e Item ID %d: %v", salesOrder.ID, item.ID, err)
-			}
-		}
-	}
+	// for _, salesOrder := range salesOrders {
+	// 	salesOrderData, err := bling.GetSalesOrdersIDInBling(bearerToken, salesOrder.ID)
+	// 	if err != nil {
+	// 		// return fmt.Errorf("erro ao obter SalesOrdersIDInBling para ID %d: %v", salesOrder.ID, err)
+	// 		utils.LogError(logFile, salesOrder.ID, fmt.Errorf("erro ao obter SalesOrdersIDInBling para ID %d: %v", salesOrder.ID, err))
+	// 		continue
+	// 	}
+	// 	fmt.Printf("Na linha abaixo, pegar todos os pedidos de venda dentro do FOR")
+	//
+	// 	for _, item := range salesOrderData.Itens {
+	// 		productSalesOrder := types.ProductSalesOrderPayload{
+	// 			SalesOrderID: salesOrderData.ID,
+	// 			ProductID:    item.Produto.ID,
+	// 			Quantidade:   int32(item.Quantidade), // Converte quantidade para int32
+	// 			CreatedAt:    time.Now(),
+	// 			UpdatedAt:    time.Now(),
+	// 		}
+	//
+	// 		err = createProductsSalesOrder(productSalesOrder)
+	// 		if err != nil {
+	// 			utils.LogError(logFile, salesOrder.ID, fmt.Errorf("erro ao criar ProductSalesOrder para SalesOrder ID %d e Item ID %d: %v", salesOrder.ID, item.ID, err))
+	// 			continue
+	// 			// return fmt.Errorf("erro ao criar ProductSalesOrder para SalesOrder ID %d e Item ID %d: %v", salesOrder.ID, item.ID, err)
+	// 		}
+	// 	}
+	// }
 
 	return nil
 }

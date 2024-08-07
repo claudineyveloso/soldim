@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	contactbling "github.com/claudineyveloso/soldim.git/internal/services/contact_bling"
 	"github.com/claudineyveloso/soldim.git/internal/services/deposit"
 	depositbling "github.com/claudineyveloso/soldim.git/internal/services/deposit_bling"
 	depositproduct "github.com/claudineyveloso/soldim.git/internal/services/deposit_product"
@@ -54,6 +55,7 @@ func (s *APIServer) Run() error {
 	productbling.RegisterRoutes(r)
 	saleschannelbling.RegisterRoutes(r)
 	depositbling.RegisterRoutes(r)
+	contactbling.RegisterRoutes(r)
 	salesorderbling.RegisterRoutes(r)
 	userStore := user.NewStore(s.db)
 	userHandler := user.NewHandler(userStore)

@@ -326,17 +326,17 @@ create unique index sku_wms_idx on triages (sku_wms);
 DROP TABLE IF EXISTS "contacts";
 CREATE TABLE contacts (
   id              BIGINT PRIMARY KEY,
-  nome            VARCHAR(100) NOT NULL DEFAULT '',
+  nome            VARCHAR(255) NOT NULL DEFAULT '',
   codigo          VARCHAR(100) NOT NULL DEFAULT '',
   situacao        VARCHAR(100) NOT NULL DEFAULT '',
   numeroDocumento VARCHAR(100) NOT NULL DEFAULT '',
-  telefone        VARCHAR(100) NOT NULL DEFAULT '',
-  celular         VARCHAR(100) NOT NULL DEFAULT '',
+  telefone        VARCHAR(30) NOT NULL DEFAULT '',
+  celular         VARCHAR(30) NOT NULL DEFAULT '',
   created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-create unique index name_contact_idx on triages (name);
+create unique index name_contact_idx on contacts (nome);
 
 DROP TABLE IF EXISTS "suppliers_users";
 CREATE TABLE suppliers_users (

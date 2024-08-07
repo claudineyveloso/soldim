@@ -35,10 +35,7 @@ type SalesOrderItem struct {
 	Descricao          string       `json:"descricao"`
 	DescricaoDetalhada string       `json:"descricaoDetalhada"`
 	Produto            SalesProduct `json:"produto"`
-}
-
-type SalesOrderResponse struct {
-	Data SalesOrder `json:"data"`
+	Comissao           Comissao     `json:"comissao"`
 }
 
 type SalesProduct struct {
@@ -52,15 +49,25 @@ type Contato struct {
 	NumeroDocumento string `json:"numeroDocumento"`
 }
 
+type Comissao struct {
+	Base     float64 `json:"base"`
+	Aliquota float64 `json:"aliquota"`
+	Valor    float64 `json:"valor"`
+}
+
 // Situacao representa a estrutura da situação no pedido de venda
 type Situacao struct {
-	ID    int64 `json:"id"`
-	Valor int   `json:"valor"`
+	ID    int64   `json:"id"`
+	Valor float64 `json:"valor"`
 }
 
 // Loja representa a estrutura da loja no pedido de venda
 type Loja struct {
 	ID int64 `json:"id"`
+}
+
+type SalesOrderResponse struct {
+	Data []SalesOrder `json:"data"`
 }
 
 // CustomDate é um tipo customizado para tratar o formato da data
