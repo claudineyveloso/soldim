@@ -4,10 +4,10 @@ import "time"
 
 type Contact struct {
 	ID              int64     `json:"id"`
-	Nome            string    `json:"descricao"`
+	Nome            string    `json:"nome"`
 	Codigo          string    `json:"codigo"`
 	Situacao        string    `json:"situacao"`
-	NumeroDocumento string    `json:"numero_documento"`
+	Numerodocumento string    `json:"numero_documento"`
 	Telefone        string    `json:"telefone"`
 	Celular         string    `json:"celular"`
 	CreatedAt       time.Time `json:"created_at"`

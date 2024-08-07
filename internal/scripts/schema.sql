@@ -261,6 +261,7 @@ CREATE TABLE IF NOT EXISTS sales_orders (
   totalDescontos      FLOAT NOT NULL DEFAULT 0,
   situation_id        BIGINT NOT NULL DEFAULT 0,
   store_id            BIGINT NOT NULL,
+  contact_id          BIGINT NOT NULL,
   created_at          TIMESTAMP NOT NULL,
   updated_at          TIMESTAMP NOT NULL
 );

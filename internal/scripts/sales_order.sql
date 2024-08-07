@@ -1,5 +1,5 @@
 -- name: CreateSalesOrder :exec
-INSERT INTO sales_orders (id, numero, numeroLoja, data, dataSaida, dataPrevista, totalProdutos, totalDescontos, situation_id, store_id, created_at, updated_at)
+INSERT INTO sales_orders (id, numero, numeroLoja, data, dataSaida, dataPrevista, totalProdutos, totalDescontos, situation_id, store_id, contact_id, created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);
 
 -- name: GetSalesOrders :many
@@ -13,6 +13,7 @@ SELECT id,
         totalDescontos,
         situation_id,
         store_id,
+        contact_id,
         created_at,
         updated_at
 FROM sales_orders
@@ -29,6 +30,7 @@ SELECT id,
         totalDescontos,
         situation_id,
         store_id,
+        contact_id,
         created_at,
         updated_at
 FROM sales_orders
@@ -45,6 +47,7 @@ SELECT id,
         totalDescontos,
         situation_id,
         store_id,
+        contact_id,
         created_at,
         updated_at
 FROM sales_orders
@@ -64,7 +67,8 @@ SELECT so.id,
        so.store_id,
        (SELECT SUM(totalprodutos) 
         FROM sales_orders 
-        WHERE sales_orders.datasaida >= $1) AS total_produtos_soma
+        WHERE sales_orders.datasaida >= $1) AS total_produtos_soma,
+        so.contact_id
 FROM sales_orders so
 WHERE so.datasaida = $1;
 
@@ -82,7 +86,8 @@ SELECT so.id,
         so.store_id,
        (SELECT SUM(totalprodutos) 
         FROM sales_orders 
-        WHERE DATE_TRUNC('week', datasaida) = DATE_TRUNC('week', $1::date)) AS total_produtos_soma
+        WHERE DATE_TRUNC('week', datasaida) = DATE_TRUNC('week', $1::date)) AS total_produtos_soma,
+        so.contact_id
 FROM sales_orders so
 WHERE DATE_TRUNC('week', so.datasaida) = DATE_TRUNC('week', $1::date)
 ORDER BY so.datasaida;
@@ -100,8 +105,4 @@ GROUP BY
     DATE_TRUNC('day', datasaida)
 ORDER BY 
     dia;
-
--- name: GetTotalSalesOrders :one
-SELECT COUNT(*)
-FROM sales_orders;
 

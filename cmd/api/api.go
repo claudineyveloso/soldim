@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/claudineyveloso/soldim.git/internal/services/contact"
 	contactbling "github.com/claudineyveloso/soldim.git/internal/services/contact_bling"
 	"github.com/claudineyveloso/soldim.git/internal/services/deposit"
 	depositbling "github.com/claudineyveloso/soldim.git/internal/services/deposit_bling"
@@ -121,6 +122,10 @@ func (s *APIServer) Run() error {
 	triageStore := triage.NewStore(s.db)
 	triateHandler := triage.NewHandler(triageStore)
 	triateHandler.RegisterRoutes(r)
+
+	contactStore := contact.NewStore(s.db)
+	contactHandler := contact.NewHandler(contactStore)
+	contactHandler.RegisterRoutes(r)
 
 	fmt.Println("Server started on http://localhost:8080")
 	return http.ListenAndServe("localhost:8080",
