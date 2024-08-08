@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/claudineyveloso/soldim.git/internal/types"
 	"github.com/claudineyveloso/soldim.git/internal/utils"
@@ -22,6 +23,7 @@ func NewHandler(contactStore types.ContactStore) *Handler {
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/create_contact", h.handleCreateContacts).Methods(http.MethodPost)
 	router.HandleFunc("/get_contacts", h.handleGetContacts).Methods(http.MethodGet)
+	router.HandleFunc("/get_contact/{contactID}", h.handleGetContact).Methods(http.MethodGet)
 }
 
 func (h *Handler) handleGetContacts(w http.ResponseWriter, r *http.Request) {
@@ -31,6 +33,27 @@ func (h *Handler) handleGetContacts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.WriteJSON(w, http.StatusOK, contacts)
+}
+
+func (h *Handler) handleGetContact(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	contactIDStr, ok := vars["contactID"]
+	if !ok {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("id do contato ausente"))
+		return
+	}
+	parsedDraftsID, err := strconv.ParseInt(contactIDStr, 10, 64)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("id do rascunho inválido"))
+		return
+	}
+
+	product, err := h.contactStore.GetContactByID(parsedDraftsID)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, product)
 }
 
 func (h *Handler) handleCreateContacts(w http.ResponseWriter, r *http.Request) {

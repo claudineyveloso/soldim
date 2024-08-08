@@ -21,4 +21,5 @@ type ContactResponse struct {
 type ContactStore interface {
 	CreateContact(Contact) error
 	GetContacts() ([]*Contact, error)
+	GetContactByID(id int64) (*Contact, error)
 }

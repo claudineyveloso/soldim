@@ -49,7 +49,7 @@ func (s *Store) CreateSalesOrder(salesorder types.SalesOrder) error {
 	return nil
 }
 
-func (s *Store) GetSalesOrders(limit, offset int32) ([]*types.SalesOrder, int64, error) {
+func (s *Store) GetSalesOrders(limit, offset int32) ([]*types.SalesOrder, error) {
 	queries := db.New(s.db)
 	ctx := context.Background()
 	params := db.GetSalesOrdersParams{
@@ -59,12 +59,7 @@ func (s *Store) GetSalesOrders(limit, offset int32) ([]*types.SalesOrder, int64,
 
 	dbSalesOrders, err := queries.GetSalesOrders(ctx, params)
 	if err != nil {
-		return nil, 0, err
-	}
-
-	totalCount, err := queries.GetTotalSalesOrders(ctx)
-	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	var salesorders []*types.SalesOrder
@@ -72,7 +67,7 @@ func (s *Store) GetSalesOrders(limit, offset int32) ([]*types.SalesOrder, int64,
 		salesorder := convertDBSalesOrderToSalesOrder(dbSalesOrder)
 		salesorders = append(salesorders, salesorder)
 	}
-	return salesorders, totalCount, nil
+	return salesorders, nil
 }
 
 func (s *Store) GetSalesOrderByID(salesorderID int64) (*types.SalesOrder, error) {

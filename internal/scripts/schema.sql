@@ -276,6 +276,13 @@ ALTER TABLE
 ADD
    FOREIGN KEY ("store_id") REFERENCES "stores" ("id");
 
+ALTER TABLE
+  "sales_orders"
+ADD
+   FOREIGN KEY ("contact_id") REFERENCES "contacts" ("id");
+
+
+
 DROP TABLE IF EXISTS "products_sales_orders";
 CREATE TABLE IF NOT EXISTS products_sales_orders (
   sales_order_id  BIGINT NOT NULL,

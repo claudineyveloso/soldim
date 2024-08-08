@@ -148,6 +148,7 @@ type SalesOrder struct {
 	Totaldescontos float64   `json:"totaldescontos"`
 	SituationID    int64     `json:"situation_id"`
 	StoreID        int64     `json:"store_id"`
+	ContactID      int64     `json:"contact_id"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
 }

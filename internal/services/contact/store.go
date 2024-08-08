@@ -62,6 +62,18 @@ func (s *Store) GetContacts() ([]*types.Contact, error) {
 	return contacts, nil
 }
 
+func (s *Store) GetContactByID(contactID int64) (*types.Contact, error) {
+	queries := db.New(s.db)
+	ctx := context.Background()
+	dbContact, err := queries.GetContact(ctx, contactID)
+	if err != nil {
+		return nil, err
+	}
+	contact := convertDBContactToContact(dbContact)
+
+	return contact, nil
+}
+
 func convertDBContactToContact(dbContact db.Contact) *types.Contact {
 	contact := &types.Contact{
 		ID:              dbContact.ID,

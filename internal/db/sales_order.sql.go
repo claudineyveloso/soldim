@@ -11,8 +11,8 @@ import (
 )
 
 const createSalesOrder = `-- name: CreateSalesOrder :exec
-INSERT INTO sales_orders (id, numero, numeroLoja, data, dataSaida, dataPrevista, totalProdutos, totalDescontos, situation_id, store_id, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+INSERT INTO sales_orders (id, numero, numeroLoja, data, dataSaida, dataPrevista, totalProdutos, totalDescontos, situation_id, store_id, contact_id, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 `
 
 type CreateSalesOrderParams struct {
@@ -26,6 +26,7 @@ type CreateSalesOrderParams struct {
 	Totaldescontos float64   `json:"totaldescontos"`
 	SituationID    int64     `json:"situation_id"`
 	StoreID        int64     `json:"store_id"`
+	ContactID      int64     `json:"contact_id"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
 }
@@ -42,6 +43,7 @@ func (q *Queries) CreateSalesOrder(ctx context.Context, arg CreateSalesOrderPara
 		arg.Totaldescontos,
 		arg.SituationID,
 		arg.StoreID,
+		arg.ContactID,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
@@ -59,6 +61,7 @@ SELECT id,
         totalDescontos,
         situation_id,
         store_id,
+        contact_id,
         created_at,
         updated_at
 FROM sales_orders
@@ -79,6 +82,7 @@ func (q *Queries) GetSalesOrder(ctx context.Context, id int64) (SalesOrder, erro
 		&i.Totaldescontos,
 		&i.SituationID,
 		&i.StoreID,
+		&i.ContactID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -96,6 +100,7 @@ SELECT id,
         totalDescontos,
         situation_id,
         store_id,
+        contact_id,
         created_at,
         updated_at
 FROM sales_orders
@@ -116,6 +121,7 @@ func (q *Queries) GetSalesOrderByNumber(ctx context.Context, numero int32) (Sale
 		&i.Totaldescontos,
 		&i.SituationID,
 		&i.StoreID,
+		&i.ContactID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -136,7 +142,8 @@ SELECT so.id,
        so.store_id,
        (SELECT SUM(totalprodutos) 
         FROM sales_orders 
-        WHERE sales_orders.datasaida >= $1) AS total_produtos_soma
+        WHERE sales_orders.datasaida >= $1) AS total_produtos_soma,
+        so.contact_id
 FROM sales_orders so
 WHERE so.datasaida = $1
 `
@@ -153,6 +160,7 @@ type GetSalesOrderTotalByDayRow struct {
 	SituationID       int64     `json:"situation_id"`
 	StoreID           int64     `json:"store_id"`
 	TotalProdutosSoma int64     `json:"total_produtos_soma"`
+	ContactID         int64     `json:"contact_id"`
 }
 
 func (q *Queries) GetSalesOrderTotalByDay(ctx context.Context, datasaida time.Time) ([]GetSalesOrderTotalByDayRow, error) {
@@ -176,6 +184,7 @@ func (q *Queries) GetSalesOrderTotalByDay(ctx context.Context, datasaida time.Ti
 			&i.SituationID,
 			&i.StoreID,
 			&i.TotalProdutosSoma,
+			&i.ContactID,
 		); err != nil {
 			return nil, err
 		}
@@ -201,6 +210,7 @@ SELECT id,
         totalDescontos,
         situation_id,
         store_id,
+        contact_id,
         created_at,
         updated_at
 FROM sales_orders
@@ -232,6 +242,7 @@ func (q *Queries) GetSalesOrders(ctx context.Context, arg GetSalesOrdersParams) 
 			&i.Totaldescontos,
 			&i.SituationID,
 			&i.StoreID,
+			&i.ContactID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -305,7 +316,8 @@ SELECT so.id,
         so.store_id,
        (SELECT SUM(totalprodutos) 
         FROM sales_orders 
-        WHERE DATE_TRUNC('week', datasaida) = DATE_TRUNC('week', $1::date)) AS total_produtos_soma
+        WHERE DATE_TRUNC('week', datasaida) = DATE_TRUNC('week', $1::date)) AS total_produtos_soma,
+        so.contact_id
 FROM sales_orders so
 WHERE DATE_TRUNC('week', so.datasaida) = DATE_TRUNC('week', $1::date)
 ORDER BY so.datasaida
@@ -323,6 +335,7 @@ type GetTotalSalesOrderTotalByWeekRow struct {
 	SituationID       int64     `json:"situation_id"`
 	StoreID           int64     `json:"store_id"`
 	TotalProdutosSoma int64     `json:"total_produtos_soma"`
+	ContactID         int64     `json:"contact_id"`
 }
 
 func (q *Queries) GetTotalSalesOrderTotalByWeek(ctx context.Context, dollar_1 time.Time) ([]GetTotalSalesOrderTotalByWeekRow, error) {
@@ -346,6 +359,7 @@ func (q *Queries) GetTotalSalesOrderTotalByWeek(ctx context.Context, dollar_1 ti
 			&i.SituationID,
 			&i.StoreID,
 			&i.TotalProdutosSoma,
+			&i.ContactID,
 		); err != nil {
 			return nil, err
 		}
@@ -358,16 +372,4 @@ func (q *Queries) GetTotalSalesOrderTotalByWeek(ctx context.Context, dollar_1 ti
 		return nil, err
 	}
 	return items, nil
-}
-
-const getTotalSalesOrders = `-- name: GetTotalSalesOrders :one
-SELECT COUNT(*)
-FROM sales_orders
-`
-
-func (q *Queries) GetTotalSalesOrders(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getTotalSalesOrders)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
 }
