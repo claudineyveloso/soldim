@@ -52,11 +52,11 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 			return
 		}
 
-		for _, sale := range sales {
+		for i, sale := range sales {
 			contact, err := existContact(sale.Contato.ID)
 			if err != nil {
 				if err == errors.ErrContactNotFound {
-					contact = &types.Contact{
+					newContact := &types.Contact{
 						ID:              sale.Contato.ID,
 						Nome:            sale.Contato.Nome,
 						Codigo:          "", // Adicione o código se disponível
@@ -67,17 +67,23 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 						CreatedAt:       time.Now(),
 						UpdatedAt:       time.Now(),
 					}
-					err = createContact(*contact)
+					createdContact, err := createContact(*newContact)
 					if err != nil {
 						http.Error(w, err.Error(), http.StatusInternalServerError)
 						return
 					}
-					// Continuar com o próximo loop após a criação do contato
-					continue
+					// Atualize o contact ID na venda com o ID retornado após a criação
+					sales[i].Contato.ID = createdContact.ID
+					sales[i].ContactID = createdContact.ID
+
 				} else {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
+			} else {
+				// Atualize o contact ID na venda com o ID encontrado
+				sales[i].Contato.ID = contact.ID
+				sales[i].ContactID = contact.ID
 			}
 		}
 
@@ -98,72 +104,6 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 	}
 }
 
-func handleImportBlingSalesOrdersToSoldimXXX(w http.ResponseWriter, r *http.Request) {
-	pageStr := r.URL.Query().Get("page")
-	limitStr := r.URL.Query().Get("limit")
-	page, err := strconv.Atoi(pageStr)
-	if err != nil || page < 1 {
-		page = 1
-	}
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil || limit < 1 {
-		limit = limitePorPagina
-	}
-
-	fmt.Printf("Requesting page: %d with limit: %d\n", page, limit)
-
-	for {
-		sales, totalPages, err := bling.GetSalesOrdersFromBling(bearerToken, page, limit)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		for _, sale := range sales {
-			contact, err := existContact(sale.Contato.ID)
-			if err != nil {
-				if err == errors.ErrContactNotFound {
-					contact = &types.Contact{
-						ID:              sale.Contato.ID,
-						Nome:            sale.Contato.Nome,
-						Codigo:          "", // Adicione o código se disponível
-						Situacao:        "", // Adicione a situação se disponível
-						Numerodocumento: sale.Contato.NumeroDocumento,
-						Telefone:        "", // Adicione o telefone se disponível
-						Celular:         "", // Adicione o celular se disponível
-						CreatedAt:       time.Now(),
-						UpdatedAt:       time.Now(),
-					}
-					err = createContact(*contact)
-					if err != nil {
-						http.Error(w, err.Error(), http.StatusInternalServerError)
-						return
-					}
-					continue
-				} else {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			}
-		}
-
-		fmt.Printf("Processing page: %d with %d products\n", page, len(sales))
-		processSales(sales)
-
-		if page >= totalPages {
-			break
-		}
-
-		page++
-	}
-
-	// err = processProductsSalesOrders()
-	err = updateSalesOrder()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
-
 func existContact(contactID int64) (*types.Contact, error) {
 	url := fmt.Sprintf("http://localhost:8080/get_contact/%d", contactID)
 	resp, err := http.Get(url)
@@ -171,38 +111,64 @@ func existContact(contactID int64) (*types.Contact, error) {
 		return nil, fmt.Errorf("error fetching contact: %v", err)
 	}
 	defer resp.Body.Close()
+
+	// Decodifica a resposta para verificar se há uma mensagem de erro
 	var errorResponse ErrorResponse
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error reading response body: %v", err)
 	}
+
+	// Verifica se a resposta contém um erro
 	if err := json.Unmarshal(body, &errorResponse); err == nil {
 		if errorResponse.Error == "contact not found" {
+			fmt.Printf("Contato com ID %d não encontrado.\n", contactID)
 			return nil, errors.ErrContactNotFound
 		}
 	}
-	return nil, nil
+
+	// Verifica se a resposta contém o contato
+	var contact types.Contact
+	if err := json.Unmarshal(body, &contact); err != nil {
+		return nil, fmt.Errorf("error decoding contact response: %v", err)
+	}
+
+	// Log detalhado do contato encontrado
+	fmt.Printf("Contato encontrado: %+v\n", contact)
+	return &contact, nil
 }
 
-func createContact(contact types.Contact) error {
+func createContact(contact types.Contact) (*types.Contact, error) {
 	url := "http://localhost:8080/create_contact"
 	contactData, err := json.Marshal(contact)
 	if err != nil {
-		return fmt.Errorf("error marshaling contact data: %v", err)
+		return nil, fmt.Errorf("error marshaling contact data: %v", err)
 	}
 
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(contactData))
 	if err != nil {
-		return fmt.Errorf("error creating contact: %v", err)
+		return nil, fmt.Errorf("error creating contact: %v", err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("unexpected status code %d: %s", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("unexpected status code %d: %s", resp.StatusCode, string(body))
 	}
 
-	return nil
+	var createdContact types.Contact
+	err = json.NewDecoder(resp.Body).Decode(&createdContact)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding response body: %v", err)
+	}
+
+	// Verifica se o contato realmente existe no banco de dados após a criação
+	existingContact, err := existContact(createdContact.ID)
+	if err != nil {
+		return nil, fmt.Errorf("contact not found after creation: %v", err)
+	}
+
+	return existingContact, nil
 }
 
 func processSales(sales []types.SalesOrder) {
@@ -217,7 +183,6 @@ func processSales(sales []types.SalesOrder) {
 
 		// Adicione um log para imprimir o JSON que está sendo enviado
 		fmt.Printf("SalesOrder JSON: %s\n", string(salesOrderJSON))
-
 		req, err := http.NewRequest("POST", "http://localhost:8080/create_sales_order", bytes.NewBuffer(salesOrderJSON))
 		if err != nil {
 			fmt.Printf("Error creating request: %v\n", err)

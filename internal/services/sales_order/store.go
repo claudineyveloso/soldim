@@ -36,6 +36,7 @@ func (s *Store) CreateSalesOrder(salesorder types.SalesOrder) error {
 		Totaldescontos: salesorder.Totaldescontos,
 		SituationID:    salesorder.SituationID,
 		StoreID:        salesorder.StoreID,
+		ContactID:      salesorder.ContactID,
 		CreatedAt:      salesorder.CreatedAt,
 		UpdatedAt:      salesorder.UpdatedAt,
 	}
@@ -106,6 +107,7 @@ func convertDBSalesOrderToSalesOrder(dbSalesOrder db.SalesOrder) *types.SalesOrd
 		Totaldescontos: dbSalesOrder.Totaldescontos,
 		SituationID:    dbSalesOrder.SituationID,
 		StoreID:        dbSalesOrder.StoreID,
+		ContactID:      dbSalesOrder.ContactID,
 		CreatedAt:      dbSalesOrder.CreatedAt,
 		UpdatedAt:      dbSalesOrder.UpdatedAt,
 	}

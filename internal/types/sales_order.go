@@ -16,6 +16,7 @@ type SalesOrder struct {
 	Totaldescontos float64          `json:"totaldescontos"`
 	SituationID    int64            `json:"situation_id"`
 	StoreID        int64            `json:"store_id"`
+	ContactID      int64            `json:"contact_id"`
 	Contato        Contato          `json:"contato"`
 	Situacao       Situacao         `json:"situacao"`
 	Loja           Loja             `json:"loja"`
