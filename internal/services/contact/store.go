@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/claudineyveloso/soldim.git/internal/db"
+	"github.com/claudineyveloso/soldim.git/internal/errors"
 	"github.com/claudineyveloso/soldim.git/internal/types"
 )
 
@@ -67,6 +68,9 @@ func (s *Store) GetContactByID(contactID int64) (*types.Contact, error) {
 	ctx := context.Background()
 	dbContact, err := queries.GetContact(ctx, contactID)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errors.ErrContactNotFound
+		}
 		return nil, err
 	}
 	contact := convertDBContactToContact(dbContact)

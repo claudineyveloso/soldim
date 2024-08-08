@@ -8,8 +8,10 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/claudineyveloso/soldim.git/internal/bling"
+	"github.com/claudineyveloso/soldim.git/internal/errors"
 	"github.com/claudineyveloso/soldim.git/internal/types"
 	"github.com/claudineyveloso/soldim.git/internal/utils"
 	"github.com/gorilla/mux"
@@ -17,8 +19,12 @@ import (
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "837932b1b80791b0167ca8f8d15f5a94d56b4268"
+	bearerToken     = "4e013e56e7ac5f1b915c3c68e3758c0624461a5f"
 )
+
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
 
 func RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/import_sales_orders", handleImportBlingSalesOrdersToSoldim).Methods(http.MethodGet)
@@ -46,6 +52,100 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 			return
 		}
 
+		for _, sale := range sales {
+			contact, err := existContact(sale.Contato.ID)
+			if err != nil {
+				if err == errors.ErrContactNotFound {
+					contact = &types.Contact{
+						ID:              sale.Contato.ID,
+						Nome:            sale.Contato.Nome,
+						Codigo:          "", // Adicione o código se disponível
+						Situacao:        "", // Adicione a situação se disponível
+						Numerodocumento: sale.Contato.NumeroDocumento,
+						Telefone:        "", // Adicione o telefone se disponível
+						Celular:         "", // Adicione o celular se disponível
+						CreatedAt:       time.Now(),
+						UpdatedAt:       time.Now(),
+					}
+					err = createContact(*contact)
+					if err != nil {
+						http.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					}
+					// Continuar com o próximo loop após a criação do contato
+					continue
+				} else {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+			}
+		}
+
+		fmt.Printf("Processing page: %d with %d products\n", page, len(sales))
+		processSales(sales) // Processa todas as vendas
+
+		if page >= totalPages {
+			break
+		}
+
+		page++
+	}
+
+	err = updateSalesOrder()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleImportBlingSalesOrdersToSoldimXXX(w http.ResponseWriter, r *http.Request) {
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit < 1 {
+		limit = limitePorPagina
+	}
+
+	fmt.Printf("Requesting page: %d with limit: %d\n", page, limit)
+
+	for {
+		sales, totalPages, err := bling.GetSalesOrdersFromBling(bearerToken, page, limit)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		for _, sale := range sales {
+			contact, err := existContact(sale.Contato.ID)
+			if err != nil {
+				if err == errors.ErrContactNotFound {
+					contact = &types.Contact{
+						ID:              sale.Contato.ID,
+						Nome:            sale.Contato.Nome,
+						Codigo:          "", // Adicione o código se disponível
+						Situacao:        "", // Adicione a situação se disponível
+						Numerodocumento: sale.Contato.NumeroDocumento,
+						Telefone:        "", // Adicione o telefone se disponível
+						Celular:         "", // Adicione o celular se disponível
+						CreatedAt:       time.Now(),
+						UpdatedAt:       time.Now(),
+					}
+					err = createContact(*contact)
+					if err != nil {
+						http.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					}
+					continue
+				} else {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+			}
+		}
+
 		fmt.Printf("Processing page: %d with %d products\n", page, len(sales))
 		processSales(sales)
 
@@ -62,6 +162,47 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+func existContact(contactID int64) (*types.Contact, error) {
+	url := fmt.Sprintf("http://localhost:8080/get_contact/%d", contactID)
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching contact: %v", err)
+	}
+	defer resp.Body.Close()
+	var errorResponse ErrorResponse
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body: %v", err)
+	}
+	if err := json.Unmarshal(body, &errorResponse); err == nil {
+		if errorResponse.Error == "contact not found" {
+			return nil, errors.ErrContactNotFound
+		}
+	}
+	return nil, nil
+}
+
+func createContact(contact types.Contact) error {
+	url := "http://localhost:8080/create_contact"
+	contactData, err := json.Marshal(contact)
+	if err != nil {
+		return fmt.Errorf("error marshaling contact data: %v", err)
+	}
+
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(contactData))
+	if err != nil {
+		return fmt.Errorf("error creating contact: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("unexpected status code %d: %s", resp.StatusCode, string(body))
+	}
+
+	return nil
 }
 
 func processSales(sales []types.SalesOrder) {

@@ -43,7 +43,10 @@ type SalesProduct struct {
 }
 
 type Contato struct {
-	ID int64 `json:"id"`
+	ID              int64  `json:"id"`
+	Nome            string `json:"nome"`
+	TipoPessoa      string `json:"tipoPessoa"`
+	NumeroDocumento string `json:"numeroDocumento"`
 }
 
 type Comissao struct {
@@ -54,7 +57,10 @@ type Comissao struct {
 
 // Situacao representa a estrutura da situação no pedido de venda
 type Situacao struct {
-	ID int64 `json:"id"`
+	ID              int64  `json:"id"`
+	Nome            string `json:"nome"`
+	TipoPessoa      string `json:"tipoPessoa"`
+	NumeroDocumento string `json:"numeroDocumento"`
 }
 
 // Loja representa a estrutura da loja no pedido de venda
