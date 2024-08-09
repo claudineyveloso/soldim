@@ -111,26 +111,26 @@ func (h *Handler) handleGetSalesOrder(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, http.StatusOK, salesOrder)
 }
 
-func (h *Handler) handleGetSalesOrderNumber(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	salesOrderNumberStr, ok := vars["salesOrderNumber"]
-	if !ok {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("número do produto ausente"))
-		return
-	}
-	parsedSalesOrderNumber, err := strconv.ParseInt(salesOrderNumberStr, 10, 64)
-	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Produto inválido!"))
-		return
-	}
-
-	// Converta parsedSalesOrderNumber de int64 para int32
-	salesOrderNumber := int32(parsedSalesOrderNumber)
-
-	salesOrder, err := h.salesOrderStore.GetSalesOrderByNumber(salesOrderNumber)
-	if err != nil {
-		utils.WriteError(w, http.StatusInternalServerError, err)
-		return
-	}
-	utils.WriteJSON(w, http.StatusOK, salesOrder)
-}
+// func (h *Handler) handleGetSalesOrderNumber(w http.ResponseWriter, r *http.Request) {
+// 	vars := mux.Vars(r)
+// 	salesOrderNumberStr, ok := vars["salesOrderNumber"]
+// 	if !ok {
+// 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("número do produto ausente"))
+// 		return
+// 	}
+// 	parsedSalesOrderNumber, err := strconv.ParseInt(salesOrderNumberStr, 10, 64)
+// 	if err != nil {
+// 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Produto inválido!"))
+// 		return
+// 	}
+//
+// 	// Converta parsedSalesOrderNumber de int64 para int32
+// 	salesOrderNumber := int32(parsedSalesOrderNumber)
+//
+// 	salesOrder, err := h.salesOrderStore.GetSalesOrderByNumber(salesOrderNumber)
+// 	if err != nil {
+// 		utils.WriteError(w, http.StatusInternalServerError, err)
+// 		return
+// 	}
+// 	utils.WriteJSON(w, http.StatusOK, salesOrder)
+// }

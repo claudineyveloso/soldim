@@ -3,58 +3,94 @@ INSERT INTO sales_orders (id, numero, numeroLoja, data, dataSaida, dataPrevista,
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
 
 -- name: GetSalesOrders :many
-SELECT id,
-        numero,
-        numeroLoja,
-        data,
-        dataSaida,
-        dataPrevista,
-        totalProdutos,
-        totalDescontos,
-        situation_id,
-        store_id,
-        contact_id,
-        created_at,
-        updated_at
-FROM sales_orders
-LIMIT $1 OFFSET $2;
+SELECT 
+  so.id,
+  so.numero,
+  so.numeroLoja,
+  so.data,
+  so.dataSaida,
+  so.dataPrevista,
+  so.totalProdutos,
+  so.totalDescontos,
+  so.situation_id,
+  s.descricao AS situation_description,  -- Renomeia a coluna da situação
+  so.store_id,
+  st.descricao AS store_description,  -- Renomeia a coluna da loja
+  so.contact_id,
+  c.nome AS contact_name,  -- Nome do contato
+  c.numeroDocumento AS contact_document,  -- Documento do contato
+  so.created_at,
+  so.updated_at
+FROM 
+    sales_orders so
+JOIN 
+    contacts c ON so.contact_id = c.id
+JOIN 
+    stores st ON so.store_id = st.id
+JOIN 
+    situations s ON so.situation_id = s.id
+ORDER BY so.dataSaida DESC;
+
 
 -- name: GetSalesOrder :one
-SELECT id,
-        numero,
-        numeroLoja,
-        data,
-        dataSaida,
-        dataPrevista,
-        totalProdutos,
-        totalDescontos,
-        situation_id,
-        store_id,
-        contact_id,
-        created_at,
-        updated_at
-FROM sales_orders
-WHERE sales_orders.id = $1;
+SELECT 
+  so.id,
+  so.numero,
+  so.numeroLoja,
+  so.data,
+  so.dataSaida,
+  so.dataPrevista,
+  so.totalProdutos,
+  so.totalDescontos,
+  so.situation_id,
+  s.descricao AS situation_description,  -- Renomeia a coluna da situação
+  so.store_id,
+  st.descricao AS store_description,  -- Renomeia a coluna da loja
+  so.contact_id,
+  c.nome AS contact_name,  -- Nome do contato
+  c.numeroDocumento AS contact_document,  -- Documento do contato
+  so.created_at,
+  so.updated_at
+FROM 
+    sales_orders so
+JOIN 
+    contacts c ON so.contact_id = c.id
+JOIN 
+    stores st ON so.store_id = st.id
+JOIN 
+    situations s ON so.situation_id = s.id
+WHERE so.id = $1;
 
 -- name: GetSalesOrderByNumber :one
-SELECT id,
-        numero,
-        numeroLoja,
-        data,
-        dataSaida,
-        dataPrevista,
-        totalProdutos,
-        totalDescontos,
-        situation_id,
-        store_id,
-        contact_id,
-        created_at,
-        updated_at
-FROM sales_orders
-WHERE sales_orders.numero = $1;
+SELECT 
+  so.id,
+  so.numero,
+  so.numeroLoja,
+  so.data,
+  so.dataSaida,
+  so.dataPrevista,
+  so.totalProdutos,
+  so.totalDescontos,
+  so.situation_id,
+  s.descricao AS situation_description,  -- Renomeia a coluna da situação
+  so.store_id,
+  st.descricao AS store_description,  -- Renomeia a coluna da loja
+  so.contact_id,
+  c.nome AS contact_name,  -- Nome do contato
+  c.numeroDocumento AS contact_document,  -- Documento do contato
+  so.created_at,
+  so.updated_at
+FROM 
+    sales_orders so
+JOIN 
+    contacts c ON so.contact_id = c.id
+JOIN 
+    stores st ON so.store_id = st.id
+JOIN 
+    situations s ON so.situation_id = s.id
+WHERE so.numero = $1;
 
 -- name: GetSalesOrderTotalByDay :many
-
 SELECT so.id, 
        so.numero, 
        so.numeroloja, 
@@ -71,7 +107,6 @@ SELECT so.id,
         so.contact_id
 FROM sales_orders so
 WHERE so.datasaida = $1;
-
 
 -- name: GetTotalSalesOrderTotalByWeek :many
 SELECT so.id, 

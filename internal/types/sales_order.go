@@ -25,6 +25,26 @@ type SalesOrder struct {
 	Itens          []SalesOrderItem `json:"itens"`
 }
 
+type SalesOrderRow struct {
+	ID                   int64     `json:"id"`
+	Numero               int32     `json:"numero"`
+	Numeroloja           string    `json:"numeroloja"`
+	Data                 time.Time `json:"data"`
+	Datasaida            time.Time `json:"datasaida"`
+	Dataprevista         time.Time `json:"dataprevista"`
+	Totalprodutos        float64   `json:"totalprodutos"`
+	Totaldescontos       float64   `json:"totaldescontos"`
+	SituationID          int64     `json:"situation_id"`
+	SituationDescription string    `json:"situation_description"`
+	StoreID              int64     `json:"store_id"`
+	StoreDescription     string    `json:"store_description"`
+	ContactID            int64     `json:"contact_id"`
+	ContactName          string    `json:"contact_name"`
+	ContactDocument      string    `json:"contact_document"`
+	CreatedAt            time.Time `json:"created_at"`
+	UpdatedAt            time.Time `json:"updated_at"`
+}
+
 type SalesOrderItem struct {
 	ID                 int64        `json:"id"`
 	Codigo             string       `json:"codigo"`
@@ -105,5 +125,5 @@ type SalesOrderStore interface {
 	CreateSalesOrder(SalesOrder) error
 	GetSalesOrders(limit, offset int32) ([]*SalesOrder, error)
 	GetSalesOrderByID(id int64) (*SalesOrder, error)
-	GetSalesOrderByNumber(numero int32) (*SalesOrder, error)
+	// GetSalesOrderByNumber(numero int32) (*SalesOrderRow, error)
 }

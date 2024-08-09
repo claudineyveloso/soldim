@@ -53,19 +53,15 @@ func (s *Store) CreateSalesOrder(salesorder types.SalesOrder) error {
 func (s *Store) GetSalesOrders(limit, offset int32) ([]*types.SalesOrder, error) {
 	queries := db.New(s.db)
 	ctx := context.Background()
-	params := db.GetSalesOrdersParams{
-		Limit:  limit,
-		Offset: offset,
-	}
 
-	dbSalesOrders, err := queries.GetSalesOrders(ctx, params)
+	dbSalesOrders, err := queries.GetSalesOrders(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	var salesorders []*types.SalesOrder
 	for _, dbSalesOrder := range dbSalesOrders {
-		salesorder := convertDBSalesOrderToSalesOrder(dbSalesOrder)
+		salesorder := convertDBSalesOrdersRowToSalesOrder(dbSalesOrder)
 		salesorders = append(salesorders, salesorder)
 	}
 	return salesorders, nil
@@ -78,25 +74,25 @@ func (s *Store) GetSalesOrderByID(salesorderID int64) (*types.SalesOrder, error)
 	if err != nil {
 		return nil, err
 	}
-	product := convertDBSalesOrderToSalesOrder(dbSalesOrder)
+	product := convertDBSalesOrderRowToSalesOrder(dbSalesOrder)
 
 	return product, nil
 }
 
-func (s *Store) GetSalesOrderByNumber(number int32) (*types.SalesOrder, error) {
-	queries := db.New(s.db)
-	ctx := context.Background()
-	dbSalesOrder, err := queries.GetSalesOrderByNumber(ctx, number)
-	if err != nil {
-		return nil, err
-	}
-	product := convertDBSalesOrderToSalesOrder(dbSalesOrder)
+// func (s *Store) GetSalesOrderByNumber(number int32) (*types.SalesOrderRow, error) {
+// 	queries := db.New(s.db)
+// 	ctx := context.Background()
+// 	dbSalesOrder, err := queries.GetSalesOrderByNumber(ctx, number)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	product := convertDBSalesOrderRowToSalesOrder(dbSalesOrder)
+//
+// 	return product, nil
+// }
 
-	return product, nil
-}
-
-func convertDBSalesOrderToSalesOrder(dbSalesOrder db.SalesOrder) *types.SalesOrder {
-	salesorder := &types.SalesOrder{
+func convertDBSalesOrdersRowToSalesOrder(dbSalesOrder db.GetSalesOrdersRow) *types.SalesOrder {
+	return &types.SalesOrder{
 		ID:             dbSalesOrder.ID,
 		Numero:         dbSalesOrder.Numero,
 		Numeroloja:     dbSalesOrder.Numeroloja,
@@ -110,6 +106,77 @@ func convertDBSalesOrderToSalesOrder(dbSalesOrder db.SalesOrder) *types.SalesOrd
 		ContactID:      dbSalesOrder.ContactID,
 		CreatedAt:      dbSalesOrder.CreatedAt,
 		UpdatedAt:      dbSalesOrder.UpdatedAt,
+		Situacao: types.Situacao{
+			ID:   dbSalesOrder.SituationID,
+			Nome: dbSalesOrder.SituationDescription,
+		},
+		Loja: types.Loja{
+			ID: dbSalesOrder.StoreID,
+		},
+		Contato: types.Contato{
+			ID:              dbSalesOrder.ContactID,
+			Nome:            dbSalesOrder.ContactName,
+			NumeroDocumento: dbSalesOrder.ContactDocument,
+		},
 	}
-	return salesorder
+}
+
+func convertDBSalesOrderRowToSalesOrder(dbSalesOrder db.GetSalesOrderRow) *types.SalesOrder {
+	return &types.SalesOrder{
+		ID:             dbSalesOrder.ID,
+		Numero:         dbSalesOrder.Numero,
+		Numeroloja:     dbSalesOrder.Numeroloja,
+		Data:           types.CustomDate{Time: dbSalesOrder.Data},
+		Datasaida:      types.CustomDate{Time: dbSalesOrder.Datasaida},
+		Dataprevista:   types.CustomDate{Time: dbSalesOrder.Dataprevista},
+		Totalprodutos:  dbSalesOrder.Totalprodutos,
+		Totaldescontos: dbSalesOrder.Totaldescontos,
+		SituationID:    dbSalesOrder.SituationID,
+		StoreID:        dbSalesOrder.StoreID,
+		ContactID:      dbSalesOrder.ContactID,
+		CreatedAt:      dbSalesOrder.CreatedAt,
+		UpdatedAt:      dbSalesOrder.UpdatedAt,
+		Situacao: types.Situacao{
+			ID:   dbSalesOrder.SituationID,
+			Nome: dbSalesOrder.SituationDescription,
+		},
+		Loja: types.Loja{
+			ID: dbSalesOrder.StoreID,
+		},
+		Contato: types.Contato{
+			ID:              dbSalesOrder.ContactID,
+			Nome:            dbSalesOrder.ContactName,
+			NumeroDocumento: dbSalesOrder.ContactDocument,
+		},
+	}
+}
+
+func convertDBSalesOrderToSalesOrderxxxx(dbSalesOrder db.GetSalesOrdersRow) *types.SalesOrder {
+	return &types.SalesOrder{
+		ID:             dbSalesOrder.ID,
+		Numero:         dbSalesOrder.Numero,
+		Numeroloja:     dbSalesOrder.Numeroloja,
+		Data:           types.CustomDate{Time: dbSalesOrder.Data},
+		Datasaida:      types.CustomDate{Time: dbSalesOrder.Datasaida},
+		Dataprevista:   types.CustomDate{Time: dbSalesOrder.Dataprevista},
+		Totalprodutos:  dbSalesOrder.Totalprodutos,
+		Totaldescontos: dbSalesOrder.Totaldescontos,
+		SituationID:    dbSalesOrder.SituationID,
+		StoreID:        dbSalesOrder.StoreID,
+		ContactID:      dbSalesOrder.ContactID,
+		CreatedAt:      dbSalesOrder.CreatedAt,
+		UpdatedAt:      dbSalesOrder.UpdatedAt,
+		Situacao: types.Situacao{
+			ID:   dbSalesOrder.SituationID,
+			Nome: dbSalesOrder.SituationDescription, // Usando SituationDescription
+		},
+		Loja: types.Loja{
+			ID: dbSalesOrder.StoreID,
+		},
+		Contato: types.Contato{
+			ID:              dbSalesOrder.ContactID,
+			Nome:            dbSalesOrder.ContactName,     // Usando ContactName
+			NumeroDocumento: dbSalesOrder.ContactDocument, // Usando ContactDocument
+		},
+	}
 }

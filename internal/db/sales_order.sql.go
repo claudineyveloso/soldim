@@ -51,26 +51,58 @@ func (q *Queries) CreateSalesOrder(ctx context.Context, arg CreateSalesOrderPara
 }
 
 const getSalesOrder = `-- name: GetSalesOrder :one
-SELECT id,
-        numero,
-        numeroLoja,
-        data,
-        dataSaida,
-        dataPrevista,
-        totalProdutos,
-        totalDescontos,
-        situation_id,
-        store_id,
-        contact_id,
-        created_at,
-        updated_at
-FROM sales_orders
-WHERE sales_orders.id = $1
+SELECT 
+  so.id,
+  so.numero,
+  so.numeroLoja,
+  so.data,
+  so.dataSaida,
+  so.dataPrevista,
+  so.totalProdutos,
+  so.totalDescontos,
+  so.situation_id,
+  s.descricao AS situation_description,  -- Renomeia a coluna da situação
+  so.store_id,
+  st.descricao AS store_description,  -- Renomeia a coluna da loja
+  so.contact_id,
+  c.nome AS contact_name,  -- Nome do contato
+  c.numeroDocumento AS contact_document,  -- Documento do contato
+  so.created_at,
+  so.updated_at
+FROM 
+    sales_orders so
+JOIN 
+    contacts c ON so.contact_id = c.id
+JOIN 
+    stores st ON so.store_id = st.id
+JOIN 
+    situations s ON so.situation_id = s.id
+WHERE so.id = $1
 `
 
-func (q *Queries) GetSalesOrder(ctx context.Context, id int64) (SalesOrder, error) {
+type GetSalesOrderRow struct {
+	ID                   int64     `json:"id"`
+	Numero               int32     `json:"numero"`
+	Numeroloja           string    `json:"numeroloja"`
+	Data                 time.Time `json:"data"`
+	Datasaida            time.Time `json:"datasaida"`
+	Dataprevista         time.Time `json:"dataprevista"`
+	Totalprodutos        float64   `json:"totalprodutos"`
+	Totaldescontos       float64   `json:"totaldescontos"`
+	SituationID          int64     `json:"situation_id"`
+	SituationDescription string    `json:"situation_description"`
+	StoreID              int64     `json:"store_id"`
+	StoreDescription     string    `json:"store_description"`
+	ContactID            int64     `json:"contact_id"`
+	ContactName          string    `json:"contact_name"`
+	ContactDocument      string    `json:"contact_document"`
+	CreatedAt            time.Time `json:"created_at"`
+	UpdatedAt            time.Time `json:"updated_at"`
+}
+
+func (q *Queries) GetSalesOrder(ctx context.Context, id int64) (GetSalesOrderRow, error) {
 	row := q.db.QueryRowContext(ctx, getSalesOrder, id)
-	var i SalesOrder
+	var i GetSalesOrderRow
 	err := row.Scan(
 		&i.ID,
 		&i.Numero,
@@ -81,8 +113,12 @@ func (q *Queries) GetSalesOrder(ctx context.Context, id int64) (SalesOrder, erro
 		&i.Totalprodutos,
 		&i.Totaldescontos,
 		&i.SituationID,
+		&i.SituationDescription,
 		&i.StoreID,
+		&i.StoreDescription,
 		&i.ContactID,
+		&i.ContactName,
+		&i.ContactDocument,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -90,26 +126,58 @@ func (q *Queries) GetSalesOrder(ctx context.Context, id int64) (SalesOrder, erro
 }
 
 const getSalesOrderByNumber = `-- name: GetSalesOrderByNumber :one
-SELECT id,
-        numero,
-        numeroLoja,
-        data,
-        dataSaida,
-        dataPrevista,
-        totalProdutos,
-        totalDescontos,
-        situation_id,
-        store_id,
-        contact_id,
-        created_at,
-        updated_at
-FROM sales_orders
-WHERE sales_orders.numero = $1
+SELECT 
+  so.id,
+  so.numero,
+  so.numeroLoja,
+  so.data,
+  so.dataSaida,
+  so.dataPrevista,
+  so.totalProdutos,
+  so.totalDescontos,
+  so.situation_id,
+  s.descricao AS situation_description,  -- Renomeia a coluna da situação
+  so.store_id,
+  st.descricao AS store_description,  -- Renomeia a coluna da loja
+  so.contact_id,
+  c.nome AS contact_name,  -- Nome do contato
+  c.numeroDocumento AS contact_document,  -- Documento do contato
+  so.created_at,
+  so.updated_at
+FROM 
+    sales_orders so
+JOIN 
+    contacts c ON so.contact_id = c.id
+JOIN 
+    stores st ON so.store_id = st.id
+JOIN 
+    situations s ON so.situation_id = s.id
+WHERE so.numero = $1
 `
 
-func (q *Queries) GetSalesOrderByNumber(ctx context.Context, numero int32) (SalesOrder, error) {
+type GetSalesOrderByNumberRow struct {
+	ID                   int64     `json:"id"`
+	Numero               int32     `json:"numero"`
+	Numeroloja           string    `json:"numeroloja"`
+	Data                 time.Time `json:"data"`
+	Datasaida            time.Time `json:"datasaida"`
+	Dataprevista         time.Time `json:"dataprevista"`
+	Totalprodutos        float64   `json:"totalprodutos"`
+	Totaldescontos       float64   `json:"totaldescontos"`
+	SituationID          int64     `json:"situation_id"`
+	SituationDescription string    `json:"situation_description"`
+	StoreID              int64     `json:"store_id"`
+	StoreDescription     string    `json:"store_description"`
+	ContactID            int64     `json:"contact_id"`
+	ContactName          string    `json:"contact_name"`
+	ContactDocument      string    `json:"contact_document"`
+	CreatedAt            time.Time `json:"created_at"`
+	UpdatedAt            time.Time `json:"updated_at"`
+}
+
+func (q *Queries) GetSalesOrderByNumber(ctx context.Context, numero int32) (GetSalesOrderByNumberRow, error) {
 	row := q.db.QueryRowContext(ctx, getSalesOrderByNumber, numero)
-	var i SalesOrder
+	var i GetSalesOrderByNumberRow
 	err := row.Scan(
 		&i.ID,
 		&i.Numero,
@@ -120,8 +188,12 @@ func (q *Queries) GetSalesOrderByNumber(ctx context.Context, numero int32) (Sale
 		&i.Totalprodutos,
 		&i.Totaldescontos,
 		&i.SituationID,
+		&i.SituationDescription,
 		&i.StoreID,
+		&i.StoreDescription,
 		&i.ContactID,
+		&i.ContactName,
+		&i.ContactDocument,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -129,7 +201,6 @@ func (q *Queries) GetSalesOrderByNumber(ctx context.Context, numero int32) (Sale
 }
 
 const getSalesOrderTotalByDay = `-- name: GetSalesOrderTotalByDay :many
-
 SELECT so.id, 
        so.numero, 
        so.numeroloja, 
@@ -200,37 +271,64 @@ func (q *Queries) GetSalesOrderTotalByDay(ctx context.Context, datasaida time.Ti
 }
 
 const getSalesOrders = `-- name: GetSalesOrders :many
-SELECT id,
-        numero,
-        numeroLoja,
-        data,
-        dataSaida,
-        dataPrevista,
-        totalProdutos,
-        totalDescontos,
-        situation_id,
-        store_id,
-        contact_id,
-        created_at,
-        updated_at
-FROM sales_orders
-LIMIT $1 OFFSET $2
+SELECT 
+  so.id,
+  so.numero,
+  so.numeroLoja,
+  so.data,
+  so.dataSaida,
+  so.dataPrevista,
+  so.totalProdutos,
+  so.totalDescontos,
+  so.situation_id,
+  s.descricao AS situation_description,  -- Renomeia a coluna da situação
+  so.store_id,
+  st.descricao AS store_description,  -- Renomeia a coluna da loja
+  so.contact_id,
+  c.nome AS contact_name,  -- Nome do contato
+  c.numeroDocumento AS contact_document,  -- Documento do contato
+  so.created_at,
+  so.updated_at
+FROM 
+    sales_orders so
+JOIN 
+    contacts c ON so.contact_id = c.id
+JOIN 
+    stores st ON so.store_id = st.id
+JOIN 
+    situations s ON so.situation_id = s.id
+ORDER BY so.dataSaida DESC
 `
 
-type GetSalesOrdersParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+type GetSalesOrdersRow struct {
+	ID                   int64     `json:"id"`
+	Numero               int32     `json:"numero"`
+	Numeroloja           string    `json:"numeroloja"`
+	Data                 time.Time `json:"data"`
+	Datasaida            time.Time `json:"datasaida"`
+	Dataprevista         time.Time `json:"dataprevista"`
+	Totalprodutos        float64   `json:"totalprodutos"`
+	Totaldescontos       float64   `json:"totaldescontos"`
+	SituationID          int64     `json:"situation_id"`
+	SituationDescription string    `json:"situation_description"`
+	StoreID              int64     `json:"store_id"`
+	StoreDescription     string    `json:"store_description"`
+	ContactID            int64     `json:"contact_id"`
+	ContactName          string    `json:"contact_name"`
+	ContactDocument      string    `json:"contact_document"`
+	CreatedAt            time.Time `json:"created_at"`
+	UpdatedAt            time.Time `json:"updated_at"`
 }
 
-func (q *Queries) GetSalesOrders(ctx context.Context, arg GetSalesOrdersParams) ([]SalesOrder, error) {
-	rows, err := q.db.QueryContext(ctx, getSalesOrders, arg.Limit, arg.Offset)
+func (q *Queries) GetSalesOrders(ctx context.Context) ([]GetSalesOrdersRow, error) {
+	rows, err := q.db.QueryContext(ctx, getSalesOrders)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []SalesOrder
+	var items []GetSalesOrdersRow
 	for rows.Next() {
-		var i SalesOrder
+		var i GetSalesOrdersRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Numero,
@@ -241,8 +339,12 @@ func (q *Queries) GetSalesOrders(ctx context.Context, arg GetSalesOrdersParams) 
 			&i.Totalprodutos,
 			&i.Totaldescontos,
 			&i.SituationID,
+			&i.SituationDescription,
 			&i.StoreID,
+			&i.StoreDescription,
 			&i.ContactID,
+			&i.ContactName,
+			&i.ContactDocument,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
