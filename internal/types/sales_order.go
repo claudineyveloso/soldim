@@ -6,23 +6,24 @@ import (
 )
 
 type SalesOrder struct {
-	ID             int64            `json:"id"`
-	Numero         int32            `json:"numero"`
-	Numeroloja     string           `json:"numeroloja"`
-	Data           CustomDate       `json:"data"`
-	Datasaida      CustomDate       `json:"datasaida"`
-	Dataprevista   CustomDate       `json:"dataprevista"`
-	Totalprodutos  float64          `json:"totalprodutos"`
-	Totaldescontos float64          `json:"totaldescontos"`
-	SituationID    int64            `json:"situation_id"`
-	StoreID        int64            `json:"store_id"`
-	ContactID      int64            `json:"contact_id"`
-	Contato        Contato          `json:"contato"`
-	Situacao       Situacao         `json:"situacao"`
-	Loja           Loja             `json:"loja"`
-	CreatedAt      time.Time        `json:"created_at"`
-	UpdatedAt      time.Time        `json:"updated_at"`
-	Itens          []SalesOrderItem `json:"itens"`
+	ID                int64            `json:"id"`
+	Numero            int32            `json:"numero"`
+	Numeroloja        string           `json:"numeroloja"`
+	Data              CustomDate       `json:"data"`
+	Datasaida         CustomDate       `json:"datasaida"`
+	Dataprevista      CustomDate       `json:"dataprevista"`
+	Totalprodutos     float64          `json:"totalprodutos"`
+	Totaldescontos    float64          `json:"totaldescontos"`
+	SituationID       int64            `json:"situation_id"`
+	StoreID           int64            `json:"store_id"`
+	ContactID         int64            `json:"contact_id"`
+	ItemsSalesOrderID int64            `json:"items_sales_order_id"`
+	Contato           Contato          `json:"contato"`
+	Situacao          Situacao         `json:"situacao"`
+	Loja              Loja             `json:"loja"`
+	CreatedAt         time.Time        `json:"created_at"`
+	UpdatedAt         time.Time        `json:"updated_at"`
+	Items             ItemsSalesOrders `json:"itens"`
 }
 
 type SalesOrderRow struct {
@@ -89,6 +90,22 @@ type Loja struct {
 	ID int64 `json:"id"`
 }
 
+type ItemsSalesOrders struct {
+	ID                 int64     `json:"id"`
+	SalesOrderID       int64     `json:"sales_order_id"`
+	Codigo             string    `json:"codigo"`
+	Unidade            string    `json:"unidade"`
+	Quantidade         int32     `json:"quantidade"`
+	Desconto           float64   `json:"desconto"`
+	Valor              float64   `json:"valor"`
+	Aliquotaipi        float64   `json:"aliquotaipi"`
+	Descricao          string    `json:"descricao"`
+	Descricaodetalhada string    `json:"descricaodetalhada"`
+	ProductID          int64     `json:"product_id"`
+	CreatedAt          time.Time `json:"created_at"`
+	UpdatedAt          time.Time `json:"updated_at"`
+}
+
 type SalesOrderResponse struct {
 	Data []SalesOrder `json:"data"`
 }
@@ -123,7 +140,7 @@ func (cd CustomDate) MarshalJSON() ([]byte, error) {
 
 type SalesOrderStore interface {
 	CreateSalesOrder(SalesOrder) error
-	GetSalesOrders(limit, offset int32) ([]*SalesOrder, error)
+	GetSalesOrders() ([]*SalesOrder, error)
 	GetSalesOrderByID(id int64) (*SalesOrder, error)
 	// GetSalesOrderByNumber(numero int32) (*SalesOrderRow, error)
 }

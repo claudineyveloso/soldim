@@ -1,6 +1,6 @@
 -- name: CreateSalesOrder :exec
-INSERT INTO sales_orders (id, numero, numeroLoja, data, dataSaida, dataPrevista, totalProdutos, totalDescontos, situation_id, store_id, contact_id, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
+INSERT INTO sales_orders (id, numero, numeroLoja, data, dataSaida, dataPrevista, totalProdutos, totalDescontos, situation_id, store_id, contact_id, items_sales_order_id, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);
 
 -- name: GetSalesOrders :many
 SELECT 
@@ -17,8 +17,10 @@ SELECT
   so.store_id,
   st.descricao AS store_description,  -- Renomeia a coluna da loja
   so.contact_id,
+  so.items_sales_order_id,
   c.nome AS contact_name,  -- Nome do contato
   c.numeroDocumento AS contact_document,  -- Documento do contato
+  item.descricao AS item_description,
   so.created_at,
   so.updated_at
 FROM 
@@ -29,6 +31,8 @@ JOIN
     stores st ON so.store_id = st.id
 JOIN 
     situations s ON so.situation_id = s.id
+LEFT JOIN 
+    items_sales_orders item ON so.id = item.sales_order_id  -- Usando LEFT JOIN para garantir que todos os pedidos sejam retornados
 ORDER BY so.dataSaida DESC;
 
 
@@ -47,8 +51,10 @@ SELECT
   so.store_id,
   st.descricao AS store_description,  -- Renomeia a coluna da loja
   so.contact_id,
+  so.items_sales_order_id,
   c.nome AS contact_name,  -- Nome do contato
   c.numeroDocumento AS contact_document,  -- Documento do contato
+  item.descricao AS item_description,
   so.created_at,
   so.updated_at
 FROM 
@@ -59,6 +65,8 @@ JOIN
     stores st ON so.store_id = st.id
 JOIN 
     situations s ON so.situation_id = s.id
+LEFT JOIN 
+    items_sales_orders item ON so.id = item.sales_order_id  -- Usando LEFT JOIN para garantir que todos os pedidos sejam retornados
 WHERE so.id = $1;
 
 -- name: GetSalesOrderByNumber :one

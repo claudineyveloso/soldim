@@ -75,7 +75,7 @@ func (h *Handler) handleGetSalesOrders(w http.ResponseWriter, r *http.Request) {
 		offset = 0 // Default offset
 	}
 
-	salesOrders, err := h.salesOrderStore.GetSalesOrders(int32(limit), int32(offset))
+	salesOrders, err := h.salesOrderStore.GetSalesOrders()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter o Pedido de vendas: %v", err), http.StatusInternalServerError)
 		return

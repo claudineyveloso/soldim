@@ -50,7 +50,7 @@ func (s *Store) CreateSalesOrder(salesorder types.SalesOrder) error {
 	return nil
 }
 
-func (s *Store) GetSalesOrders(limit, offset int32) ([]*types.SalesOrder, error) {
+func (s *Store) GetSalesOrders() ([]*types.SalesOrder, error) {
 	queries := db.New(s.db)
 	ctx := context.Background()
 
@@ -93,19 +93,20 @@ func (s *Store) GetSalesOrderByID(salesorderID int64) (*types.SalesOrder, error)
 
 func convertDBSalesOrdersRowToSalesOrder(dbSalesOrder db.GetSalesOrdersRow) *types.SalesOrder {
 	return &types.SalesOrder{
-		ID:             dbSalesOrder.ID,
-		Numero:         dbSalesOrder.Numero,
-		Numeroloja:     dbSalesOrder.Numeroloja,
-		Data:           types.CustomDate{Time: dbSalesOrder.Data},
-		Datasaida:      types.CustomDate{Time: dbSalesOrder.Datasaida},
-		Dataprevista:   types.CustomDate{Time: dbSalesOrder.Dataprevista},
-		Totalprodutos:  dbSalesOrder.Totalprodutos,
-		Totaldescontos: dbSalesOrder.Totaldescontos,
-		SituationID:    dbSalesOrder.SituationID,
-		StoreID:        dbSalesOrder.StoreID,
-		ContactID:      dbSalesOrder.ContactID,
-		CreatedAt:      dbSalesOrder.CreatedAt,
-		UpdatedAt:      dbSalesOrder.UpdatedAt,
+		ID:                dbSalesOrder.ID,
+		Numero:            dbSalesOrder.Numero,
+		Numeroloja:        dbSalesOrder.Numeroloja,
+		Data:              types.CustomDate{Time: dbSalesOrder.Data},
+		Datasaida:         types.CustomDate{Time: dbSalesOrder.Datasaida},
+		Dataprevista:      types.CustomDate{Time: dbSalesOrder.Dataprevista},
+		Totalprodutos:     dbSalesOrder.Totalprodutos,
+		Totaldescontos:    dbSalesOrder.Totaldescontos,
+		SituationID:       dbSalesOrder.SituationID,
+		StoreID:           dbSalesOrder.StoreID,
+		ContactID:         dbSalesOrder.ContactID,
+		ItemsSalesOrderID: dbSalesOrder.ItemsSalesOrderID,
+		CreatedAt:         dbSalesOrder.CreatedAt,
+		UpdatedAt:         dbSalesOrder.UpdatedAt,
 		Situacao: types.Situacao{
 			ID:   dbSalesOrder.SituationID,
 			Nome: dbSalesOrder.SituationDescription,
@@ -118,24 +119,28 @@ func convertDBSalesOrdersRowToSalesOrder(dbSalesOrder db.GetSalesOrdersRow) *typ
 			Nome:            dbSalesOrder.ContactName,
 			NumeroDocumento: dbSalesOrder.ContactDocument,
 		},
+		Items: types.ItemsSalesOrders{
+			ID: dbSalesOrder.ID,
+		},
 	}
 }
 
 func convertDBSalesOrderRowToSalesOrder(dbSalesOrder db.GetSalesOrderRow) *types.SalesOrder {
 	return &types.SalesOrder{
-		ID:             dbSalesOrder.ID,
-		Numero:         dbSalesOrder.Numero,
-		Numeroloja:     dbSalesOrder.Numeroloja,
-		Data:           types.CustomDate{Time: dbSalesOrder.Data},
-		Datasaida:      types.CustomDate{Time: dbSalesOrder.Datasaida},
-		Dataprevista:   types.CustomDate{Time: dbSalesOrder.Dataprevista},
-		Totalprodutos:  dbSalesOrder.Totalprodutos,
-		Totaldescontos: dbSalesOrder.Totaldescontos,
-		SituationID:    dbSalesOrder.SituationID,
-		StoreID:        dbSalesOrder.StoreID,
-		ContactID:      dbSalesOrder.ContactID,
-		CreatedAt:      dbSalesOrder.CreatedAt,
-		UpdatedAt:      dbSalesOrder.UpdatedAt,
+		ID:                dbSalesOrder.ID,
+		Numero:            dbSalesOrder.Numero,
+		Numeroloja:        dbSalesOrder.Numeroloja,
+		Data:              types.CustomDate{Time: dbSalesOrder.Data},
+		Datasaida:         types.CustomDate{Time: dbSalesOrder.Datasaida},
+		Dataprevista:      types.CustomDate{Time: dbSalesOrder.Dataprevista},
+		Totalprodutos:     dbSalesOrder.Totalprodutos,
+		Totaldescontos:    dbSalesOrder.Totaldescontos,
+		SituationID:       dbSalesOrder.SituationID,
+		StoreID:           dbSalesOrder.StoreID,
+		ContactID:         dbSalesOrder.ContactID,
+		ItemsSalesOrderID: dbSalesOrder.ItemsSalesOrderID,
+		CreatedAt:         dbSalesOrder.CreatedAt,
+		UpdatedAt:         dbSalesOrder.UpdatedAt,
 		Situacao: types.Situacao{
 			ID:   dbSalesOrder.SituationID,
 			Nome: dbSalesOrder.SituationDescription,

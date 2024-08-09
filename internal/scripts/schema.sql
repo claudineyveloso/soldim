@@ -251,19 +251,20 @@ CREATE TABLE IF NOT EXISTS stores (
 
 DROP TABLE IF EXISTS "sales_orders";
 CREATE TABLE IF NOT EXISTS sales_orders (
-  id                  BIGINT PRIMARY KEY,
-  numero              INT NOT NULL,
-  numeroLoja          VARCHAR(100) NOT NULL,
-  data                DATE NOT NULL,
-  dataSaida           DATE NOT NULL,
-  dataPrevista        DATE NOT NULL,
-  totalProdutos       FLOAT NOT NULL DEFAULT 0,
-  totalDescontos      FLOAT NOT NULL DEFAULT 0,
-  situation_id        BIGINT NOT NULL DEFAULT 0,
-  store_id            BIGINT NOT NULL,
-  contact_id          BIGINT NOT NULL,
-  created_at          TIMESTAMP NOT NULL,
-  updated_at          TIMESTAMP NOT NULL
+  id                    BIGINT PRIMARY KEY,
+  numero                INT NOT NULL,
+  numeroLoja            VARCHAR(100) NOT NULL,
+  data                  DATE NOT NULL,
+  dataSaida             DATE NOT NULL,
+  dataPrevista          DATE NOT NULL,
+  totalProdutos         FLOAT NOT NULL DEFAULT 0,
+  totalDescontos        FLOAT NOT NULL DEFAULT 0,
+  situation_id          BIGINT NOT NULL DEFAULT 0,
+  store_id              BIGINT NOT NULL,
+  contact_id            BIGINT NOT NULL,
+  items_sales_order_id  BIGINT NOT NULL,
+  created_at            TIMESTAMP NOT NULL,
+  updated_at            TIMESTAMP NOT NULL
 );
 
 ALTER TABLE
@@ -280,6 +281,12 @@ ALTER TABLE
   "sales_orders"
 ADD
    FOREIGN KEY ("contact_id") REFERENCES "contacts" ("id");
+
+ALTER TABLE
+  "sales_orders"
+ADD
+   FOREIGN KEY ("items_sales_order_id") REFERENCES "items_sales_orders" ("id");
+
 
 DROP TABLE IF EXISTS "products_sales_orders";
 CREATE TABLE IF NOT EXISTS products_sales_orders (
@@ -311,8 +318,8 @@ CREATE TABLE IF NOT EXISTS items_sales_orders (
   valor               FLOAT NOT NULL DEFAULT 0,
   aliquotaIPI         FLOAT NOT NULL DEFAULT 0,
   descricao           VARCHAR(255) NOT NULL DEFAULT '',
-  descricaoDetalhada TEXT NOT NULL DEFAULT '',
-  product_id         BIGINT NOT NULL,
+  descricaoDetalhada  TEXT NOT NULL DEFAULT '',
+  product_id          BIGINT NOT NULL,
   created_at          TIMESTAMP NOT NULL,
   updated_at          TIMESTAMP NOT NULL
 );

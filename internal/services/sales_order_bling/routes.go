@@ -19,7 +19,7 @@ import (
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "4e013e56e7ac5f1b915c3c68e3758c0624461a5f"
+	bearerToken     = "dca754e762f82a3ec53cf48e4984978675fbb0a0"
 )
 
 type ErrorResponse struct {
@@ -85,6 +85,7 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 				sales[i].Contato.ID = contact.ID
 				sales[i].ContactID = contact.ID
 			}
+			// items, err
 		}
 
 		fmt.Printf("Processing page: %d with %d products\n", page, len(sales))
@@ -105,6 +106,10 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 }
 
 func existContact(contactID int64) (*types.Contact, error) {
+	fmt.Printf("*********************************************************************************************************")
+	fmt.Printf("Numero do Contato ID: %+v\n", contactID)
+	fmt.Printf("*********************************************************************************************************")
+
 	url := fmt.Sprintf("http://localhost:8080/get_contact/%d", contactID)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -122,7 +127,7 @@ func existContact(contactID int64) (*types.Contact, error) {
 	// Verifica se a resposta contém um erro
 	if err := json.Unmarshal(body, &errorResponse); err == nil {
 		if errorResponse.Error == "contact not found" {
-			fmt.Printf("Contato com ID %d não encontrado.\n", contactID)
+			fmt.Printf("Contato com IDssssss %d não encontrado.\n", contactID)
 			return nil, errors.ErrContactNotFound
 		}
 	}
@@ -175,6 +180,7 @@ func processSales(sales []types.SalesOrder) {
 	for _, sale := range sales {
 		sale.SituationID = sale.Situacao.ID
 		sale.StoreID = sale.Loja.ID
+		sale.ItemsSalesOrderID = sale.Items.ID
 		salesOrderJSON, err := json.Marshal(sale)
 		if err != nil {
 			fmt.Printf("Error marshalling sales: %v\n", err)
