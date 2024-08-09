@@ -25,6 +25,15 @@ type Address struct {
 	UpdatedAt       time.Time      `json:"updated_at"`
 }
 
+type Commission struct {
+	ItemsSalesOrderID int64     `json:"items_sales_order_id"`
+	Base              float64   `json:"base"`
+	Aliquota          float64   `json:"aliquota"`
+	Valor             float64   `json:"valor"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
+}
+
 type Contact struct {
 	ID              int64     `json:"id"`
 	Nome            string    `json:"nome"`
@@ -67,6 +76,22 @@ type Draft struct {
 	SearchID    uuid.UUID `json:"search_id"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type ItemsSalesOrder struct {
+	ID                 int64     `json:"id"`
+	SalesOrderID       int64     `json:"sales_order_id"`
+	Codigo             string    `json:"codigo"`
+	Unidade            string    `json:"unidade"`
+	Quantidade         int32     `json:"quantidade"`
+	Desconto           float64   `json:"desconto"`
+	Valor              float64   `json:"valor"`
+	Aliquotaipi        float64   `json:"aliquotaipi"`
+	Descricao          string    `json:"descricao"`
+	Descricaodetalhada string    `json:"descricaodetalhada"`
+	ProductID          int64     `json:"product_id"`
+	CreatedAt          time.Time `json:"created_at"`
+	UpdatedAt          time.Time `json:"updated_at"`
 }
 
 type Parameter struct {

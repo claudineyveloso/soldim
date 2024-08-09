@@ -281,8 +281,6 @@ ALTER TABLE
 ADD
    FOREIGN KEY ("contact_id") REFERENCES "contacts" ("id");
 
-
-
 DROP TABLE IF EXISTS "products_sales_orders";
 CREATE TABLE IF NOT EXISTS products_sales_orders (
   sales_order_id  BIGINT NOT NULL,
@@ -301,6 +299,48 @@ ALTER TABLE
   "products_sales_orders"
 ADD
    FOREIGN KEY ("product_id") REFERENCES "products" ("id");
+
+DROP TABLE IF EXISTS "items_sales_orders";
+CREATE TABLE IF NOT EXISTS items_sales_orders (
+  id                  BIGINT PRIMARY KEY,
+  sales_order_id      BIGINT NOT NULL,
+  codigo              VARCHAR(100) NOT NULL DEFAULT '',
+  unidade             VARCHAR(100) NOT NULL DEFAULT '',
+  quantidade          INT NOT NULL DEFAULT 0,
+  desconto            FLOAT NOT NULL DEFAULT 0,
+  valor               FLOAT NOT NULL DEFAULT 0,
+  aliquotaIPI         FLOAT NOT NULL DEFAULT 0,
+  descricao           VARCHAR(255) NOT NULL DEFAULT '',
+  descricaoDetalhada TEXT NOT NULL DEFAULT '',
+  product_id         BIGINT NOT NULL,
+  created_at          TIMESTAMP NOT NULL,
+  updated_at          TIMESTAMP NOT NULL
+);
+
+ALTER TABLE
+  "items_sales_orders"
+ADD
+   FOREIGN KEY ("sales_order_id") REFERENCES "sales_orders" ("id");
+
+ALTER TABLE
+  "items_sales_orders"
+ADD
+   FOREIGN KEY ("product_id") REFERENCES "products" ("id");
+
+DROP TABLE IF EXISTS "commissions";
+CREATE TABLE IF NOT EXISTS commissions (
+  items_sales_order_id  BIGINT PRIMARY KEY,
+  base                  FLOAT NOT NULL DEFAULT 0,
+  aliquota              FLOAT NOT NULL DEFAULT 0,
+  valor                 FLOAT NOT NULL DEFAULT 0,
+  created_at            TIMESTAMP NOT NULL,
+  updated_at            TIMESTAMP NOT NULL
+);
+
+ALTER TABLE
+  "commissions"
+  ADD
+    FOREIGN KEY ("items_sales_order_id") REFERENCES "items_sales_orders" ("id");
 
 
 DROP TABLE IF EXISTS "triages";
@@ -345,6 +385,7 @@ CREATE TABLE contacts (
 );
 
 create unique index name_contact_idx on contacts (nome);
+
 
 DROP TABLE IF EXISTS "suppliers_users";
 CREATE TABLE suppliers_users (

@@ -23,6 +23,8 @@ sql:
       - "internal/scripts/triage.sql"
       - "internal/scripts/contact.sql"
       - "internal/scripts/supplier_user.sql"
+      - "internal/scripts/items_sales_order.sql"
+      - "internal/scripts/commission.sql"
 
     gen:
       go:
