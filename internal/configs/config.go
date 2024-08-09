@@ -5,6 +5,10 @@ import (
 	"strconv"
 )
 
+type AddressBaseURL struct {
+	BaseURL string
+}
+
 type Config struct {
 	PublicHost             string
 	Port                   string
@@ -45,4 +49,20 @@ func getEnvAsInt(key string, fallback int64) int64 {
 		return i
 	}
 	return fallback
+}
+
+func NewConfig(env string) *AddressBaseURL {
+	var baseURL string
+	switch env {
+	case "dev":
+		baseURL = "http://localhost:8080"
+	case "prod":
+		baseURL = "https://meuservidor.com" // Substitua pelo URL de produção
+	default:
+		baseURL = "http://localhost:8080" // Padrão para dev
+	}
+
+	return &AddressBaseURL{
+		BaseURL: baseURL,
+	}
 }
