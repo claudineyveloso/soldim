@@ -1,6 +1,6 @@
 -- name: CreateSalesOrder :exec
-INSERT INTO sales_orders (id, numero, numeroLoja, data, dataSaida, dataPrevista, totalProdutos, totalDescontos, situation_id, store_id, contact_id, items_sales_order_id, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);
+INSERT INTO sales_orders (id, numero, numeroLoja, data, dataSaida, dataPrevista, totalProdutos, totalDescontos, situation_id, store_id, contact_id, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
 
 -- name: GetSalesOrders :many
 SELECT 
@@ -17,10 +17,19 @@ SELECT
   so.store_id,
   st.descricao AS store_description,  -- Renomeia a coluna da loja
   so.contact_id,
-  so.items_sales_order_id,
+  iso.id AS items_sales_order_id,
+  iso.sales_order_id,
+  iso.codigo,
+  iso.unidade,
+  iso.quantidade,
+  iso.desconto,
+  iso.valor,
+  iso.aliquotaipi,
+  iso.descricao,
+  iso.descricaoDetalhada,
+  iso.product_id,
   c.nome AS contact_name,  -- Nome do contato
   c.numeroDocumento AS contact_document,  -- Documento do contato
-  item.descricao AS item_description,
   so.created_at,
   so.updated_at
 FROM 
@@ -31,8 +40,8 @@ JOIN
     stores st ON so.store_id = st.id
 JOIN 
     situations s ON so.situation_id = s.id
-LEFT JOIN 
-    items_sales_orders item ON so.id = item.sales_order_id  -- Usando LEFT JOIN para garantir que todos os pedidos sejam retornados
+JOIN 
+  items_sales_orders iso ON so.id = iso.sales_order_id
 ORDER BY so.dataSaida DESC;
 
 
@@ -51,10 +60,19 @@ SELECT
   so.store_id,
   st.descricao AS store_description,  -- Renomeia a coluna da loja
   so.contact_id,
-  so.items_sales_order_id,
+  iso.id AS items_sales_order_id,
+  iso.sales_order_id,
+  iso.codigo,
+  iso.unidade,
+  iso.quantidade,
+  iso.desconto,
+  iso.valor,
+  iso.aliquotaipi,
+  iso.descricao,
+  iso.descricaoDetalhada,
+  iso.product_id,
   c.nome AS contact_name,  -- Nome do contato
   c.numeroDocumento AS contact_document,  -- Documento do contato
-  item.descricao AS item_description,
   so.created_at,
   so.updated_at
 FROM 
@@ -65,8 +83,8 @@ JOIN
     stores st ON so.store_id = st.id
 JOIN 
     situations s ON so.situation_id = s.id
-LEFT JOIN 
-    items_sales_orders item ON so.id = item.sales_order_id  -- Usando LEFT JOIN para garantir que todos os pedidos sejam retornados
+JOIN 
+  items_sales_orders iso ON so.id = iso.sales_order_id
 WHERE so.id = $1;
 
 -- name: GetSalesOrderByNumber :one
@@ -84,18 +102,31 @@ SELECT
   so.store_id,
   st.descricao AS store_description,  -- Renomeia a coluna da loja
   so.contact_id,
+  iso.id AS items_sales_order_id,
+  iso.sales_order_id,
+  iso.codigo,
+  iso.unidade,
+  iso.quantidade,
+  iso.desconto,
+  iso.valor,
+  iso.aliquotaipi,
+  iso.descricao,
+  iso.descricaoDetalhada,
+  iso.product_id,
   c.nome AS contact_name,  -- Nome do contato
   c.numeroDocumento AS contact_document,  -- Documento do contato
   so.created_at,
   so.updated_at
-FROM 
-    sales_orders so
+FROM
+  sales_orders so
 JOIN 
     contacts c ON so.contact_id = c.id
 JOIN 
     stores st ON so.store_id = st.id
 JOIN 
     situations s ON so.situation_id = s.id
+JOIN 
+  items_sales_orders iso ON so.id = iso.sales_order_id
 WHERE so.numero = $1;
 
 -- name: GetSalesOrderTotalByDay :many

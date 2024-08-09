@@ -262,7 +262,6 @@ CREATE TABLE IF NOT EXISTS sales_orders (
   situation_id          BIGINT NOT NULL DEFAULT 0,
   store_id              BIGINT NOT NULL,
   contact_id            BIGINT NOT NULL,
-  items_sales_order_id  BIGINT NOT NULL,
   created_at            TIMESTAMP NOT NULL,
   updated_at            TIMESTAMP NOT NULL
 );
@@ -281,12 +280,6 @@ ALTER TABLE
   "sales_orders"
 ADD
    FOREIGN KEY ("contact_id") REFERENCES "contacts" ("id");
-
-ALTER TABLE
-  "sales_orders"
-ADD
-   FOREIGN KEY ("items_sales_order_id") REFERENCES "items_sales_orders" ("id");
-
 
 DROP TABLE IF EXISTS "products_sales_orders";
 CREATE TABLE IF NOT EXISTS products_sales_orders (
