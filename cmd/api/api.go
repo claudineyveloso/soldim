@@ -13,6 +13,7 @@ import (
 	"github.com/claudineyveloso/soldim.git/internal/services/draft"
 	generatetoken "github.com/claudineyveloso/soldim.git/internal/services/generate_token"
 	"github.com/claudineyveloso/soldim.git/internal/services/healthy"
+	itemssalesorder "github.com/claudineyveloso/soldim.git/internal/services/items_sales_order"
 	"github.com/claudineyveloso/soldim.git/internal/services/product"
 	productbling "github.com/claudineyveloso/soldim.git/internal/services/product_bling"
 	productssalesorder "github.com/claudineyveloso/soldim.git/internal/services/products_sales_order"
@@ -114,6 +115,10 @@ func (s *APIServer) Run() error {
 	salesOrderStore := salesorder.NewStore(s.db)
 	salesOrderHandler := salesorder.NewHandler(salesOrderStore)
 	salesOrderHandler.RegisterRoutes(r)
+
+	itemsSalesOrderStore := itemssalesorder.NewStore(s.db)
+	itemsSalesOrderHandler := itemssalesorder.NewHandler(itemsSalesOrderStore)
+	itemsSalesOrderHandler.RegisterRoutes(r)
 
 	productSalesOrderStore := productssalesorder.NewStore(s.db)
 	productSalesOrderHandler := productssalesorder.NewHandler(productSalesOrderStore)
