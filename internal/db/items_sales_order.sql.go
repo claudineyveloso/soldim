@@ -11,8 +11,8 @@ import (
 )
 
 const createItemsSalesOrder = `-- name: CreateItemsSalesOrder :exec
-INSERT INTO items_sales_orders (id, sales_order_id, codigo, unidade, quantidade, desconto, valor, aliquotaIPI, descricao, descricaoDetalhada, product_id, created_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+INSERT INTO items_sales_orders (id, sales_order_id, codigo, unidade, quantidade, desconto, valor, aliquotaIPI, descricao, descricaoDetalhada, product_id, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 `
 
 type CreateItemsSalesOrderParams struct {
@@ -28,6 +28,7 @@ type CreateItemsSalesOrderParams struct {
 	Descricaodetalhada string    `json:"descricaodetalhada"`
 	ProductID          int64     `json:"product_id"`
 	CreatedAt          time.Time `json:"created_at"`
+	UpdatedAt          time.Time `json:"updated_at"`
 }
 
 func (q *Queries) CreateItemsSalesOrder(ctx context.Context, arg CreateItemsSalesOrderParams) error {
@@ -44,6 +45,121 @@ func (q *Queries) CreateItemsSalesOrder(ctx context.Context, arg CreateItemsSale
 		arg.Descricaodetalhada,
 		arg.ProductID,
 		arg.CreatedAt,
+		arg.UpdatedAt,
 	)
 	return err
+}
+
+const getItemsSalesOrderByID = `-- name: GetItemsSalesOrderByID :one
+SELECT item.id,
+       item.sales_order_id,
+       item.codigo,
+       item.unidade,
+       item.quantidade,
+       item.desconto,
+       item.valor,
+       item.aliquotaIPI,
+       item.descricao,
+       item.descricaoDetalhada,
+       item.product_id,
+       item.created_at,
+       item.updated_at
+FROM items_sales_orders item WHERE item.id = $1
+`
+
+func (q *Queries) GetItemsSalesOrderByID(ctx context.Context, id int64) (ItemsSalesOrder, error) {
+	row := q.db.QueryRowContext(ctx, getItemsSalesOrderByID, id)
+	var i ItemsSalesOrder
+	err := row.Scan(
+		&i.ID,
+		&i.SalesOrderID,
+		&i.Codigo,
+		&i.Unidade,
+		&i.Quantidade,
+		&i.Desconto,
+		&i.Valor,
+		&i.Aliquotaipi,
+		&i.Descricao,
+		&i.Descricaodetalhada,
+		&i.ProductID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getItemsSalesOrderByProductID = `-- name: GetItemsSalesOrderByProductID :one
+SELECT item.id,
+       item.sales_order_id,
+       item.codigo,
+       item.unidade,
+       item.quantidade,
+       item.desconto,
+       item.valor,
+       item.aliquotaIPI,
+       item.descricao,
+       item.descricaoDetalhada,
+       item.product_id,
+       item.created_at,
+       item.updated_at
+FROM items_sales_orders item WHERE item.product_id = $1
+`
+
+func (q *Queries) GetItemsSalesOrderByProductID(ctx context.Context, productID int64) (ItemsSalesOrder, error) {
+	row := q.db.QueryRowContext(ctx, getItemsSalesOrderByProductID, productID)
+	var i ItemsSalesOrder
+	err := row.Scan(
+		&i.ID,
+		&i.SalesOrderID,
+		&i.Codigo,
+		&i.Unidade,
+		&i.Quantidade,
+		&i.Desconto,
+		&i.Valor,
+		&i.Aliquotaipi,
+		&i.Descricao,
+		&i.Descricaodetalhada,
+		&i.ProductID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getItemsSalesOrderBySalesOrderID = `-- name: GetItemsSalesOrderBySalesOrderID :one
+SELECT item.id,
+       item.sales_order_id,
+       item.codigo,
+       item.unidade,
+       item.quantidade,
+       item.desconto,
+       item.valor,
+       item.aliquotaIPI,
+       item.descricao,
+       item.descricaoDetalhada,
+       item.product_id,
+       item.created_at,
+       item.updated_at
+FROM items_sales_orders item WHERE item.sales_order_id = $1
+`
+
+func (q *Queries) GetItemsSalesOrderBySalesOrderID(ctx context.Context, salesOrderID int64) (ItemsSalesOrder, error) {
+	row := q.db.QueryRowContext(ctx, getItemsSalesOrderBySalesOrderID, salesOrderID)
+	var i ItemsSalesOrder
+	err := row.Scan(
+		&i.ID,
+		&i.SalesOrderID,
+		&i.Codigo,
+		&i.Unidade,
+		&i.Quantidade,
+		&i.Desconto,
+		&i.Valor,
+		&i.Aliquotaipi,
+		&i.Descricao,
+		&i.Descricaodetalhada,
+		&i.ProductID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }

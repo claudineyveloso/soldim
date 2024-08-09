@@ -7,28 +7,30 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
 const createSalesOrder = `-- name: CreateSalesOrder :exec
-INSERT INTO sales_orders (id, numero, numeroLoja, data, dataSaida, dataPrevista, totalProdutos, totalDescontos, situation_id, store_id, contact_id, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+INSERT INTO sales_orders (id, numero, numeroLoja, data, dataSaida, dataPrevista, totalProdutos, totalDescontos, situation_id, store_id, contact_id, items_sales_order_id, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 `
 
 type CreateSalesOrderParams struct {
-	ID             int64     `json:"id"`
-	Numero         int32     `json:"numero"`
-	Numeroloja     string    `json:"numeroloja"`
-	Data           time.Time `json:"data"`
-	Datasaida      time.Time `json:"datasaida"`
-	Dataprevista   time.Time `json:"dataprevista"`
-	Totalprodutos  float64   `json:"totalprodutos"`
-	Totaldescontos float64   `json:"totaldescontos"`
-	SituationID    int64     `json:"situation_id"`
-	StoreID        int64     `json:"store_id"`
-	ContactID      int64     `json:"contact_id"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	ID                int64     `json:"id"`
+	Numero            int32     `json:"numero"`
+	Numeroloja        string    `json:"numeroloja"`
+	Data              time.Time `json:"data"`
+	Datasaida         time.Time `json:"datasaida"`
+	Dataprevista      time.Time `json:"dataprevista"`
+	Totalprodutos     float64   `json:"totalprodutos"`
+	Totaldescontos    float64   `json:"totaldescontos"`
+	SituationID       int64     `json:"situation_id"`
+	StoreID           int64     `json:"store_id"`
+	ContactID         int64     `json:"contact_id"`
+	ItemsSalesOrderID int64     `json:"items_sales_order_id"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
 }
 
 func (q *Queries) CreateSalesOrder(ctx context.Context, arg CreateSalesOrderParams) error {
@@ -44,6 +46,7 @@ func (q *Queries) CreateSalesOrder(ctx context.Context, arg CreateSalesOrderPara
 		arg.SituationID,
 		arg.StoreID,
 		arg.ContactID,
+		arg.ItemsSalesOrderID,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
@@ -65,8 +68,10 @@ SELECT
   so.store_id,
   st.descricao AS store_description,  -- Renomeia a coluna da loja
   so.contact_id,
+  so.items_sales_order_id,
   c.nome AS contact_name,  -- Nome do contato
   c.numeroDocumento AS contact_document,  -- Documento do contato
+  item.descricao AS item_description,
   so.created_at,
   so.updated_at
 FROM 
@@ -77,27 +82,31 @@ JOIN
     stores st ON so.store_id = st.id
 JOIN 
     situations s ON so.situation_id = s.id
+LEFT JOIN 
+    items_sales_orders item ON so.id = item.sales_order_id  -- Usando LEFT JOIN para garantir que todos os pedidos sejam retornados
 WHERE so.id = $1
 `
 
 type GetSalesOrderRow struct {
-	ID                   int64     `json:"id"`
-	Numero               int32     `json:"numero"`
-	Numeroloja           string    `json:"numeroloja"`
-	Data                 time.Time `json:"data"`
-	Datasaida            time.Time `json:"datasaida"`
-	Dataprevista         time.Time `json:"dataprevista"`
-	Totalprodutos        float64   `json:"totalprodutos"`
-	Totaldescontos       float64   `json:"totaldescontos"`
-	SituationID          int64     `json:"situation_id"`
-	SituationDescription string    `json:"situation_description"`
-	StoreID              int64     `json:"store_id"`
-	StoreDescription     string    `json:"store_description"`
-	ContactID            int64     `json:"contact_id"`
-	ContactName          string    `json:"contact_name"`
-	ContactDocument      string    `json:"contact_document"`
-	CreatedAt            time.Time `json:"created_at"`
-	UpdatedAt            time.Time `json:"updated_at"`
+	ID                   int64          `json:"id"`
+	Numero               int32          `json:"numero"`
+	Numeroloja           string         `json:"numeroloja"`
+	Data                 time.Time      `json:"data"`
+	Datasaida            time.Time      `json:"datasaida"`
+	Dataprevista         time.Time      `json:"dataprevista"`
+	Totalprodutos        float64        `json:"totalprodutos"`
+	Totaldescontos       float64        `json:"totaldescontos"`
+	SituationID          int64          `json:"situation_id"`
+	SituationDescription string         `json:"situation_description"`
+	StoreID              int64          `json:"store_id"`
+	StoreDescription     string         `json:"store_description"`
+	ContactID            int64          `json:"contact_id"`
+	ItemsSalesOrderID    int64          `json:"items_sales_order_id"`
+	ContactName          string         `json:"contact_name"`
+	ContactDocument      string         `json:"contact_document"`
+	ItemDescription      sql.NullString `json:"item_description"`
+	CreatedAt            time.Time      `json:"created_at"`
+	UpdatedAt            time.Time      `json:"updated_at"`
 }
 
 func (q *Queries) GetSalesOrder(ctx context.Context, id int64) (GetSalesOrderRow, error) {
@@ -117,8 +126,10 @@ func (q *Queries) GetSalesOrder(ctx context.Context, id int64) (GetSalesOrderRow
 		&i.StoreID,
 		&i.StoreDescription,
 		&i.ContactID,
+		&i.ItemsSalesOrderID,
 		&i.ContactName,
 		&i.ContactDocument,
+		&i.ItemDescription,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -285,8 +296,10 @@ SELECT
   so.store_id,
   st.descricao AS store_description,  -- Renomeia a coluna da loja
   so.contact_id,
+  so.items_sales_order_id,
   c.nome AS contact_name,  -- Nome do contato
   c.numeroDocumento AS contact_document,  -- Documento do contato
+  item.descricao AS item_description,
   so.created_at,
   so.updated_at
 FROM 
@@ -297,27 +310,31 @@ JOIN
     stores st ON so.store_id = st.id
 JOIN 
     situations s ON so.situation_id = s.id
+LEFT JOIN 
+    items_sales_orders item ON so.id = item.sales_order_id  -- Usando LEFT JOIN para garantir que todos os pedidos sejam retornados
 ORDER BY so.dataSaida DESC
 `
 
 type GetSalesOrdersRow struct {
-	ID                   int64     `json:"id"`
-	Numero               int32     `json:"numero"`
-	Numeroloja           string    `json:"numeroloja"`
-	Data                 time.Time `json:"data"`
-	Datasaida            time.Time `json:"datasaida"`
-	Dataprevista         time.Time `json:"dataprevista"`
-	Totalprodutos        float64   `json:"totalprodutos"`
-	Totaldescontos       float64   `json:"totaldescontos"`
-	SituationID          int64     `json:"situation_id"`
-	SituationDescription string    `json:"situation_description"`
-	StoreID              int64     `json:"store_id"`
-	StoreDescription     string    `json:"store_description"`
-	ContactID            int64     `json:"contact_id"`
-	ContactName          string    `json:"contact_name"`
-	ContactDocument      string    `json:"contact_document"`
-	CreatedAt            time.Time `json:"created_at"`
-	UpdatedAt            time.Time `json:"updated_at"`
+	ID                   int64          `json:"id"`
+	Numero               int32          `json:"numero"`
+	Numeroloja           string         `json:"numeroloja"`
+	Data                 time.Time      `json:"data"`
+	Datasaida            time.Time      `json:"datasaida"`
+	Dataprevista         time.Time      `json:"dataprevista"`
+	Totalprodutos        float64        `json:"totalprodutos"`
+	Totaldescontos       float64        `json:"totaldescontos"`
+	SituationID          int64          `json:"situation_id"`
+	SituationDescription string         `json:"situation_description"`
+	StoreID              int64          `json:"store_id"`
+	StoreDescription     string         `json:"store_description"`
+	ContactID            int64          `json:"contact_id"`
+	ItemsSalesOrderID    int64          `json:"items_sales_order_id"`
+	ContactName          string         `json:"contact_name"`
+	ContactDocument      string         `json:"contact_document"`
+	ItemDescription      sql.NullString `json:"item_description"`
+	CreatedAt            time.Time      `json:"created_at"`
+	UpdatedAt            time.Time      `json:"updated_at"`
 }
 
 func (q *Queries) GetSalesOrders(ctx context.Context) ([]GetSalesOrdersRow, error) {
@@ -343,8 +360,10 @@ func (q *Queries) GetSalesOrders(ctx context.Context) ([]GetSalesOrdersRow, erro
 			&i.StoreID,
 			&i.StoreDescription,
 			&i.ContactID,
+			&i.ItemsSalesOrderID,
 			&i.ContactName,
 			&i.ContactDocument,
+			&i.ItemDescription,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
