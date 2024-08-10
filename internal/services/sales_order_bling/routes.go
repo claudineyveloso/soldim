@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/claudineyveloso/soldim.git/internal/bling"
-	"github.com/claudineyveloso/soldim.git/internal/errors"
 	"github.com/claudineyveloso/soldim.git/internal/types"
 	"github.com/claudineyveloso/soldim.git/internal/utils"
 	"github.com/gorilla/mux"
@@ -19,7 +19,7 @@ import (
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "6ad9b7d003ec9c01916fcbb72e9bbf37c917e1f3"
+	bearerToken     = "b194d8c160a6586105694d6b7587f7763516a441"
 )
 
 type ErrorResponse struct {
@@ -32,6 +32,97 @@ func RegisterRoutes(router *mux.Router) {
 }
 
 func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("Recovered from panic: %v\n", r)
+			http.Error(w, fmt.Sprintf("Internal server error: %v", r), http.StatusInternalServerError)
+		}
+	}()
+
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit < 1 {
+		limit = limitePorPagina
+	}
+
+	fmt.Printf("Requesting page: %d with limit: %d\n", page, limit)
+
+	for {
+		sales, totalPages, err := bling.GetSalesOrdersFromBling(bearerToken, page, limit)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		for i, sale := range sales {
+			fmt.Printf("Verificando o contato com ID %d\n", sale.Contato.ID)
+			contact, err := existContact(sale.Contato.ID)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Error checking contact existence: %v", err), http.StatusInternalServerError)
+				return
+			}
+
+			if contact == nil || contact.ID == 0 {
+				fmt.Printf("Contato com ID %d não encontrado. Criando novo contato.\n", sale.Contato.ID)
+				newContact := &types.Contact{
+					ID:              sale.Contato.ID,
+					Nome:            sale.Contato.Nome,
+					Codigo:          "", // Adicione o código se disponível
+					Situacao:        "", // Adicione a situação se disponível
+					Numerodocumento: sale.Contato.NumeroDocumento,
+					Telefone:        "", // Adicione o telefone se disponível
+					Celular:         "", // Adicione o celular se disponível
+					CreatedAt:       time.Now(),
+					UpdatedAt:       time.Now(),
+				}
+				createdContact, err := createContact(*newContact)
+				if err != nil {
+					http.Error(w, fmt.Sprintf("Error creating contact: %v", err), http.StatusInternalServerError)
+					return
+				}
+				if createdContact == nil || createdContact.ID == 0 {
+					http.Error(w, "Failed to create contact: ID is 0 or invalid", http.StatusInternalServerError)
+					return
+				}
+				fmt.Printf("Contato criado com ID %d\n", createdContact.ID)
+				sales[i].Contato.ID = createdContact.ID
+				sales[i].ContactID = createdContact.ID
+			} else {
+				fmt.Printf("Contato encontrado com ID %d\n", contact.ID)
+				sales[i].Contato.ID = contact.ID
+				sales[i].ContactID = contact.ID
+			}
+		}
+
+		fmt.Printf("Processing page: %d with %d products\n", page, len(sales))
+		processSales(sales)
+
+		if page >= totalPages {
+			break
+		}
+
+		page++
+	}
+
+	err = updateSalesOrder()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func handleImportBlingSalesOrdersToSoldimAA(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("Recovered from panic: %v\n", r)
+			http.Error(w, fmt.Sprintf("Internal server error: %v", r), http.StatusInternalServerError)
+		}
+	}()
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
 	page, err := strconv.Atoi(pageStr)
@@ -55,37 +146,36 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 		for i, sale := range sales {
 			contact, err := existContact(sale.Contato.ID)
 			if err != nil {
-				if err == errors.ErrContactNotFound {
-					newContact := &types.Contact{
-						ID:              sale.Contato.ID,
-						Nome:            sale.Contato.Nome,
-						Codigo:          "", // Adicione o código se disponível
-						Situacao:        "", // Adicione a situação se disponível
-						Numerodocumento: sale.Contato.NumeroDocumento,
-						Telefone:        "", // Adicione o telefone se disponível
-						Celular:         "", // Adicione o celular se disponível
-						CreatedAt:       time.Now(),
-						UpdatedAt:       time.Now(),
-					}
-					createdContact, err := createContact(*newContact)
-					if err != nil {
-						http.Error(w, err.Error(), http.StatusInternalServerError)
-						return
-					}
-					// Atualize o contact ID na venda com o ID retornado após a criação
-					sales[i].Contato.ID = createdContact.ID
-					sales[i].ContactID = createdContact.ID
+				http.Error(w, fmt.Sprintf("Error checking contact existence: %v", err), http.StatusInternalServerError)
+				return
+			}
 
-				} else {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
+			// Se o contato não existir (contact == nil), crie um novo contato
+			if contact == (&types.Contact{}) {
+				newContact := &types.Contact{
+					ID:              sale.Contato.ID,
+					Nome:            sale.Contato.Nome,
+					Codigo:          "", // Adicione o código se disponível
+					Situacao:        "", // Adicione a situação se disponível
+					Numerodocumento: sale.Contato.NumeroDocumento,
+					Telefone:        "", // Adicione o telefone se disponível
+					Celular:         "", // Adicione o celular se disponível
+					CreatedAt:       time.Now(),
+					UpdatedAt:       time.Now(),
+				}
+				createdContact, err := createContact(*newContact)
+				if err != nil {
+					http.Error(w, fmt.Sprintf("Error creating contact: %v", err), http.StatusInternalServerError)
 					return
 				}
+				// Atualize o contact ID na venda com o ID retornado após a criação
+				sales[i].Contato.ID = createdContact.ID
+				sales[i].ContactID = createdContact.ID
 			} else {
-				// Atualize o contact ID na venda com o ID encontrado
+				// Se o contato existir, atualize o contact ID na venda com o ID encontrado
 				sales[i].Contato.ID = contact.ID
 				sales[i].ContactID = contact.ID
 			}
-			// items, err
 		}
 
 		fmt.Printf("Processing page: %d with %d products\n", page, len(sales))
@@ -106,10 +196,6 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 }
 
 func existContact(contactID int64) (*types.Contact, error) {
-	fmt.Printf("*********************************************************************************************************")
-	fmt.Printf("Numero do Contato ID: %+v\n", contactID)
-	fmt.Printf("*********************************************************************************************************")
-
 	url := fmt.Sprintf("http://localhost:8080/get_contact/%d", contactID)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -117,28 +203,70 @@ func existContact(contactID int64) (*types.Contact, error) {
 	}
 	defer resp.Body.Close()
 
-	// Decodifica a resposta para verificar se há uma mensagem de erro
-	var errorResponse ErrorResponse
+	// Verifica o status da resposta antes de ler o corpo
+	if resp.StatusCode == http.StatusNotFound {
+		fmt.Printf("Contato com ID %d não encontrado.\n", contactID)
+		return nil, nil
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body) // Leitura do corpo para fins de depuração, mas ignorada
+		return nil, fmt.Errorf("unexpected status code %d: %s", resp.StatusCode, string(body))
+	}
+
+	// Ler o corpo da resposta
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("error reading response body: %v", err)
 	}
 
-	// Verifica se a resposta contém um erro
-	if err := json.Unmarshal(body, &errorResponse); err == nil {
-		if errorResponse.Error == "contact not found" {
-			fmt.Printf("Contato com IDssssss %d não encontrado.\n", contactID)
-			return nil, errors.ErrContactNotFound
-		}
+	// Verifica se o corpo da resposta é "null" ou "{}"
+	bodyTrimmed := strings.TrimSpace(string(body))
+	if bodyTrimmed == "null" || bodyTrimmed == "{}" {
+		fmt.Printf("Contato com ID %d não encontrado.\n", contactID)
+		return nil, nil
 	}
 
-	// Verifica se a resposta contém o contato
+	// Tenta decodificar o corpo da resposta como um contato
 	var contact types.Contact
 	if err := json.Unmarshal(body, &contact); err != nil {
 		return nil, fmt.Errorf("error decoding contact response: %v", err)
 	}
 
-	// Log detalhado do contato encontrado
+	fmt.Printf("Contato encontrado: %+v\n", contact)
+	return &contact, nil
+}
+
+func existContactSS(contactID int64) (*types.Contact, error) {
+	url := fmt.Sprintf("http://localhost:8080/get_contact/%d", contactID)
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching contact: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Ler o corpo da resposta
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body: %v", err)
+	}
+
+	// Verifica se o corpo da resposta é "null" ou "{}"
+	if string(body) == "null" || string(body) == "{}" {
+		fmt.Printf("Contato com ID %d não encontrado.\n", contactID)
+		return nil, nil
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code %d: %s", resp.StatusCode, string(body))
+	}
+
+	// Tenta decodificar o corpo da resposta como um contato
+	var contact types.Contact
+	if err := json.Unmarshal(body, &contact); err != nil {
+		return nil, fmt.Errorf("error decoding contact response: %v", err)
+	}
+
 	fmt.Printf("Contato encontrado: %+v\n", contact)
 	return &contact, nil
 }
