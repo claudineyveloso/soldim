@@ -1,6 +1,7 @@
 package types
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
 )
@@ -136,6 +137,34 @@ func (cd CustomDate) MarshalJSON() ([]byte, error) {
 		return []byte(`"0000-00-00"`), nil
 	}
 	return []byte(fmt.Sprintf(`"%s"`, cd.Time.Format("2006-01-02"))), nil
+}
+
+func ConvertNullString(nullStr sql.NullString) string {
+	if nullStr.Valid {
+		return nullStr.String
+	}
+	return "" // Retorna uma string vazia se o valor for nulo
+}
+
+func ConvertNullInt32(nullInt sql.NullInt32) int32 {
+	if nullInt.Valid {
+		return nullInt.Int32
+	}
+	return 0 // Retorna 0 se o valor for nulo
+}
+
+func ConvertNullInt64(nullInt sql.NullInt64) int64 {
+	if nullInt.Valid {
+		return nullInt.Int64
+	}
+	return 0 // Retorna 0 se o valor for nulo
+}
+
+func ConvertNullFloat64(nullFloat sql.NullFloat64) float64 {
+	if nullFloat.Valid {
+		return nullFloat.Float64
+	}
+	return 0.0 // Retorna 0.0 se o valor for nulo
 }
 
 type SalesOrderStore interface {

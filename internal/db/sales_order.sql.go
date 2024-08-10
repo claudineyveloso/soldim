@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
@@ -88,40 +89,40 @@ JOIN
     stores st ON so.store_id = st.id
 JOIN 
     situations s ON so.situation_id = s.id
-JOIN 
+LEFT JOIN
   items_sales_orders iso ON so.id = iso.sales_order_id
 WHERE so.id = $1
 `
 
 type GetSalesOrderRow struct {
-	ID                   int64     `json:"id"`
-	Numero               int32     `json:"numero"`
-	Numeroloja           string    `json:"numeroloja"`
-	Data                 time.Time `json:"data"`
-	Datasaida            time.Time `json:"datasaida"`
-	Dataprevista         time.Time `json:"dataprevista"`
-	Totalprodutos        float64   `json:"totalprodutos"`
-	Totaldescontos       float64   `json:"totaldescontos"`
-	SituationID          int64     `json:"situation_id"`
-	SituationDescription string    `json:"situation_description"`
-	StoreID              int64     `json:"store_id"`
-	StoreDescription     string    `json:"store_description"`
-	ContactID            int64     `json:"contact_id"`
-	ItemsSalesOrderID    int64     `json:"items_sales_order_id"`
-	SalesOrderID         int64     `json:"sales_order_id"`
-	Codigo               string    `json:"codigo"`
-	Unidade              string    `json:"unidade"`
-	Quantidade           int32     `json:"quantidade"`
-	Desconto             float64   `json:"desconto"`
-	Valor                float64   `json:"valor"`
-	Aliquotaipi          float64   `json:"aliquotaipi"`
-	Descricao            string    `json:"descricao"`
-	Descricaodetalhada   string    `json:"descricaodetalhada"`
-	ProductID            int64     `json:"product_id"`
-	ContactName          string    `json:"contact_name"`
-	ContactDocument      string    `json:"contact_document"`
-	CreatedAt            time.Time `json:"created_at"`
-	UpdatedAt            time.Time `json:"updated_at"`
+	ID                   int64           `json:"id"`
+	Numero               int32           `json:"numero"`
+	Numeroloja           string          `json:"numeroloja"`
+	Data                 time.Time       `json:"data"`
+	Datasaida            time.Time       `json:"datasaida"`
+	Dataprevista         time.Time       `json:"dataprevista"`
+	Totalprodutos        float64         `json:"totalprodutos"`
+	Totaldescontos       float64         `json:"totaldescontos"`
+	SituationID          int64           `json:"situation_id"`
+	SituationDescription string          `json:"situation_description"`
+	StoreID              int64           `json:"store_id"`
+	StoreDescription     string          `json:"store_description"`
+	ContactID            int64           `json:"contact_id"`
+	ItemsSalesOrderID    sql.NullInt64   `json:"items_sales_order_id"`
+	SalesOrderID         sql.NullInt64   `json:"sales_order_id"`
+	Codigo               sql.NullString  `json:"codigo"`
+	Unidade              sql.NullString  `json:"unidade"`
+	Quantidade           sql.NullInt32   `json:"quantidade"`
+	Desconto             sql.NullFloat64 `json:"desconto"`
+	Valor                sql.NullFloat64 `json:"valor"`
+	Aliquotaipi          sql.NullFloat64 `json:"aliquotaipi"`
+	Descricao            sql.NullString  `json:"descricao"`
+	Descricaodetalhada   sql.NullString  `json:"descricaodetalhada"`
+	ProductID            sql.NullInt64   `json:"product_id"`
+	ContactName          string          `json:"contact_name"`
+	ContactDocument      string          `json:"contact_document"`
+	CreatedAt            time.Time       `json:"created_at"`
+	UpdatedAt            time.Time       `json:"updated_at"`
 }
 
 func (q *Queries) GetSalesOrder(ctx context.Context, id int64) (GetSalesOrderRow, error) {
@@ -198,40 +199,40 @@ JOIN
     stores st ON so.store_id = st.id
 JOIN 
     situations s ON so.situation_id = s.id
-JOIN 
+LEFT JOIN
   items_sales_orders iso ON so.id = iso.sales_order_id
 WHERE so.numero = $1
 `
 
 type GetSalesOrderByNumberRow struct {
-	ID                   int64     `json:"id"`
-	Numero               int32     `json:"numero"`
-	Numeroloja           string    `json:"numeroloja"`
-	Data                 time.Time `json:"data"`
-	Datasaida            time.Time `json:"datasaida"`
-	Dataprevista         time.Time `json:"dataprevista"`
-	Totalprodutos        float64   `json:"totalprodutos"`
-	Totaldescontos       float64   `json:"totaldescontos"`
-	SituationID          int64     `json:"situation_id"`
-	SituationDescription string    `json:"situation_description"`
-	StoreID              int64     `json:"store_id"`
-	StoreDescription     string    `json:"store_description"`
-	ContactID            int64     `json:"contact_id"`
-	ItemsSalesOrderID    int64     `json:"items_sales_order_id"`
-	SalesOrderID         int64     `json:"sales_order_id"`
-	Codigo               string    `json:"codigo"`
-	Unidade              string    `json:"unidade"`
-	Quantidade           int32     `json:"quantidade"`
-	Desconto             float64   `json:"desconto"`
-	Valor                float64   `json:"valor"`
-	Aliquotaipi          float64   `json:"aliquotaipi"`
-	Descricao            string    `json:"descricao"`
-	Descricaodetalhada   string    `json:"descricaodetalhada"`
-	ProductID            int64     `json:"product_id"`
-	ContactName          string    `json:"contact_name"`
-	ContactDocument      string    `json:"contact_document"`
-	CreatedAt            time.Time `json:"created_at"`
-	UpdatedAt            time.Time `json:"updated_at"`
+	ID                   int64           `json:"id"`
+	Numero               int32           `json:"numero"`
+	Numeroloja           string          `json:"numeroloja"`
+	Data                 time.Time       `json:"data"`
+	Datasaida            time.Time       `json:"datasaida"`
+	Dataprevista         time.Time       `json:"dataprevista"`
+	Totalprodutos        float64         `json:"totalprodutos"`
+	Totaldescontos       float64         `json:"totaldescontos"`
+	SituationID          int64           `json:"situation_id"`
+	SituationDescription string          `json:"situation_description"`
+	StoreID              int64           `json:"store_id"`
+	StoreDescription     string          `json:"store_description"`
+	ContactID            int64           `json:"contact_id"`
+	ItemsSalesOrderID    sql.NullInt64   `json:"items_sales_order_id"`
+	SalesOrderID         sql.NullInt64   `json:"sales_order_id"`
+	Codigo               sql.NullString  `json:"codigo"`
+	Unidade              sql.NullString  `json:"unidade"`
+	Quantidade           sql.NullInt32   `json:"quantidade"`
+	Desconto             sql.NullFloat64 `json:"desconto"`
+	Valor                sql.NullFloat64 `json:"valor"`
+	Aliquotaipi          sql.NullFloat64 `json:"aliquotaipi"`
+	Descricao            sql.NullString  `json:"descricao"`
+	Descricaodetalhada   sql.NullString  `json:"descricaodetalhada"`
+	ProductID            sql.NullInt64   `json:"product_id"`
+	ContactName          string          `json:"contact_name"`
+	ContactDocument      string          `json:"contact_document"`
+	CreatedAt            time.Time       `json:"created_at"`
+	UpdatedAt            time.Time       `json:"updated_at"`
 }
 
 func (q *Queries) GetSalesOrderByNumber(ctx context.Context, numero int32) (GetSalesOrderByNumberRow, error) {
@@ -378,40 +379,40 @@ JOIN
     stores st ON so.store_id = st.id
 JOIN 
     situations s ON so.situation_id = s.id
-JOIN 
+LEFT JOIN
   items_sales_orders iso ON so.id = iso.sales_order_id
 ORDER BY so.dataSaida DESC
 `
 
 type GetSalesOrdersRow struct {
-	ID                   int64     `json:"id"`
-	Numero               int32     `json:"numero"`
-	Numeroloja           string    `json:"numeroloja"`
-	Data                 time.Time `json:"data"`
-	Datasaida            time.Time `json:"datasaida"`
-	Dataprevista         time.Time `json:"dataprevista"`
-	Totalprodutos        float64   `json:"totalprodutos"`
-	Totaldescontos       float64   `json:"totaldescontos"`
-	SituationID          int64     `json:"situation_id"`
-	SituationDescription string    `json:"situation_description"`
-	StoreID              int64     `json:"store_id"`
-	StoreDescription     string    `json:"store_description"`
-	ContactID            int64     `json:"contact_id"`
-	ItemsSalesOrderID    int64     `json:"items_sales_order_id"`
-	SalesOrderID         int64     `json:"sales_order_id"`
-	Codigo               string    `json:"codigo"`
-	Unidade              string    `json:"unidade"`
-	Quantidade           int32     `json:"quantidade"`
-	Desconto             float64   `json:"desconto"`
-	Valor                float64   `json:"valor"`
-	Aliquotaipi          float64   `json:"aliquotaipi"`
-	Descricao            string    `json:"descricao"`
-	Descricaodetalhada   string    `json:"descricaodetalhada"`
-	ProductID            int64     `json:"product_id"`
-	ContactName          string    `json:"contact_name"`
-	ContactDocument      string    `json:"contact_document"`
-	CreatedAt            time.Time `json:"created_at"`
-	UpdatedAt            time.Time `json:"updated_at"`
+	ID                   int64           `json:"id"`
+	Numero               int32           `json:"numero"`
+	Numeroloja           string          `json:"numeroloja"`
+	Data                 time.Time       `json:"data"`
+	Datasaida            time.Time       `json:"datasaida"`
+	Dataprevista         time.Time       `json:"dataprevista"`
+	Totalprodutos        float64         `json:"totalprodutos"`
+	Totaldescontos       float64         `json:"totaldescontos"`
+	SituationID          int64           `json:"situation_id"`
+	SituationDescription string          `json:"situation_description"`
+	StoreID              int64           `json:"store_id"`
+	StoreDescription     string          `json:"store_description"`
+	ContactID            int64           `json:"contact_id"`
+	ItemsSalesOrderID    sql.NullInt64   `json:"items_sales_order_id"`
+	SalesOrderID         sql.NullInt64   `json:"sales_order_id"`
+	Codigo               sql.NullString  `json:"codigo"`
+	Unidade              sql.NullString  `json:"unidade"`
+	Quantidade           sql.NullInt32   `json:"quantidade"`
+	Desconto             sql.NullFloat64 `json:"desconto"`
+	Valor                sql.NullFloat64 `json:"valor"`
+	Aliquotaipi          sql.NullFloat64 `json:"aliquotaipi"`
+	Descricao            sql.NullString  `json:"descricao"`
+	Descricaodetalhada   sql.NullString  `json:"descricaodetalhada"`
+	ProductID            sql.NullInt64   `json:"product_id"`
+	ContactName          string          `json:"contact_name"`
+	ContactDocument      string          `json:"contact_document"`
+	CreatedAt            time.Time       `json:"created_at"`
+	UpdatedAt            time.Time       `json:"updated_at"`
 }
 
 func (q *Queries) GetSalesOrders(ctx context.Context) ([]GetSalesOrdersRow, error) {

@@ -40,7 +40,7 @@ JOIN
     stores st ON so.store_id = st.id
 JOIN 
     situations s ON so.situation_id = s.id
-JOIN 
+LEFT JOIN
   items_sales_orders iso ON so.id = iso.sales_order_id
 ORDER BY so.dataSaida DESC;
 
@@ -83,7 +83,7 @@ JOIN
     stores st ON so.store_id = st.id
 JOIN 
     situations s ON so.situation_id = s.id
-JOIN 
+LEFT JOIN
   items_sales_orders iso ON so.id = iso.sales_order_id
 WHERE so.id = $1;
 
@@ -125,7 +125,7 @@ JOIN
     stores st ON so.store_id = st.id
 JOIN 
     situations s ON so.situation_id = s.id
-JOIN 
+LEFT JOIN
   items_sales_orders iso ON so.id = iso.sales_order_id
 WHERE so.numero = $1;
 

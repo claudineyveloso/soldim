@@ -23,6 +23,10 @@ func (s *Store) CreateContact(contact types.Contact) error {
 	queries := db.New(s.db)
 	ctx := context.Background()
 
+	if contact.ID == 0 {
+		return fmt.Errorf("invalid contact ID: %d", contact.ID)
+	}
+
 	now := time.Now()
 	contact.CreatedAt = now
 	contact.UpdatedAt = now
@@ -43,6 +47,7 @@ func (s *Store) CreateContact(contact types.Contact) error {
 		fmt.Println("Erro ao criar um Contato:", err)
 		return err
 	}
+	fmt.Printf("Contato criado com ID: %d\n", contact.ID)
 	return nil
 }
 
@@ -64,6 +69,28 @@ func (s *Store) GetContacts() ([]*types.Contact, error) {
 }
 
 func (s *Store) GetContactByID(contactID int64) (*types.Contact, error) {
+	queries := db.New(s.db)
+	ctx := context.Background()
+
+	// Tenta buscar o contato no banco de dados
+	dbContact, err := queries.GetContact(ctx, contactID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// Se o contato não for encontrado, retorna nil sem erro
+			return nil, nil
+		}
+		// Retorna o erro se houver algum problema na consulta ao banco de dados
+		return nil, err
+	}
+
+	// Converte o contato do formato do banco de dados para o formato da aplicação
+	contact := convertDBContactToContact(dbContact)
+
+	// Retorna o contato encontrado
+	return contact, nil
+}
+
+func (s *Store) GetContactByIDAA(contactID int64) (*types.Contact, error) {
 	queries := db.New(s.db)
 	ctx := context.Background()
 	dbContact, err := queries.GetContact(ctx, contactID)
