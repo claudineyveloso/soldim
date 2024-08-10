@@ -72,7 +72,55 @@ func GetSalesOrdersFromBling(bearerToken string, page int, limit int) ([]types.S
 }
 
 func GetSalesOrdersIDInBling(bearerToken string, salesOrderID int64) ([]types.SalesOrder, error) {
-	url := fmt.Sprintf("https://api.bling.com.br/Api/v2/pedido/%d/json", salesOrderID)
+	url := fmt.Sprintf("https://bling.com.br/Api/v3/pedidos/vendas/%d", salesOrderID)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", bearerToken))
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to get sales order: %s", resp.Status)
+	}
+
+	var result struct {
+		Retorno struct {
+			Pedidos []struct {
+				Pedido types.SalesOrder `json:"pedido"`
+			} `json:"pedidos"`
+		} `json:"retorno"`
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
+	}
+
+	var salesOrders []types.SalesOrder
+	for _, p := range result.Retorno.Pedidos {
+		salesOrders = append(salesOrders, p.Pedido)
+	}
+
+	return salesOrders, nil
+}
+
+func GetSalesOrdersIDInBlingXXX(bearerToken string, salesOrderID int64) ([]types.SalesOrder, error) {
+	url := fmt.Sprintf("https://bling.com.br/Api/v3/pedidos/vendas/%d", salesOrderID)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

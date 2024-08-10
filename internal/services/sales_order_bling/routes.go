@@ -72,21 +72,17 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 				newContact := &types.Contact{
 					ID:              sale.Contato.ID,
 					Nome:            sale.Contato.Nome,
-					Codigo:          "", // Adicione o código se disponível
-					Situacao:        "", // Adicione a situação se disponível
+					Codigo:          "",
+					Situacao:        "",
 					Numerodocumento: sale.Contato.NumeroDocumento,
-					Telefone:        "", // Adicione o telefone se disponível
-					Celular:         "", // Adicione o celular se disponível
+					Telefone:        "",
+					Celular:         "",
 					CreatedAt:       time.Now(),
 					UpdatedAt:       time.Now(),
 				}
 				createdContact, err := createContact(*newContact)
 				if err != nil {
 					http.Error(w, fmt.Sprintf("Error creating contact: %v", err), http.StatusInternalServerError)
-					return
-				}
-				if createdContact == nil || createdContact.ID == 0 {
-					http.Error(w, "Failed to create contact: ID is 0 or invalid", http.StatusInternalServerError)
 					return
 				}
 				fmt.Printf("Contato criado com ID %d\n", createdContact.ID)
@@ -107,6 +103,12 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 		}
 
 		page++
+	}
+
+	err = processItemsSalesOrder(bearerToken)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erro ao processar itens dos pedidos de venda: %v", err), http.StatusInternalServerError)
+		return
 	}
 
 	err = updateSalesOrder()
@@ -237,40 +239,6 @@ func existContact(contactID int64) (*types.Contact, error) {
 	return &contact, nil
 }
 
-func existContactSS(contactID int64) (*types.Contact, error) {
-	url := fmt.Sprintf("http://localhost:8080/get_contact/%d", contactID)
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, fmt.Errorf("error fetching contact: %v", err)
-	}
-	defer resp.Body.Close()
-
-	// Ler o corpo da resposta
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("error reading response body: %v", err)
-	}
-
-	// Verifica se o corpo da resposta é "null" ou "{}"
-	if string(body) == "null" || string(body) == "{}" {
-		fmt.Printf("Contato com ID %d não encontrado.\n", contactID)
-		return nil, nil
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code %d: %s", resp.StatusCode, string(body))
-	}
-
-	// Tenta decodificar o corpo da resposta como um contato
-	var contact types.Contact
-	if err := json.Unmarshal(body, &contact); err != nil {
-		return nil, fmt.Errorf("error decoding contact response: %v", err)
-	}
-
-	fmt.Printf("Contato encontrado: %+v\n", contact)
-	return &contact, nil
-}
-
 func createContact(contact types.Contact) (*types.Contact, error) {
 	url := "http://localhost:8080/create_contact"
 	contactData, err := json.Marshal(contact)
@@ -308,7 +276,6 @@ func processSales(sales []types.SalesOrder) {
 	for _, sale := range sales {
 		sale.SituationID = sale.Situacao.ID
 		sale.StoreID = sale.Loja.ID
-		sale.ItemsSalesOrderID = sale.Items.ID
 		salesOrderJSON, err := json.Marshal(sale)
 		if err != nil {
 			fmt.Printf("Error marshalling sales: %v\n", err)
@@ -340,6 +307,134 @@ func processSales(sales []types.SalesOrder) {
 
 		fmt.Printf("Sales Orders created successfully em processSales: %v\n", sale)
 	}
+}
+
+func processItemsSalesOrder(bearerToken string) error {
+	// Faz a requisição para obter os IDs dos pedidos de venda
+	resp, err := http.Get("http://localhost:8080/get_sales_orders")
+	if err != nil {
+		return fmt.Errorf("erro ao chamar get_sales_orders: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("falha na requisição para get_sales_orders: %s", resp.Status)
+	}
+	// Lê a resposta do corpo e converte para um slice de int64
+	var salesOrderIDs []int64
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("erro ao ler o corpo da resposta: %v", err)
+	}
+
+	err = json.Unmarshal(body, &salesOrderIDs)
+	if err != nil {
+		return fmt.Errorf("erro ao desserializar a resposta: %v", err)
+	}
+
+	// Para cada ID de pedido de venda, obtem os detalhes e processa os itens
+	for _, id := range salesOrderIDs {
+		salesOrders, err := bling.GetSalesOrdersIDInBling(bearerToken, id)
+		if err != nil {
+			fmt.Printf("Erro ao obter detalhes do pedido de venda com ID %d: %v\n", id, err)
+			continue
+		}
+
+		// Processa cada pedido de venda retornado
+		for _, order := range salesOrders {
+			for _, item := range order.Items { // Agora você pode iterar sobre os itens
+				// Envia cada item para o endpoint /create_items_sales_order
+				err := sendItemToCreate(item)
+				if err != nil {
+					fmt.Printf("Erro ao criar item %d do pedido %d: %v\n", item.ID, order.ID, err)
+					continue
+				}
+				fmt.Printf("Item %d do pedido %d processado com sucesso: Produto %s, Quantidade %d\n", item.ID, order.ID, item.Codigo, item.Quantidade)
+			}
+		}
+	}
+
+	return nil
+}
+
+func processItemsSalesOrderXXX(bearerToken string) error {
+	// Faz a requisição para obter os IDs dos pedidos de venda
+	resp, err := http.Get("http://localhost:8080/get_sales_orders")
+	if err != nil {
+		return fmt.Errorf("erro ao chamar get_sales_orders: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("falha na requisição para get_sales_orders: %s", resp.Status)
+	}
+	// Lê a resposta do corpo e converte para um slice de int64
+	var salesOrderIDs []int64
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("erro ao ler o corpo da resposta: %v", err)
+	}
+
+	err = json.Unmarshal(body, &salesOrderIDs)
+	if err != nil {
+		return fmt.Errorf("erro ao desserializar a resposta: %v", err)
+	}
+
+	// Para cada ID de pedido de venda, obtem os detalhes e processa os itens
+	for _, id := range salesOrderIDs {
+		salesOrders, err := bling.GetSalesOrdersIDInBling(bearerToken, id)
+		if err != nil {
+			fmt.Printf("Erro ao obter detalhes do pedido de venda com ID %d: %v\n", id, err)
+			continue
+		}
+
+		// Processa cada pedido de venda retornado
+		for _, order := range salesOrders {
+			for _, item := range order.Items {
+				// Envia cada item para o endpoint /create_items_sales_order
+				err := sendItemToCreate(item)
+				if err != nil {
+					fmt.Printf("Erro ao criar item %d do pedido %d: %v\n", item.ID, order.ID, err)
+					continue
+				}
+				fmt.Printf("Item %d do pedido %d processado com sucesso: Produto %s, Quantidade %d\n", item.ID, order.ID, item.Codigo, item.Quantidade)
+			}
+		}
+	}
+
+	return nil
+}
+
+func sendItemToCreate(item types.ItemsSalesOrders) error {
+	url := "http://localhost:8080/create_items_sales_order"
+
+	// Cria o payload a partir do item
+	payload, err := json.Marshal(item)
+	if err != nil {
+		return fmt.Errorf("erro ao serializar o item: %v", err)
+	}
+
+	// Cria uma requisição POST
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	if err != nil {
+		return fmt.Errorf("erro ao criar requisição POST: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	// Envia a requisição
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("erro ao enviar requisição POST: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("falha ao criar item: %s, resposta: %s", resp.Status, string(body))
+	}
+
+	return nil
 }
 
 func updateSalesOrder() error {

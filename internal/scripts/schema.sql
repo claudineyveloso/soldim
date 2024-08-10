@@ -384,7 +384,7 @@ CREATE TABLE contacts (
   updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-create unique index name_contact_idx on contacts (nome);
+-- create unique index name_contact_idx on contacts (nome);
 
 
 DROP TABLE IF EXISTS "suppliers_users";

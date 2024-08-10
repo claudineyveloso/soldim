@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/claudineyveloso/soldim.git/internal/db"
-	"github.com/claudineyveloso/soldim.git/internal/errors"
 	"github.com/claudineyveloso/soldim.git/internal/types"
 )
 
@@ -77,7 +76,7 @@ func (s *Store) GetContactByID(contactID int64) (*types.Contact, error) {
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// Se o contato não for encontrado, retorna nil sem erro
-			return nil, nil
+			return &types.Contact{}, nil
 		}
 		// Retorna o erro se houver algum problema na consulta ao banco de dados
 		return nil, err
@@ -87,21 +86,6 @@ func (s *Store) GetContactByID(contactID int64) (*types.Contact, error) {
 	contact := convertDBContactToContact(dbContact)
 
 	// Retorna o contato encontrado
-	return contact, nil
-}
-
-func (s *Store) GetContactByIDAA(contactID int64) (*types.Contact, error) {
-	queries := db.New(s.db)
-	ctx := context.Background()
-	dbContact, err := queries.GetContact(ctx, contactID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errors.ErrContactNotFound
-		}
-		return nil, err
-	}
-	contact := convertDBContactToContact(dbContact)
-
 	return contact, nil
 }
 

@@ -92,6 +92,21 @@ func (s *Store) GetSalesOrderByID(salesorderID int64) (*types.SalesOrder, error)
 // }
 
 func convertDBSalesOrdersRowToSalesOrder(dbSalesOrder db.GetSalesOrdersRow) *types.SalesOrder {
+	items := []types.ItemsSalesOrders{
+		{
+			ID:                 dbSalesOrder.ID,
+			Codigo:             types.ConvertNullString(dbSalesOrder.Codigo),
+			Unidade:            types.ConvertNullString(dbSalesOrder.Unidade),
+			Quantidade:         types.ConvertNullInt32(dbSalesOrder.Quantidade),
+			Desconto:           types.ConvertNullFloat64(dbSalesOrder.Desconto),
+			Valor:              types.ConvertNullFloat64(dbSalesOrder.Valor),
+			SalesOrderID:       types.ConvertNullInt64(dbSalesOrder.SalesOrderID),
+			Aliquotaipi:        types.ConvertNullFloat64(dbSalesOrder.Aliquotaipi),
+			ProductID:          types.ConvertNullInt64(dbSalesOrder.ProductID),
+			Descricao:          types.ConvertNullString(dbSalesOrder.Descricao),
+			Descricaodetalhada: types.ConvertNullString(dbSalesOrder.Descricaodetalhada),
+		},
+	}
 	return &types.SalesOrder{
 		ID:             dbSalesOrder.ID,
 		Numero:         dbSalesOrder.Numero,
@@ -118,19 +133,7 @@ func convertDBSalesOrdersRowToSalesOrder(dbSalesOrder db.GetSalesOrdersRow) *typ
 			Nome:            dbSalesOrder.ContactName,
 			NumeroDocumento: dbSalesOrder.ContactDocument,
 		},
-		Items: types.ItemsSalesOrders{
-			ID:                 dbSalesOrder.ID,
-			Codigo:             types.ConvertNullString(dbSalesOrder.Codigo),
-			Unidade:            types.ConvertNullString(dbSalesOrder.Unidade),
-			Quantidade:         types.ConvertNullInt32(dbSalesOrder.Quantidade),
-			Desconto:           types.ConvertNullFloat64(dbSalesOrder.Desconto),
-			Valor:              types.ConvertNullFloat64(dbSalesOrder.Valor),
-			SalesOrderID:       types.ConvertNullInt64(dbSalesOrder.SalesOrderID),
-			Aliquotaipi:        types.ConvertNullFloat64(dbSalesOrder.Aliquotaipi),
-			ProductID:          types.ConvertNullInt64(dbSalesOrder.ProductID),
-			Descricao:          types.ConvertNullString(dbSalesOrder.Descricao),
-			Descricaodetalhada: types.ConvertNullString(dbSalesOrder.Descricaodetalhada),
-		},
+		Items: items,
 	}
 }
 
