@@ -27,6 +27,7 @@ func (s *Store) CreateItemsSalesOrder(itemssalesorder types.ItemsSalesOrder) err
 	itemssalesorder.UpdatedAt = now
 	createItemsSalesOrderParams := db.CreateItemsSalesOrderParams{
 		ID:                 itemssalesorder.ID,
+		SalesOrderID:       itemssalesorder.SalesOrderID,
 		Codigo:             itemssalesorder.Codigo,
 		Unidade:            itemssalesorder.Unidade,
 		Quantidade:         itemssalesorder.Quantidade,
@@ -40,7 +41,7 @@ func (s *Store) CreateItemsSalesOrder(itemssalesorder types.ItemsSalesOrder) err
 		UpdatedAt:          itemssalesorder.UpdatedAt,
 	}
 
-	fmt.Println("Criando um Pedido de Vendas...", createItemsSalesOrderParams)
+	fmt.Println("Criando um Item do Pedido de Vendas...", createItemsSalesOrderParams)
 
 	if err := queries.CreateItemsSalesOrder(ctx, createItemsSalesOrderParams); err != nil {
 		fmt.Println("Erro ao criar um item do pedido de vendas:", err)
@@ -88,6 +89,7 @@ func (s *Store) GetItemsSalesOrderBySalesOrderID(itemssalesorderID int64) (*type
 func convertDBItemsSalesOrderToItemsSalesOrder(dbItemsSalesOrder db.ItemsSalesOrder) *types.ItemsSalesOrder {
 	return &types.ItemsSalesOrder{
 		ID:                 dbItemsSalesOrder.ID,
+		SalesOrderID:       dbItemsSalesOrder.SalesOrderID,
 		Codigo:             dbItemsSalesOrder.Codigo,
 		Unidade:            dbItemsSalesOrder.Unidade,
 		Quantidade:         dbItemsSalesOrder.Quantidade,

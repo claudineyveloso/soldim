@@ -118,85 +118,6 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 	}
 }
 
-func handleImportBlingSalesOrdersToSoldimAA(w http.ResponseWriter, r *http.Request) {
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Printf("Recovered from panic: %v\n", r)
-			http.Error(w, fmt.Sprintf("Internal server error: %v", r), http.StatusInternalServerError)
-		}
-	}()
-	pageStr := r.URL.Query().Get("page")
-	limitStr := r.URL.Query().Get("limit")
-	page, err := strconv.Atoi(pageStr)
-	if err != nil || page < 1 {
-		page = 1
-	}
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil || limit < 1 {
-		limit = limitePorPagina
-	}
-
-	fmt.Printf("Requesting page: %d with limit: %d\n", page, limit)
-
-	for {
-		sales, totalPages, err := bling.GetSalesOrdersFromBling(bearerToken, page, limit)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		for i, sale := range sales {
-			contact, err := existContact(sale.Contato.ID)
-			if err != nil {
-				http.Error(w, fmt.Sprintf("Error checking contact existence: %v", err), http.StatusInternalServerError)
-				return
-			}
-
-			// Se o contato não existir (contact == nil), crie um novo contato
-			if contact == (&types.Contact{}) {
-				newContact := &types.Contact{
-					ID:              sale.Contato.ID,
-					Nome:            sale.Contato.Nome,
-					Codigo:          "", // Adicione o código se disponível
-					Situacao:        "", // Adicione a situação se disponível
-					Numerodocumento: sale.Contato.NumeroDocumento,
-					Telefone:        "", // Adicione o telefone se disponível
-					Celular:         "", // Adicione o celular se disponível
-					CreatedAt:       time.Now(),
-					UpdatedAt:       time.Now(),
-				}
-				createdContact, err := createContact(*newContact)
-				if err != nil {
-					http.Error(w, fmt.Sprintf("Error creating contact: %v", err), http.StatusInternalServerError)
-					return
-				}
-				// Atualize o contact ID na venda com o ID retornado após a criação
-				sales[i].Contato.ID = createdContact.ID
-				sales[i].ContactID = createdContact.ID
-			} else {
-				// Se o contato existir, atualize o contact ID na venda com o ID encontrado
-				sales[i].Contato.ID = contact.ID
-				sales[i].ContactID = contact.ID
-			}
-		}
-
-		fmt.Printf("Processing page: %d with %d products\n", page, len(sales))
-		processSales(sales) // Processa todas as vendas
-
-		if page >= totalPages {
-			break
-		}
-
-		page++
-	}
-
-	err = updateSalesOrder()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
-
 func existContact(contactID int64) (*types.Contact, error) {
 	url := fmt.Sprintf("http://localhost:8080/get_contact/%d", contactID)
 	resp, err := http.Get(url)
@@ -359,10 +280,6 @@ func processItemsSalesOrder(bearerToken string) error {
 }
 
 func sendItemToCreate(item types.ItemsSalesOrders) error {
-	// Certifique-se de que o item contém o product_id correto
-	//if item.ProductID.ID == 0 {
-	//	return fmt.Errorf("product_id está faltando ou é inválido para o item %d", item.ID)
-	//}
 	orderItem := convertToItemsSalesOrder(item)
 
 	url := "http://localhost:8080/create_items_sales_order"
@@ -412,38 +329,6 @@ func convertToItemsSalesOrder(item types.ItemsSalesOrders) types.ItemsSalesOrder
 		CreatedAt:          item.CreatedAt,
 		UpdatedAt:          item.UpdatedAt,
 	}
-}
-
-func sendItemToCreateXXX(item types.ItemsSalesOrders) error {
-	url := "http://localhost:8080/create_items_sales_order"
-
-	// Cria o payload a partir do item
-	payload, err := json.Marshal(item)
-	if err != nil {
-		return fmt.Errorf("erro ao serializar o item: %v", err)
-	}
-
-	// Cria uma requisição POST
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
-	if err != nil {
-		return fmt.Errorf("erro ao criar requisição POST: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	// Envia a requisição
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("erro ao enviar requisição POST: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("falha ao criar item: %s, resposta: %s", resp.Status, string(body))
-	}
-
-	return nil
 }
 
 func updateSalesOrder() error {
