@@ -328,10 +328,28 @@ func processItemsSalesOrder(bearerToken string) error {
 	}
 
 	// 3. Desserializar o JSON na estrutura correta
-	var response types.SalesOrderResponse
+	var response types.SalesOrdersResponse
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return fmt.Errorf("erro ao desserializar a resposta: %v", err)
+	}
+
+	// 4. Iterar sobre cada pedido de venda para processar os itens
+	for _, order := range response.SalesOrders {
+		// Aqui fazemos a chamada para obter os detalhes do pedido de venda usando o ID
+		salesOrderDetails, err := bling.GetSalesOrdersIDInBling(bearerToken, order.ID)
+		if err != nil {
+			fmt.Printf("Erro ao obter detalhes do pedido de venda com ID %d: %v\n", order.ID, err)
+			continue
+		}
+
+		// 5. Processar cada item no pedido de venda retornado
+		for _, item := range salesOrderDetails.Itens {
+			fmt.Println("***********************************************************************************")
+			fmt.Printf("Valor de Item: %+v\n", item)
+			fmt.Println("***********************************************************************************")
+			fmt.Printf("Item %d do pedido %d processado com sucesso: Produto %s, Quantidade %d\n, Descricao %s\n", item.ID, salesOrderDetails.ID, item.Codigo, item.Quantidade, item.Descricao)
+		}
 	}
 
 	return nil

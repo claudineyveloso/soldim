@@ -107,11 +107,14 @@ type ItemsSalesOrders struct {
 	UpdatedAt          time.Time `json:"updated_at"`
 }
 
-//type SalesOrderResponse struct {
-//	Data []SalesOrder `json:"data"`
-//}
+//	type SalesOrderResponse struct {
+//		Data []SalesOrder `json:"data"`
+//	}
+type SalesOrdersResponse struct {
+	SalesOrders []SalesOrder `json:"sales_orders"`
+}
 
-type SalesOrderResponse struct {
+type ItemsSalesOrderResponse struct {
 	Data SalesOrder `json:"data"`
 }
 
