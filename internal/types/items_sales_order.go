@@ -13,7 +13,7 @@ type ItemsSalesOrder struct {
 	Aliquotaipi        float64   `json:"aliquotaipi"`
 	Descricao          string    `json:"descricao"`
 	Descricaodetalhada string    `json:"descricaodetalhada"`
-	ProductID          int64     `json:"product_id"`
+	ProductID          int64     `json:"produto"`
 	CreatedAt          time.Time `json:"created_at"`
 	UpdatedAt          time.Time `json:"updated_at"`
 }

@@ -19,7 +19,7 @@ import (
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "61551bac486ac9b7433340db38c1fb57ea5bd3bd"
+	bearerToken     = "a635e423f261781f4d0b8dcc710de4d6caa60d44"
 )
 
 type ErrorResponse struct {
@@ -345,10 +345,13 @@ func processItemsSalesOrder(bearerToken string) error {
 
 		// 5. Processar cada item no pedido de venda retornado
 		for _, item := range salesOrderDetails.Itens {
-			fmt.Println("***********************************************************************************")
-			fmt.Printf("Valor de Item: %+v\n", item)
-			fmt.Println("***********************************************************************************")
-			fmt.Printf("Item %d do pedido %d processado com sucesso: Produto %s, Quantidade %d\n, Descricao %s\n", item.ID, salesOrderDetails.ID, item.Codigo, item.Quantidade, item.Descricao)
+			// productID := item.ProductID.ID
+			item.SalesOrderID = order.ID
+			err := sendItemToCreate(item)
+			if err != nil {
+				fmt.Printf("Erro ao criar item %d do pedido %d: %v\n", item.ID, salesOrderDetails.ID, err)
+				continue
+			}
 		}
 	}
 
@@ -356,6 +359,62 @@ func processItemsSalesOrder(bearerToken string) error {
 }
 
 func sendItemToCreate(item types.ItemsSalesOrders) error {
+	// Certifique-se de que o item contém o product_id correto
+	//if item.ProductID.ID == 0 {
+	//	return fmt.Errorf("product_id está faltando ou é inválido para o item %d", item.ID)
+	//}
+	orderItem := convertToItemsSalesOrder(item)
+
+	url := "http://localhost:8080/create_items_sales_order"
+
+	// Cria o payload a partir do item, que agora inclui o product_id corretamente
+	payload, err := json.Marshal(orderItem)
+	if err != nil {
+		return fmt.Errorf("erro ao serializar o item: %v", err)
+	}
+
+	// Cria uma requisição POST
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	if err != nil {
+		return fmt.Errorf("erro ao criar requisição POST: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	// Envia a requisição
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("erro ao enviar requisição POST: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("falha ao criar item: %s, resposta: %s", resp.Status, string(body))
+	}
+
+	return nil
+}
+
+func convertToItemsSalesOrder(item types.ItemsSalesOrders) types.ItemsSalesOrder {
+	return types.ItemsSalesOrder{
+		ID:                 item.ID,
+		SalesOrderID:       item.SalesOrderID,
+		Codigo:             item.Codigo,
+		Unidade:            item.Unidade,
+		Quantidade:         item.Quantidade,
+		Desconto:           item.Desconto,
+		Valor:              item.Valor,
+		Aliquotaipi:        item.Aliquotaipi,
+		Descricao:          item.Descricao,
+		Descricaodetalhada: item.Descricaodetalhada,
+		ProductID:          item.ProductID.ID, // Extraia o ID do produto corretamente
+		CreatedAt:          item.CreatedAt,
+		UpdatedAt:          item.UpdatedAt,
+	}
+}
+
+func sendItemToCreateXXX(item types.ItemsSalesOrders) error {
 	url := "http://localhost:8080/create_items_sales_order"
 
 	// Cria o payload a partir do item

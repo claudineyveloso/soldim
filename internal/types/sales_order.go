@@ -92,19 +92,19 @@ type Loja struct {
 }
 
 type ItemsSalesOrders struct {
-	ID                 int64     `json:"id"`
-	SalesOrderID       int64     `json:"sales_order_id"`
-	Codigo             string    `json:"codigo"`
-	Unidade            string    `json:"unidade"`
-	Quantidade         int32     `json:"quantidade"`
-	Desconto           float64   `json:"desconto"`
-	Valor              float64   `json:"valor"`
-	Aliquotaipi        float64   `json:"aliquotaipi"`
-	Descricao          string    `json:"descricao"`
-	Descricaodetalhada string    `json:"descricaodetalhada"`
-	ProductID          int64     `json:"product_id"`
-	CreatedAt          time.Time `json:"created_at"`
-	UpdatedAt          time.Time `json:"updated_at"`
+	ID                 int64        `json:"id"`
+	SalesOrderID       int64        `json:"sales_order_id"`
+	Codigo             string       `json:"codigo"`
+	Unidade            string       `json:"unidade"`
+	Quantidade         int32        `json:"quantidade"`
+	Desconto           float64      `json:"desconto"`
+	Valor              float64      `json:"valor"`
+	Aliquotaipi        float64      `json:"aliquotaipi"`
+	Descricao          string       `json:"descricao"`
+	Descricaodetalhada string       `json:"descricaodetalhada"`
+	ProductID          SalesProduct `json:"produto"`
+	CreatedAt          time.Time    `json:"created_at"`
+	UpdatedAt          time.Time    `json:"updated_at"`
 }
 
 //	type SalesOrderResponse struct {
