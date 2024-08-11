@@ -19,7 +19,7 @@ import (
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "eeb9763a319deb38ff7c7e62f6fd107ea1c12119"
+	bearerToken     = "61551bac486ac9b7433340db38c1fb57ea5bd3bd"
 )
 
 type ErrorResponse struct {
@@ -310,7 +310,7 @@ func processSales(sales []types.SalesOrder) {
 }
 
 func processItemsSalesOrder(bearerToken string) error {
-	// Faz a requisição para obter os IDs dos pedidos de venda
+	// 1. Fazer a requisição para obter os IDs dos pedidos de venda
 	resp, err := http.Get("http://localhost:8080/get_sales_orders")
 	if err != nil {
 		return fmt.Errorf("erro ao chamar get_sales_orders: %v", err)
@@ -320,86 +320,18 @@ func processItemsSalesOrder(bearerToken string) error {
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("falha na requisição para get_sales_orders: %s", resp.Status)
 	}
-	// Lê a resposta do corpo e converte para um slice de int64
-	var salesOrderIDs []int64
+
+	// 2. Ler a resposta do corpo
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("erro ao ler o corpo da resposta: %v", err)
 	}
 
-	err = json.Unmarshal(body, &salesOrderIDs)
+	// 3. Desserializar o JSON na estrutura correta
+	var response types.SalesOrderResponse
+	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return fmt.Errorf("erro ao desserializar a resposta: %v", err)
-	}
-
-	// Para cada ID de pedido de venda, obtem os detalhes e processa os itens
-	for _, id := range salesOrderIDs {
-		salesOrders, err := bling.GetSalesOrdersIDInBling(bearerToken, id)
-		if err != nil {
-			fmt.Printf("Erro ao obter detalhes do pedido de venda com ID %d: %v\n", id, err)
-			continue
-		}
-
-		// Processa cada pedido de venda retornado
-		for _, order := range salesOrders {
-			for _, item := range order.Items { // Agora você pode iterar sobre os itens
-				// Envia cada item para o endpoint /create_items_sales_order
-				err := sendItemToCreate(item)
-				if err != nil {
-					fmt.Printf("Erro ao criar item %d do pedido %d: %v\n", item.ID, order.ID, err)
-					continue
-				}
-				fmt.Printf("Item %d do pedido %d processado com sucesso: Produto %s, Quantidade %d\n", item.ID, order.ID, item.Codigo, item.Quantidade)
-			}
-		}
-	}
-
-	return nil
-}
-
-func processItemsSalesOrderXXX(bearerToken string) error {
-	// Faz a requisição para obter os IDs dos pedidos de venda
-	resp, err := http.Get("http://localhost:8080/get_sales_orders")
-	if err != nil {
-		return fmt.Errorf("erro ao chamar get_sales_orders: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("falha na requisição para get_sales_orders: %s", resp.Status)
-	}
-	// Lê a resposta do corpo e converte para um slice de int64
-	var salesOrderIDs []int64
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("erro ao ler o corpo da resposta: %v", err)
-	}
-
-	err = json.Unmarshal(body, &salesOrderIDs)
-	if err != nil {
-		return fmt.Errorf("erro ao desserializar a resposta: %v", err)
-	}
-
-	// Para cada ID de pedido de venda, obtem os detalhes e processa os itens
-	for _, id := range salesOrderIDs {
-		salesOrders, err := bling.GetSalesOrdersIDInBling(bearerToken, id)
-		if err != nil {
-			fmt.Printf("Erro ao obter detalhes do pedido de venda com ID %d: %v\n", id, err)
-			continue
-		}
-
-		// Processa cada pedido de venda retornado
-		for _, order := range salesOrders {
-			for _, item := range order.Items {
-				// Envia cada item para o endpoint /create_items_sales_order
-				err := sendItemToCreate(item)
-				if err != nil {
-					fmt.Printf("Erro ao criar item %d do pedido %d: %v\n", item.ID, order.ID, err)
-					continue
-				}
-				fmt.Printf("Item %d do pedido %d processado com sucesso: Produto %s, Quantidade %d\n", item.ID, order.ID, item.Codigo, item.Quantidade)
-			}
-		}
 	}
 
 	return nil

@@ -24,7 +24,7 @@ type SalesOrder struct {
 	Loja              Loja               `json:"loja"`
 	CreatedAt         time.Time          `json:"created_at"`
 	UpdatedAt         time.Time          `json:"updated_at"`
-	Items             []ItemsSalesOrders `json:"itens"`
+	Itens             []ItemsSalesOrders `json:"itens"`
 }
 
 type SalesOrderRow struct {
@@ -107,8 +107,12 @@ type ItemsSalesOrders struct {
 	UpdatedAt          time.Time `json:"updated_at"`
 }
 
+//type SalesOrderResponse struct {
+//	Data []SalesOrder `json:"data"`
+//}
+
 type SalesOrderResponse struct {
-	Data []SalesOrder `json:"data"`
+	Data SalesOrder `json:"data"`
 }
 
 // CustomDate é um tipo customizado para tratar o formato da data

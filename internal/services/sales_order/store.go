@@ -92,7 +92,7 @@ func (s *Store) GetSalesOrderByID(salesorderID int64) (*types.SalesOrder, error)
 // }
 
 func convertDBSalesOrdersRowToSalesOrder(dbSalesOrder db.GetSalesOrdersRow) *types.SalesOrder {
-	items := []types.ItemsSalesOrders{
+	itens := []types.ItemsSalesOrders{
 		{
 			ID:                 dbSalesOrder.ID,
 			Codigo:             types.ConvertNullString(dbSalesOrder.Codigo),
@@ -133,7 +133,7 @@ func convertDBSalesOrdersRowToSalesOrder(dbSalesOrder db.GetSalesOrdersRow) *typ
 			Nome:            dbSalesOrder.ContactName,
 			NumeroDocumento: dbSalesOrder.ContactDocument,
 		},
-		Items: items,
+		Itens: itens,
 	}
 }
 
