@@ -216,6 +216,13 @@ type ProductResponse struct {
 	Limit    int       `json:"limit"`
 }
 
+type stock struct {
+	Minimo       int8   `json:"minimo"`
+	Maximo       int8   `json:"maximo"`
+	Crossdocking int8   `json:"crossdocking"`
+	Localizacao  string `json:"localizacao"`
+}
+
 type ProductStore interface {
 	CreateProduct(ProductPayload) error
 	GetProducts(nome, situacao string) ([]*Product, error)
