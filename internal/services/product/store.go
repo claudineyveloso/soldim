@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/claudineyveloso/soldim.git/internal/db"
@@ -57,7 +58,7 @@ func (s *Store) CreateProduct(product types.ProductPayload) error {
 	}
 
 	if err := queries.CreateProduct(ctx, createProductParams); err != nil {
-		fmt.Println("Erro ao criar um Rascunho:", err)
+		slog.Error("Erro ao criar um produto", "room_id", "error", err)
 		return err
 	}
 	return nil

@@ -1,8 +1,11 @@
 package product
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -10,6 +13,7 @@ import (
 	"github.com/claudineyveloso/soldim.git/internal/utils"
 	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx"
 )
 
 type Handler struct {
@@ -39,12 +43,18 @@ func (h *Handler) handleGetProducts(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Erro ao obter os produtos : %v", err), http.StatusInternalServerError)
 		return
 	}
-	response := struct {
+
+	data, err := json.Marshal(struct {
 		Products []*types.Product `json:"products"`
-	}{
-		Products: products,
+	}{Products: products})
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erro ao serializar os produtos: %v", err), http.StatusInternalServerError)
+		return
 	}
-	utils.WriteJSON(w, http.StatusOK, response)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(data)
 }
 
 func (h *Handler) handleCreateProduct(w http.ResponseWriter, r *http.Request) {
@@ -171,14 +181,23 @@ func (h *Handler) handleGetProduct(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("id do produto ausente"))
 		return
 	}
-	parsedDraftsID, err := strconv.ParseInt(productIDStr, 10, 64)
+	productID, err := strconv.ParseInt(productIDStr, 10, 64)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			http.Error(w, "room not found", http.StatusBadRequest)
+			return
+		}
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("id do rascunho inválido"))
 		return
 	}
 
-	product, err := h.productStore.GetProductByID(parsedDraftsID)
+	product, err := h.productStore.GetProductByID(productID)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			slog.Error("Produto não encontrado", slog.Int64("productID", productID))
+			utils.WriteError(w, http.StatusNotFound, fmt.Errorf("Produto com ID %d não encontrado", productID))
+			return
+		}
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
