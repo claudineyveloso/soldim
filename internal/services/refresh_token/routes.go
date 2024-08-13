@@ -54,7 +54,7 @@ func RegisterRoutes(router *mux.Router) {
 func handlePostRefreshToken(w http.ResponseWriter, r *http.Request) {
 	username := "11e56de94a8dc983459367236b79608cd941dda6"
 	password := "26ef0f168a6c9fc7618cafacbead208a9cb4a9d2492c1f33ac4a8ccfb2c3"
-	refreshToken := "e39c855c85113c7407e0b3931d991f5bf1fa0818"
+	refreshToken := "0e34df521d68795501c55ab972f1127c77919883"
 
 	fmt.Println("Enviando requisição para gerar novo token de atualização...")
 
