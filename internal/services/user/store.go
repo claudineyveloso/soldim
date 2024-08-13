@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/claudineyveloso/soldim.git/internal/db"
@@ -30,7 +31,7 @@ func (s *Store) CreateUser(user types.UserPayload) error {
 	user.UpdatedAt = now
 	hashedPassword, err := auth.HashPassword(user.Password)
 	if err != nil {
-		fmt.Println("Erro ao gerar hash da senha:", err)
+		slog.Error("Erro ao gerar hash da senha", slog.String("error", err.Error()))
 		return err
 	}
 
@@ -45,8 +46,7 @@ func (s *Store) CreateUser(user types.UserPayload) error {
 	}
 
 	if err := queries.CreateUser(ctx, createUserParams); err != nil {
-		// http.Error(_, "Erro ao criar usuário", http.StatusInternalServerError)
-		fmt.Println("Erro ao criar usuário:", err)
+		slog.Error("Erro ao criar um usuário", slog.String("error", err.Error()))
 		return err
 	}
 	return nil
@@ -90,14 +90,12 @@ func (s *Store) GetUserByEmail(email string) (*types.User, error) {
 		return nil, err
 	}
 
-	// Aqui você precisa converter dbUser para o tipo *types.User, se necessário
 	user := &types.User{
 		ID:       dbUser.ID,
 		Email:    dbUser.Email,
 		Password: dbUser.Password,
 		IsActive: dbUser.IsActive,
 		UserType: dbUser.UserType,
-		// Atribua outros campos conforme necessário
 	}
 
 	return user, nil

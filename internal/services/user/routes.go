@@ -143,13 +143,13 @@ func (h *Handler) handleGetUser(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Usuário ausente!"))
 		return
 	}
-	parsedUserID, err := uuid.Parse(str)
+	userID, err := uuid.Parse(str)
 	if err != nil {
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Usuário inválido!"))
 		return
 	}
 
-	user, err := h.userStore.GetUserByID(parsedUserID)
+	user, err := h.userStore.GetUserByID(userID)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
