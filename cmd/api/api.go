@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/claudineyveloso/soldim.git/internal/services/contact"
@@ -48,8 +49,18 @@ func NewAPIServer(addr string, db *sql.DB) *APIServer {
 	}
 }
 
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Do stuff here
+		log.Println(r.RequestURI)
+		// Call the next handler, which can be another middleware in the chain, or the final handler.
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (s *APIServer) Run() error {
 	r := mux.NewRouter()
+	r.Use(loggingMiddleware)
 	healthy.RegisterRoutes(r)
 	webhook.RegisterRoutes(r)
 	generatetoken.RegisterRoutes(r)
