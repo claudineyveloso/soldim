@@ -1,6 +1,7 @@
 package types
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
@@ -55,11 +56,19 @@ type LoginResponse struct {
 	Token    string `json:"token"`
 }
 
+type DisableUserPayload struct {
+	ID        uuid.UUID `json:"id"`
+	IsActive  bool      `json:"is_active"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type UserStore interface {
 	CreateUser(UserPayload) error
 	GetUsers() ([]*User, error)
 	GetUserByID(id uuid.UUID) (*User, error)
 	GetUserByEmail(email string) (*User, error)
 	LoginUser(user CreateLoginPayload) (*User, error)
+	// DisableUser(ctx context.Context, user UserPayload) error
+	DisableUser(ctx context.Context, user DisableUserPayload) error
 	// UpdateUser(User) error
 }

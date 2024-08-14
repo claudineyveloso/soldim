@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -26,6 +27,7 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 	// router.HandleFunc("/register", h.handleRegister).Methods("POST")
 
 	router.HandleFunc("/create_user", h.handleCreateUser).Methods(http.MethodPost)
+	router.HandleFunc("/disabled_user", h.handleDisableUser).Methods(http.MethodPut)
 	router.HandleFunc("/get_users", h.handleGetUsers).Methods(http.MethodGet)
 	router.HandleFunc("/get_user/{userID}", h.handleGetUser).Methods(http.MethodGet)
 }
@@ -155,4 +157,27 @@ func (h *Handler) handleGetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.WriteJSON(w, http.StatusOK, user)
+}
+
+func (h *Handler) handleDisableUser(w http.ResponseWriter, r *http.Request) {
+	var user types.DisableUserPayload
+	if err := utils.ParseJSON(r, &user); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+	if err := utils.Validate.Struct(user); err != nil {
+		var validationErrors validator.ValidationErrors
+		if errors.As(err, &validationErrors) {
+			utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("Payload inválido: %v", validationErrors))
+		} else {
+			utils.WriteError(w, http.StatusBadRequest, err)
+		}
+		return
+	}
+	err := h.userStore.DisableUser(r.Context(), user)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+	utils.WriteJSON(w, http.StatusNoContent, nil)
 }

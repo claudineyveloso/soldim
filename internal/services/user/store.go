@@ -128,6 +128,19 @@ func (s *Store) LoginUser(user types.CreateLoginPayload) (*types.User, error) {
 	return convertedUser, nil
 }
 
+func (s *Store) DisableUser(ctx context.Context, user types.DisableUserPayload) error {
+	queries := db.New(s.db)
+	now := time.Now()
+	disableUserParams := db.DisableUserParams{
+		ID:        user.ID,
+		UpdatedAt: now,
+	}
+	if err := queries.DisableUser(ctx, disableUserParams); err != nil {
+		return err
+	}
+	return nil
+}
+
 func convertDBUserToUser(dbUser db.User) *types.User {
 	user := &types.User{
 		ID:        dbUser.ID,

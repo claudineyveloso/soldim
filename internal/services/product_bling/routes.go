@@ -51,7 +51,6 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		criterio = 0 // Valor padrão para criterio se não for fornecido ou inválido
 	}
-	// rateLimiter := time.Tick(333 * time.Millisecond)
 	rateLimiter := time.NewTicker(333 * time.Millisecond)
 	defer rateLimiter.Stop()
 
