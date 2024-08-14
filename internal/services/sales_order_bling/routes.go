@@ -19,7 +19,7 @@ import (
 
 const (
 	limitePorPagina = 100
-	bearerToken     = "49e82d5f8255f4def70b7dd814865572c6be0cb5  0e5df36333605cb867f4ebf91cf9e54291cea9a0"
+	bearerToken     = "d0176656e80181c7e63661125ae932451bdf8e52"
 )
 
 type ErrorResponse struct {
