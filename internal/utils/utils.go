@@ -19,14 +19,6 @@ func HandleHTTPError(w http.ResponseWriter, statusCode int, message string) {
 	http.Error(w, message, statusCode)
 }
 
-// CreateNullString returns a sql.NullString with the given value, if not empty
-// func CreateNullString(value string) sql.NullString {
-// 	if value != "" {
-// 		return sql.NullString{String: value, Valid: true}
-// 	}
-// 	return sql.NullString{Valid: false}
-// }
-
 func CreateNullString(value interface{}) sql.NullString {
 	switch v := value.(type) {
 	case string:
@@ -65,7 +57,7 @@ func ParseJSON(r *http.Request, v any) error {
 		return fmt.Errorf("missing request body")
 	}
 
-	return json.NewDecoder(r.Body).Decode(v)
+	return json.NewDecoder(r.Body).Decode(&v)
 }
 
 func GetTokenFromRequest(r *http.Request) string {

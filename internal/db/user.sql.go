@@ -99,7 +99,8 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 
 const getUsers = `-- name: GetUsers :many
 SELECT id, email, password, is_active, user_type, created_at, updated_at
-FROM users
+FROM users 
+ORDER BY users.email ASC
 `
 
 func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {

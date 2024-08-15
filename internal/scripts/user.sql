@@ -9,7 +9,8 @@ WHERE users.id = $1;
 
 -- name: GetUsers :many
 SELECT *
-FROM users;
+FROM users 
+ORDER BY users.email ASC;
 
 -- name: GetUserByEmail :one
 SELECT *
