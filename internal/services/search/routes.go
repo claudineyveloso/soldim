@@ -30,6 +30,7 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/get_searches", h.handleGetSearches).Methods(http.MethodGet)
 	router.HandleFunc("/get_search/{searchID}", h.handleGetSearch).Methods(http.MethodGet)
 	router.HandleFunc("/delete_search/{searchID}", h.handleDeleteSearch).Methods(http.MethodDelete)
+	router.HandleFunc("/update_search", h.handleUpdateSearch).Methods(http.MethodPut)
 }
 
 func (h *Handler) handleCreateSearch(w http.ResponseWriter, r *http.Request) {
@@ -174,6 +175,40 @@ func (h *Handler) handleDeleteSearch(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(jsonResponse)
+}
+
+func (h *Handler) handleUpdateSearch(w http.ResponseWriter, r *http.Request) {
+	var search types.SearchPayload
+	if err := utils.ParseJSON(r, &search); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+	if err := utils.Validate.Struct(search); err != nil {
+		errors := err.(validator.ValidationErrors)
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("payload inválido: %v", errors))
+		return
+	}
+	err := h.searchStore.UpdateSearch(search)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	response := map[string]interface{}{
+		"data":    search,
+		"message": "Registro alterado com sucesso",
+		"status":  http.StatusOK,
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(jsonResponse)

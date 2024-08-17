@@ -82,6 +82,26 @@ func (s *Store) DeleteSearch(searchID uuid.UUID) error {
 	return nil
 }
 
+func (s *Store) UpdateSearch(search types.SearchPayload) error {
+	queries := db.New(s.db)
+	ctx := context.Background()
+
+	now := time.Now()
+	search.UpdatedAt = now
+
+	UpdateSearchParams := db.UpdateSearchParams{
+		ID:          search.ID,
+		Description: search.Description,
+		UpdatedAt:   search.UpdatedAt,
+	}
+
+	if err := queries.UpdateSearch(ctx, UpdateSearchParams); err != nil {
+		fmt.Println("Erro ao atualizar uma Busca na Web:", err)
+		return err
+	}
+	return nil
+}
+
 func convertDBSearchToSearch(dbSearch db.Search) *types.Search {
 	search := &types.Search{
 		ID:          dbSearch.ID,

@@ -11,6 +11,9 @@ SELECT *
 FROM searches
 WHERE searches.id = $1;
 
+-- name: UpdateSearch :exec
+UPDATE searches SET description = $2, updated_at = $3 WHERE searches.id = $1;
+
 -- name: DeleteSearch :exec
 DELETE FROM searches
 WHERE searches.id = $1;

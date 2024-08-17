@@ -94,3 +94,18 @@ func (q *Queries) GetSearches(ctx context.Context) ([]Search, error) {
 	}
 	return items, nil
 }
+
+const updateSearch = `-- name: UpdateSearch :exec
+UPDATE searches SET description = $2, updated_at = $3 WHERE searches.id = $1
+`
+
+type UpdateSearchParams struct {
+	ID          uuid.UUID `json:"id"`
+	Description string    `json:"description"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+func (q *Queries) UpdateSearch(ctx context.Context, arg UpdateSearchParams) error {
+	_, err := q.db.ExecContext(ctx, updateSearch, arg.ID, arg.Description, arg.UpdatedAt)
+	return err
+}
