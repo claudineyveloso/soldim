@@ -102,6 +102,18 @@ func (s *Store) GetDraftByID(draftID uuid.UUID) (*types.Draft, error) {
 	return draft, nil
 }
 
+func (s *Store) GetDraftBySearchID(searchID uuid.UUID) (*types.Draft, error) {
+	queries := db.New(s.db)
+	ctx := context.Background()
+	dbDraft, err := queries.GetDraftBySearchId(ctx, searchID)
+	if err != nil {
+		return nil, err
+	}
+	draft := convertDBDraftToDraft(dbDraft)
+
+	return draft, nil
+}
+
 func (s *Store) DeleteDraft(draftID uuid.UUID) error {
 	queries := db.New(s.db)
 	ctx := context.Background()

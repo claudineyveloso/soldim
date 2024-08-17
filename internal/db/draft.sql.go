@@ -121,6 +121,30 @@ func (q *Queries) GetDraftByDescription(ctx context.Context, dollar_1 sql.NullSt
 	return items, nil
 }
 
+const getDraftBySearchId = `-- name: GetDraftBySearchId :one
+SELECT id, image_url, description, source, price, promotion, link, search_id, created_at, updated_at
+FROM drafts
+WHERE drafts.search_id = $1
+`
+
+func (q *Queries) GetDraftBySearchId(ctx context.Context, searchID uuid.UUID) (Draft, error) {
+	row := q.db.QueryRowContext(ctx, getDraftBySearchId, searchID)
+	var i Draft
+	err := row.Scan(
+		&i.ID,
+		&i.ImageUrl,
+		&i.Description,
+		&i.Source,
+		&i.Price,
+		&i.Promotion,
+		&i.Link,
+		&i.SearchID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getDrafts = `-- name: GetDrafts :many
 SELECT id, image_url, description, source, price, promotion, link, search_id, created_at, updated_at
 FROM drafts ORDER BY created_at DESC

@@ -36,6 +36,7 @@ type DraftStore interface {
 	CreateDraft(DraftPayload) error
 	GetDrafts() ([]*Draft, error)
 	GetDraftByID(id uuid.UUID) (*Draft, error)
+	GetDraftBySearchID(id uuid.UUID) (*Draft, error)
 	UpdateDraft(DraftPayload) error
 	DeleteDraft(id uuid.UUID) error
 }

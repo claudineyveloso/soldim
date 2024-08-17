@@ -84,13 +84,12 @@ CREATE TABLE IF NOT EXISTS drafts (
   link        varchar not null,
   search_id   UUID not null,
   created_at  timestamp not null,
-  updated_at  timestamp not null
+  updated_at  timestamp not null,
+    CONSTRAINT fk_search
+    FOREIGN KEY (search_id)
+    REFERENCES searches (id)
+    ON DELETE CASCADE
 );
-
-ALTER TABLE
-   "drafts"
-ADD
-   FOREIGN KEY ("search_id") REFERENCES "searches" ("id");
 
 DROP TABLE IF EXISTS "parameters";
 CREATE TABLE IF NOT EXISTS parameters (

@@ -24,6 +24,7 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/create_draft", h.handleCreateDraft).Methods(http.MethodPost)
 	router.HandleFunc("/get_drafts", h.handleGetDrafts).Methods(http.MethodGet)
 	router.HandleFunc("/get_draft/{draftID}", h.handleGetDraft).Methods(http.MethodGet)
+	router.HandleFunc("/get_drafts_by_search_id/{searchID}", h.handleGetDraftBySearchID).Methods(http.MethodGet)
 	router.HandleFunc("/update_draft", h.handleUpdateDraft).Methods(http.MethodPut)
 	router.HandleFunc("/delete_draft/{draftID}", h.handleDeleteDraft).Methods(http.MethodDelete)
 }
@@ -119,12 +120,33 @@ func (h *Handler) handleGetDraft(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bucket, err := h.draftStore.GetDraftByID(parsedDraftsID)
+	draft, err := h.draftStore.GetDraftByID(parsedDraftsID)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
-	utils.WriteJSON(w, http.StatusOK, bucket)
+	utils.WriteJSON(w, http.StatusOK, draft)
+}
+
+func (h *Handler) handleGetDraftBySearchID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	str, ok := vars["searchID"]
+	if !ok {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Search ausente!"))
+		return
+	}
+	parsedSearchID, err := uuid.Parse(str)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Search inválido!"))
+		return
+	}
+
+	draft, err := h.draftStore.GetDraftBySearchID(parsedSearchID)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, draft)
 }
 
 func (h *Handler) handleUpdateDraft(w http.ResponseWriter, r *http.Request) {

@@ -16,6 +16,11 @@ SELECT *
 FROM drafts
 WHERE drafts.id = $1;
 
+-- name: GetDraftBySearchId :one
+SELECT *
+FROM drafts
+WHERE drafts.search_id = $1;
+
 -- name: UpdateDraft :exec
 UPDATE drafts SET description = $2, 
   image_url = $3,
