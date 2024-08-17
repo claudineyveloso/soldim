@@ -10,7 +10,8 @@ type AddressBaseURL struct {
 }
 
 type Config struct {
-	PublicHost             string
+	Environment            string
+	Host                   string
 	Port                   string
 	DBUser                 string
 	DBPassword             string
@@ -22,12 +23,40 @@ type Config struct {
 var Envs = InitConfig()
 
 func InitConfig() Config {
+	env := getEnv("ENVIRONMENT", "dev")
+	var host, port, dbUser, dbPassword, dbName string
+
+	if env == "prod" {
+		host = getEnv("PROD_DB_HOST", "c1i13pt05ja4ag.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com")
+		port = getEnv("PROD_DB_PORT", "5432")
+		dbUser = getEnv("PROD_DB_USER", "uatd3fq2t594ii")
+		dbPassword = getEnv("PROD_DB_PASSWORD", "p4377b619ff8fd53aaf5c6ab44ae9bf0e72e7abd09ce2a4b1f1c5883d7b10f689")
+		dbName = getEnv("PROD_DB_NAME", "d2jmp4epp3r1qp")
+	} else {
+		host = getEnv("DEV_DB_HOST", "localhost")
+		port = getEnv("DEV_DB_PORT", "5432")
+		dbUser = getEnv("DEV_DB_USER", "user_soldim_development")
+		dbPassword = getEnv("DEV_DB_PASSWORD", "pwd_soldim_development")
+		dbName = getEnv("DEV_DB_NAME", "soldim_development")
+	}
+
+	// return Config{
+	// 	PublicHost:             os.Getenv("PUBLIC_HOST"),
+	// 	Port:                   os.Getenv("DB_PORT"),
+	// 	DBUser:                 os.Getenv("DB_USER"),
+	// 	DBPassword:             os.Getenv("DB_PASSWORD"),
+	// 	DBName:                 os.Getenv("DB_NAME"),
+	// 	JWTSecret:              getEnv("JWT_SECRET", "not-so-secret-now-is-it?"),
+	// 	JWTExpirationInSeconds: getEnvAsInt("JWT_EXPIRATION_IN_SECONDS", 3600*24*7),
+	// }
+
 	return Config{
-		PublicHost:             os.Getenv("PUBLIC_HOST"),
-		Port:                   os.Getenv("DB_PORT"),
-		DBUser:                 os.Getenv("DB_USER"),
-		DBPassword:             os.Getenv("DB_PASSWORD"),
-		DBName:                 os.Getenv("DB_NAME"),
+		Environment:            env,
+		Host:                   host,
+		Port:                   port,
+		DBUser:                 dbUser,
+		DBPassword:             dbPassword,
+		DBName:                 dbName,
 		JWTSecret:              getEnv("JWT_SECRET", "not-so-secret-now-is-it?"),
 		JWTExpirationInSeconds: getEnvAsInt("JWT_EXPIRATION_IN_SECONDS", 3600*24*7),
 	}

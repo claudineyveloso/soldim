@@ -12,7 +12,7 @@ import (
 
 func main() {
 	cfg := configs.Config{
-		PublicHost: configs.Envs.PublicHost,
+		Host:       configs.Envs.Host,
 		Port:       configs.Envs.Port,
 		DBUser:     configs.Envs.DBUser,
 		DBPassword: configs.Envs.DBPassword,
