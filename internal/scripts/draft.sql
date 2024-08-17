@@ -34,3 +34,7 @@ WHERE drafts.id = $1;
 -- name: DeleteDraft :exec
 DELETE FROM drafts
 WHERE drafts.id = $1;
+
+-- name: DeleteDraft :exec
+DELETE FROM drafts
+WHERE drafts.search_id = $1;
