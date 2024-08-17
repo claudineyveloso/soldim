@@ -27,6 +27,7 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/get_drafts_by_search_id/{searchID}", h.handleGetDraftBySearchID).Methods(http.MethodGet)
 	router.HandleFunc("/update_draft", h.handleUpdateDraft).Methods(http.MethodPut)
 	router.HandleFunc("/delete_draft/{draftID}", h.handleDeleteDraft).Methods(http.MethodDelete)
+	router.HandleFunc("/delete_drafts_by_search_id/{searchID}", h.handleDeleteDraftBySearchID).Methods(http.MethodDelete)
 }
 
 func (h *Handler) handleGetDrafts(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +77,7 @@ func (h *Handler) handleCreateDraft(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) handleDeleteDraft(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	str, ok := vars["searchID"]
+	str, ok := vars["draftID"]
 	if !ok {
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Draft ausente!"))
 		return
@@ -88,6 +89,39 @@ func (h *Handler) handleDeleteDraft(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.draftStore.DeleteDraft(parsedDraftsID)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	response := map[string]interface{}{
+		"message": "Registro apagado com sucesso",
+		"status":  http.StatusOK,
+	}
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(jsonResponse)
+}
+
+func (h *Handler) handleDeleteDraftBySearchID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	str, ok := vars["searchID"]
+	if !ok {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Search ausente!"))
+		return
+	}
+	parsedSearchesID, err := uuid.Parse(str)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Search inválido!"))
+		return
+	}
+
+	err = h.draftStore.DeleteDraftBySearchID(parsedSearchesID)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return

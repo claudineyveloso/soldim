@@ -44,6 +44,25 @@ func (q *Queries) DeleteSearch(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const getLastSearch = `-- name: GetLastSearch :one
+SELECT id, description, created_at, updated_At
+FROM searches
+ORDER BY created_at DESC
+LIMIT 1
+`
+
+func (q *Queries) GetLastSearch(ctx context.Context) (Search, error) {
+	row := q.db.QueryRowContext(ctx, getLastSearch)
+	var i Search
+	err := row.Scan(
+		&i.ID,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getSearch = `-- name: GetSearch :one
 SELECT id, description, created_at, updated_at
 FROM searches

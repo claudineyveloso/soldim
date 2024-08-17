@@ -28,6 +28,7 @@ func NewHandler(searchStore types.SearchStore, searchResultStore types.SearchRes
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/create_search", h.handleCreateSearch).Methods(http.MethodPost)
 	router.HandleFunc("/get_searches", h.handleGetSearches).Methods(http.MethodGet)
+	router.HandleFunc("/get_last_search", h.handleGetLastSearch).Methods(http.MethodGet)
 	router.HandleFunc("/get_search/{searchID}", h.handleGetSearch).Methods(http.MethodGet)
 	router.HandleFunc("/delete_search/{searchID}", h.handleDeleteSearch).Methods(http.MethodDelete)
 	router.HandleFunc("/update_search", h.handleUpdateSearch).Methods(http.MethodPut)
@@ -119,6 +120,17 @@ func (h *Handler) handleGetSearches(w http.ResponseWriter, r *http.Request) {
 	// bucketID := auth.GetUserIDFromContext(r.Context())
 	// fmt.Println("Valor de userIDffsadfsda", bucketID)
 	searches, err := h.searchStore.GetSearches()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erro ao obter a procura de produto: %v", err), http.StatusInternalServerError)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, searches)
+}
+
+func (h *Handler) handleGetLastSearch(w http.ResponseWriter, r *http.Request) {
+	// bucketID := auth.GetUserIDFromContext(r.Context())
+	// fmt.Println("Valor de userIDffsadfsda", bucketID)
+	searches, err := h.searchStore.GetLastSearchByID()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter a procura de produto: %v", err), http.StatusInternalServerError)
 		return

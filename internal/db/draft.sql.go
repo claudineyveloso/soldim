@@ -57,6 +57,16 @@ func (q *Queries) DeleteDraft(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const deleteDraftBySearchID = `-- name: DeleteDraftBySearchID :exec
+DELETE FROM drafts
+WHERE drafts.search_id = $1
+`
+
+func (q *Queries) DeleteDraftBySearchID(ctx context.Context, searchID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteDraftBySearchID, searchID)
+	return err
+}
+
 const getDraft = `-- name: GetDraft :one
 SELECT id, image_url, description, source, price, promotion, link, search_id, created_at, updated_at
 FROM drafts

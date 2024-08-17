@@ -124,6 +124,16 @@ func (s *Store) DeleteDraft(draftID uuid.UUID) error {
 	return nil
 }
 
+func (s *Store) DeleteDraftBySearchID(searchID uuid.UUID) error {
+	queries := db.New(s.db)
+	ctx := context.Background()
+	err := queries.DeleteDraftBySearchID(ctx, searchID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func convertDBDraftToDraft(dbDraft db.Draft) *types.Draft {
 	draft := &types.Draft{
 		ID:          dbDraft.ID,

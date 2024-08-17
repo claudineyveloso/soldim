@@ -6,6 +6,13 @@ VALUES ($1, $2, $3, $4);
 SELECT *
 FROM searches;
 
+-- name: GetLastSearch :one
+SELECT id, description, created_at, updated_At
+FROM searches
+ORDER BY created_at DESC
+LIMIT 1;
+
+
 -- name: GetSearch :one
 SELECT *
 FROM searches

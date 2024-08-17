@@ -72,6 +72,18 @@ func (s *Store) GetSearchByID(searchID uuid.UUID) (*types.Search, error) {
 	return search, nil
 }
 
+func (s *Store) GetLastSearchByID() (*types.Search, error) {
+	queries := db.New(s.db)
+	ctx := context.Background()
+	dbSearch, err := queries.GetLastSearch(ctx)
+	if err != nil {
+		return nil, err
+	}
+	search := convertDBSearchToSearch(dbSearch)
+
+	return search, nil
+}
+
 func (s *Store) DeleteSearch(searchID uuid.UUID) error {
 	queries := db.New(s.db)
 	ctx := context.Background()

@@ -24,6 +24,7 @@ type SearchStore interface {
 	CreateSearch(SearchPayload) (uuid.UUID, error)
 	GetSearches() ([]*Search, error)
 	GetSearchByID(id uuid.UUID) (*Search, error)
+	GetLastSearchByID() (*Search, error)
 	DeleteSearch(id uuid.UUID) error
 	UpdateSearch(SearchPayload) error
 }
