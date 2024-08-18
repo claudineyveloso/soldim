@@ -371,7 +371,7 @@ create unique index sku_wms_idx on triages (sku_wms);
 
 
 DROP TABLE IF EXISTS "contacts";
-CREATE TABLE contacts (
+CREATE TABLE IF NOT EXISTS contacts (
   id              BIGINT PRIMARY KEY,
   nome            VARCHAR(255) NOT NULL DEFAULT '',
   codigo          VARCHAR(100) NOT NULL DEFAULT '',
@@ -387,7 +387,7 @@ CREATE TABLE contacts (
 
 
 DROP TABLE IF EXISTS "suppliers_users";
-CREATE TABLE suppliers_users (
+CREATE TABLE IF NOT EXISTS suppliers_users (
   supplier_id BIGINT NOT NULL DEFAULT 0,
   user_id     UUID NOT NULL DEFAULT 0,
   created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

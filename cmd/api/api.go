@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/claudineyveloso/soldim.git/internal/services/contact"
 	contactbling "github.com/claudineyveloso/soldim.git/internal/services/contact_bling"
@@ -144,7 +145,19 @@ func (s *APIServer) Run() error {
 	contactHandler.RegisterRoutes(r)
 
 	fmt.Println("Server started on http://localhost:8080")
-	return http.ListenAndServe("localhost:8080",
+
+	env := os.Getenv("ENVIRONMENT")
+	var address string
+
+	if env == "prod" {
+		// Se estiver em produção, use a URL do Heroku
+		address = ":8080" // Heroku geralmente vincula automaticamente à porta 8080
+	} else {
+		// Se estiver em desenvolvimento, use o localhost
+		address = "localhost:8080"
+	}
+
+	return http.ListenAndServe(address,
 		handlers.CORS(
 			handlers.AllowedOrigins([]string{"*"}),
 			handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
