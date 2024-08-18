@@ -150,8 +150,12 @@ func (s *APIServer) Run() error {
 	var address string
 
 	if env == "prod" {
-		// Se estiver em produção, use a URL do Heroku
-		address = ":8080" // Heroku geralmente vincula automaticamente à porta 8080
+		// Use a porta fornecida pelo Heroku
+		port := os.Getenv("PORT")
+		if port == "" {
+			log.Fatal("$PORT must be set")
+		}
+		address = ":" + port
 	} else {
 		// Se estiver em desenvolvimento, use o localhost
 		address = "localhost:8080"
