@@ -10,9 +10,13 @@ import (
 )
 
 func NewPostgresSQLStorage(cfg configs.Config) (*sql.DB, error) {
+	sslMode := "disable"
+	if cfg.Environment == "prod" {
+		sslMode = "require" // Use SSL in production
+	}
 	connStr := fmt.Sprintf("host=%s port=%s user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		cfg.Host, cfg.Port, cfg.DBUser, cfg.DBPassword, cfg.DBName)
+		"password=%s dbname=%s sslmode=%s",
+		cfg.Host, cfg.Port, cfg.DBUser, cfg.DBPassword, cfg.DBName, sslMode)
 
 	dbConn, err := sql.Open("postgres", connStr)
 	if err != nil {
