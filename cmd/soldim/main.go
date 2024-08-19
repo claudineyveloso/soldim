@@ -4,42 +4,79 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"net/http"
-	"os"
 
-	_ "github.com/lib/pq"
+	"github.com/claudineyveloso/soldim.git/cmd/api"
+	"github.com/claudineyveloso/soldim.git/cmd/db"
+	"github.com/claudineyveloso/soldim.git/internal/configs"
 )
 
 func main() {
-    http.HandleFunc("/test-db-connection", func(w http.ResponseWriter, r *http.Request) {
-        connStr := "host=c3gtj1dt5vh48j.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com port=5432 user=u8v8gfju2nbfqn password=p009827e7e08f28b44b9ba56751f82543345f445a718fb44624dd5b653e0238bd dbname=ddcvr5rele9132 sslmode=require"
+	cfg := configs.Config{
+		Host:       configs.Envs.Host,
+		Port:       configs.Envs.Port,
+		DBUser:     configs.Envs.DBUser,
+		DBPassword: configs.Envs.DBPassword,
+		DBName:     configs.Envs.DBName,
+	}
+	db, err := db.NewPostgresSQLStorage(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-        log.Println("About to connect to the database with the following connection string")
-        log.Println("Connection string:", connStr)
+	initStorage(db)
 
-        db, err := sql.Open("postgres", connStr)
-        if err != nil {
-            log.Println("Failed to open the database:", err)
-            http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
-            return
-        }
-
-        err = db.Ping()
-        if err != nil {
-            log.Println("Failed to connect to the database:", err)
-            http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
-            return
-        }
-
-        log.Println("Connected to the database successfully!")
-        fmt.Fprintln(w, "Connected to the database successfully!")
-    })
-
-    port := os.Getenv("PORT")
-    if port == "" {
-        log.Fatal("$PORT must be set")
-    }
-
-    log.Printf("Server started on port %s", port)
-    log.Fatal(http.ListenAndServe(":"+port, nil))
+	server := api.NewAPIServer(fmt.Sprintf(":%s", configs.Envs.Port), db)
+	if err := server.Run(); err != nil {
+		log.Fatal(err)
+	}
 }
+
+func initStorage(db *sql.DB) {
+	err := db.Ping()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("DB: Successfully connected!")
+}
+
+// ##################################################################
+
+// package main
+//
+// import (
+// 	"encoding/json"
+// 	"fmt"
+// 	"log"
+// 	"net/http"
+//
+// 	"github.com/claudineyveloso/soldim.git/internal/crawler"
+// 	"github.com/gorilla/mux"
+// )
+//
+// func main() {
+// 	r := mux.NewRouter()
+// 	r.HandleFunc("/crawl", handleCrawl).Methods("GET")
+//
+// 	fmt.Println("Server started at :8080")
+// 	log.Fatal(http.ListenAndServe(":8080", r))
+// }
+//
+// func handleCrawl(w http.ResponseWriter, r *http.Request) {
+// 	query := r.URL.Query().Get("query")
+// 	if query == "" {
+// 		http.Error(w, "query parameter is required", http.StatusBadRequest)
+// 		return
+// 	}
+//
+// 	produtos, err := crawler.CrawlGoogle(query)
+// 	if err != nil {
+// 		http.Error(w, fmt.Sprintf("error crawling data: %v", err), http.StatusInternalServerError)
+// 		return
+// 	}
+//
+// 	w.Header().Set("Content-Type", "application/json")
+// 	json.NewEncoder(w).Encode(produtos)
+//
+// 	// Log the total number of products collected
+// 	log.Printf("Total de produtos coletados: %d", len(produtos))
+// }
