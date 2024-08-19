@@ -49,7 +49,7 @@ func NewPostgresSQLStorage(cfg configs.Config) (*sql.DB, error) {
 	connStr := fmt.Sprintf("host=%s port=%s user=%s "+
 		"password=%s dbname=%s sslmode=%s",
 		cfg.Host, cfg.Port, cfg.DBUser, cfg.DBPassword, cfg.DBName, sslMode)
-
+	log.Println("Connection string:", connStr)
 	dbConn, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
