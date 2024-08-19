@@ -6,15 +6,19 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 
 	"github.com/claudineyveloso/soldim.git/internal/bling"
 	"github.com/claudineyveloso/soldim.git/internal/utils"
 	"github.com/gorilla/mux"
 )
 
-const (
-	bearerToken = "fe258fdddd72ed376bacb9572c6e0b8395d7e0c0"
-)
+// const (
+//
+//	bearerToken = "fe258fdddd72ed376bacb9572c6e0b8395d7e0c0"
+//
+// )
+var token = os.Getenv("ACCESS_TOKEN_BLING")
 
 func RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/import_contacts", handleImportBlingContactsToSoldim).Methods(http.MethodGet)
@@ -23,10 +27,10 @@ func RegisterRoutes(router *mux.Router) {
 
 func handleImportBlingContactsToSoldim(w http.ResponseWriter, r *http.Request) {
 	// Obtenha os contatos do Bling
-	channels, err := bling.GetContactsFromBling(bearerToken)
+	channels, err := bling.GetContactsFromBling(token)
 	if err != nil {
 
-		http.Error(w, fmt.Sprintf("Errorfff getting contacts from Bling: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Error getting contacts from Bling: %v", err), http.StatusInternalServerError)
 		return
 	}
 
