@@ -124,7 +124,18 @@ func (h *Handler) handleGetSearches(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Erro ao obter a procura de produto: %v", err), http.StatusInternalServerError)
 		return
 	}
-	utils.WriteJSON(w, http.StatusOK, searches)
+	data, err := json.Marshal(struct {
+		Searches []*types.Search `json:"searches"`
+	}{Searches: searches})
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erro ao serializar as buscas na web: %v", err), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(data)
+
+	// utils.WriteJSON(w, http.StatusOK, searches)
 }
 
 func (h *Handler) handleGetLastSearch(w http.ResponseWriter, r *http.Request) {
