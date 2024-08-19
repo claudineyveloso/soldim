@@ -156,9 +156,11 @@ func (s *APIServer) Run() error {
 			log.Fatal("$PORT must be set")
 		}
 		address = ":" + port
+		fmt.Printf("Server started on port %s\n", port)
 	} else {
 		// Se estiver em desenvolvimento, use o localhost
 		address = "localhost:8080"
+		fmt.Println("Server started on http://localhost:8080")
 	}
 
 	return http.ListenAndServe(address,
