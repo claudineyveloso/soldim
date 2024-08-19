@@ -142,12 +142,12 @@ func (h *Handler) handleGetUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	str, ok := vars["userID"]
 	if !ok {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Usuário ausente!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Usuário ausente"))
 		return
 	}
 	userID, err := uuid.Parse(str)
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Usuário inválido!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Usuário inválido"))
 		return
 	}
 

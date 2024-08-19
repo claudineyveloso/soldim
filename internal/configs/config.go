@@ -1,6 +1,7 @@
 package configs
 
 import (
+	"log"
 	"os"
 	"strconv"
 )
@@ -25,6 +26,7 @@ var Envs = InitConfig()
 func InitConfig() Config {
 	env := getEnv("ENVIRONMENT", "dev")
 	var host, port, dbUser, dbPassword, dbName string
+	log.Println(`ENVIRONMENT ${env}`)
 
 	if env == "prod" {
 		host = getEnv("PROD_DB_HOST", "c3gtj1dt5vh48j.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com")
