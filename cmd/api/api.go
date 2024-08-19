@@ -144,8 +144,6 @@ func (s *APIServer) Run() error {
 	contactHandler := contact.NewHandler(contactStore)
 	contactHandler.RegisterRoutes(r)
 
-	fmt.Println("Server started on http://localhost:8080")
-
 	env := os.Getenv("ENVIRONMENT")
 	var address string
 
@@ -156,7 +154,6 @@ func (s *APIServer) Run() error {
 			log.Fatal("$PORT must be set")
 		}
 		address = ":" + port
-		fmt.Printf("Server started on port %s\n", port)
 	} else {
 		// Se estiver em desenvolvimento, use o localhost
 		address = "localhost:8080"
