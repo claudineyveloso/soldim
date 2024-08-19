@@ -26,8 +26,7 @@ func handleImportBlingContactsToSoldim(w http.ResponseWriter, r *http.Request) {
 	channels, err := bling.GetContactsFromBling(bearerToken)
 	if err != nil {
 
-		http.Error(w, fmt.Sprintf("EValor de bearerToken: %s", bearerToken), http.StatusInternalServerError)
-		// http.Error(w, fmt.Sprintf("Error getting contacts from Bling: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Errorff getting contacts from Bling: %v", err), http.StatusInternalServerError)
 		return
 	}
 
