@@ -81,7 +81,7 @@ func handleImportBlingContactsToSoldim(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetContacts(w http.ResponseWriter, r *http.Request) {
-	channels, err := bling.GetContactsFromBling(bearerToken)
+	channels, err := bling.GetContactsFromBling(token)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter contatos: %v", err), http.StatusInternalServerError)
 		return
