@@ -14,6 +14,16 @@ import (
 
 var Validate = validator.New()
 
+// Retorna a URL base dependendo do ambiente
+func GetBaseURL() string {
+	env := os.Getenv("ENVIRONMENT")
+
+	if env == "prod" {
+		return "https://soldim-api-a62e9b25ff95.herokuapp.com"
+	}
+	return "http://localhost:8080"
+}
+
 // Helper function to handle HTTP errors
 func HandleHTTPError(w http.ResponseWriter, statusCode int, message string) {
 	http.Error(w, message, statusCode)
