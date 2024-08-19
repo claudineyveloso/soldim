@@ -27,6 +27,8 @@ func GetContactsFromBling(bearerToken string) ([]types.Contact, error) {
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
 		bodyString := string(bodyBytes)
+		log.Printf("Status Code: %d", resp.StatusCode)
+		log.Printf("Response Body: %s", bodyString)
 		return nil, fmt.Errorf("falha na requisição: %s", bodyString)
 	}
 
