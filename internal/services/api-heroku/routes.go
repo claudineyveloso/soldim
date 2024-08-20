@@ -16,7 +16,7 @@ import (
 var token = os.Getenv("ACCESS_TOKEN_BLING")
 
 func RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/contacts_bling", handleGetAPIHeroku).Methods(http.MethodGet)
+	router.HandleFunc("/api_contacts_bling", handleGetAPIHeroku).Methods(http.MethodGet)
 }
 
 func handleGetAPIHeroku(w http.ResponseWriter, r *http.Request) {
