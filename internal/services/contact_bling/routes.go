@@ -35,7 +35,7 @@ func handleImportBlingContactsToSoldim(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Error getting contacts from Bling: %v", err), http.StatusInternalServerError)
 		return
 	}
-	log.Printf("Number of contacts received: %d", len(channels))
+	log.Println("Number of contacts received:", len(channels))
 	// Para cada contato, faça uma requisição para criar o contato no sistema local
 	for _, channel := range channels {
 		channelJSON, err := json.Marshal(channel)
