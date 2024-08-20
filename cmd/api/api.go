@@ -146,6 +146,7 @@ func (s *APIServer) Run() error {
 
 	env := os.Getenv("ENVIRONMENT")
 	var address string
+	fmt.Println("ENVIRONMENT" + env)
 
 	if env == "prod" {
 		// Use a porta fornecida pelo Heroku
