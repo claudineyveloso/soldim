@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -19,9 +20,11 @@ import (
 	"golang.org/x/time/rate"
 )
 
-const (
+var (
 	limitePorPagina = 100
-	bearerToken     = "fe258fdddd72ed376bacb9572c6e0b8395d7e0c0"
+
+	token   = os.Getenv("ACCESS_TOKEN_BLING")
+	baseURL = utils.GetBaseURL()
 )
 
 func RegisterRoutes(router *mux.Router) {
@@ -59,7 +62,7 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 	limit = 100
 
 	for {
-		products, totalPages, err := bling.GetProductsFromBling(bearerToken, page, limit, name, criterio)
+		products, totalPages, err := bling.GetProductsFromBling(token, page, limit, name, criterio)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -73,13 +76,13 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 
 		go func() {
 			defer wg.Done()
-			processStocks(products, bearerToken, rateLimiter)
+			processStocks(products, token, rateLimiter)
 		}()
 
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			processSuppliers(products, bearerToken, rateLimiter)
+			processSuppliers(products, token, rateLimiter)
 		}()
 
 		wg.Wait()
@@ -91,7 +94,7 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 		page++
 	}
 
-	resp, err := http.Get("http://localhost:8080/get_products")
+	resp, err := http.Get(baseURL + "/get_products")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -120,7 +123,7 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 	const maxRetries = 5
 	for _, product := range products {
 		<-rateLimiter.C
-		url := fmt.Sprintf("http://localhost:8080/get_product_id_bling?productID=%d", product.ID)
+		url := fmt.Sprintf(baseURL+"/get_product_id_bling?productID=%d", product.ID)
 		resp, err := fetchWithRetries(url, maxRetries)
 		if err != nil {
 			fmt.Printf("Error getting product from Bling: %v\n", err)
@@ -187,7 +190,7 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Update product details: %+v\n", updateProduct)
 		fmt.Println("**********************************************************************************************************************************************")
 		// Atualize o produto em localhost com os dados obtidos do Bling
-		updateURL := fmt.Sprintf("http://localhost:8080/update_product?productID=%d", updateProduct.ID)
+		updateURL := fmt.Sprintf(baseURL+"/update_product?productID=%d", updateProduct.ID)
 		productJSON, err := json.Marshal(updateProduct)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Error marshalling updated product: %v", err), http.StatusInternalServerError)
@@ -245,7 +248,7 @@ func processProducts(products []types.Product, rateLimiter *time.Ticker) {
 			continue
 		}
 
-		req, err := http.NewRequest("POST", "http://localhost:8080/create_product", bytes.NewBuffer(productJSON))
+		req, err := http.NewRequest("POST", baseURL+"/create_product", bytes.NewBuffer(productJSON))
 		if err != nil {
 			fmt.Printf("Error creating request: %v\n", err)
 			continue
@@ -324,7 +327,7 @@ func processStockForProduct(product types.Product, bearerToken string, rateLimit
 
 		// fmt.Printf("Sending stock data for product %d: %s\n", product.ID, string(stockJSON))
 
-		stockResp, err := http.Post("http://localhost:8080/create_stock", "application/json", bytes.NewBuffer(stockJSON))
+		stockResp, err := http.Post(baseURL+"/create_stock", "application/json", bytes.NewBuffer(stockJSON))
 		if err != nil {
 			fmt.Printf("Error sending stock data for product %d: %v\n", product.ID, err)
 			continue
@@ -352,7 +355,7 @@ func processStockForProduct(product types.Product, bearerToken string, rateLimit
 
 			// fmt.Printf("Sending deposit product data for product %d: %s\n", product.ID, string(depositProductJSON))
 
-			depositResp, err := http.Post("http://localhost:8080/create_deposit_product", "application/json", bytes.NewBuffer(depositProductJSON))
+			depositResp, err := http.Post(baseURL+"/create_deposit_product", "application/json", bytes.NewBuffer(depositProductJSON))
 			if err != nil {
 				fmt.Printf("Error sending deposit product data for product %d: %v\n", product.ID, err)
 				continue
@@ -418,7 +421,7 @@ func processSupplierForProduct(product types.Product, bearerToken string, rateLi
 
 		fmt.Printf("Sending supplier product data for product %d: %s\n", product.ID, string(supplierProductJSON))
 		<-rateLimiter.C
-		supplierProductResp, err := http.Post("http://localhost:8080/create_supplier_product", "application/json", bytes.NewBuffer(supplierProductJSON))
+		supplierProductResp, err := http.Post(baseURL+"/create_supplier_product", "application/json", bytes.NewBuffer(supplierProductJSON))
 		if err != nil {
 			fmt.Printf("Error sending supplier product data for product %d: %v\n", product.ID, err)
 			continue
@@ -453,7 +456,7 @@ func handleGetProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Printf("Requesting page: %d with limit: %d and name: %s\n", page, limit, name)
-	products, totalPages, err := bling.GetProductsFromBling(bearerToken, page, limit, name, criterio)
+	products, totalPages, err := bling.GetProductsFromBling(token, page, limit, name, criterio)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -499,7 +502,7 @@ func handleCreateProduct(w http.ResponseWriter, r *http.Request) {
 
 	// bearerToken := "981b387171e4db2550a80c80eb1fbd7c6af0a807" // r.Header.Get("Authorization")
 	// Chama a função para criar o produto no Bling
-	err := bling.CreateProductInBling(bearerToken, newProduct)
+	err := bling.CreateProductInBling(token, newProduct)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao criar produto: %v", err), http.StatusInternalServerError)
 		log.Fatalf("Erro ao criar produto: %v", err)
@@ -541,7 +544,7 @@ func handleUpdateProduct(w http.ResponseWriter, r *http.Request) {
 
 	// bearerToken := "981b387171e4db2550a80c80eb1fbd7c6af0a807" // r.Header.Get("Authorization")
 	// Chama a função para atualizar o produto no Bling
-	err = bling.UpdateProductInBling(bearerToken, productID, updatedProduct)
+	err = bling.UpdateProductInBling(token, productID, updatedProduct)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao atualizar produto: %v", err), http.StatusInternalServerError)
 		log.Fatalf("Erro ao atualizar produto: %v", err)
@@ -573,7 +576,7 @@ func handleDeleteProduct(w http.ResponseWriter, r *http.Request) {
 
 	// bearerToken := "981b387171e4db2550a80c80eb1fbd7c6af0a807" // r.Header.Get("Authorization")
 	// Chama a função para deletar o produto no Bling
-	err = bling.DeleteProductInBling(bearerToken, productID)
+	err = bling.DeleteProductInBling(token, productID)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao deletar produto: %v", err), http.StatusInternalServerError)
 		log.Fatalf("Erro ao deletar produto: %v", err)
@@ -605,7 +608,7 @@ func handleGetProductId(w http.ResponseWriter, r *http.Request) {
 
 	// bearerToken := "ea2648642cd55fa59ac6582d3a9506be8e91f6f2" // r.Header.Get("Authorization")
 	// Chama a função para obter os detalhes do produto no Bling
-	product, err := bling.GetProductIDInBling(bearerToken, productID)
+	product, err := bling.GetProductIDInBling(token, productID)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter detalhes do produto: %v", err), http.StatusInternalServerError)
 		log.Fatalf("Erro ao obter detalhes do produto: %v", err)

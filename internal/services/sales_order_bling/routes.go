@@ -17,9 +17,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const (
+var (
 	limitePorPagina = 100
-	bearerToken     = "fe258fdddd72ed376bacb9572c6e0b8395d7e0c0"
+	token           = os.Getenv("ACCESS_TOKEN_BLING")
+	baseURL         = utils.GetBaseURL()
 )
 
 type ErrorResponse struct {
@@ -53,7 +54,7 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 	fmt.Printf("Requesting page: %d with limit: %d\n", page, limit)
 
 	for {
-		sales, totalPages, err := bling.GetSalesOrdersFromBling(bearerToken, page, limit)
+		sales, totalPages, err := bling.GetSalesOrdersFromBling(token, page, limit)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -105,7 +106,7 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 		page++
 	}
 
-	err = processItemsSalesOrder(bearerToken)
+	err = processItemsSalesOrder(token)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao processar itens dos pedidos de venda: %v", err), http.StatusInternalServerError)
 		return
@@ -119,7 +120,7 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 }
 
 func existContact(contactID int64) (*types.Contact, error) {
-	url := fmt.Sprintf("http://localhost:8080/get_contact/%d", contactID)
+	url := fmt.Sprintf(baseURL+"/get_contact/%d", contactID)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching contact: %v", err)
@@ -161,7 +162,7 @@ func existContact(contactID int64) (*types.Contact, error) {
 }
 
 func createContact(contact types.Contact) (*types.Contact, error) {
-	url := "http://localhost:8080/create_contact"
+	url := baseURL + "/create_contact"
 	contactData, err := json.Marshal(contact)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling contact data: %v", err)
@@ -205,7 +206,7 @@ func processSales(sales []types.SalesOrder) {
 
 		// Adicione um log para imprimir o JSON que está sendo enviado
 		fmt.Printf("SalesOrder JSON: %s\n", string(salesOrderJSON))
-		req, err := http.NewRequest("POST", "http://localhost:8080/create_sales_order", bytes.NewBuffer(salesOrderJSON))
+		req, err := http.NewRequest("POST", baseURL+"/create_sales_order", bytes.NewBuffer(salesOrderJSON))
 		if err != nil {
 			fmt.Printf("Error creating request: %v\n", err)
 			continue
@@ -232,7 +233,7 @@ func processSales(sales []types.SalesOrder) {
 
 func processItemsSalesOrder(bearerToken string) error {
 	// 1. Fazer a requisição para obter os IDs dos pedidos de venda
-	resp, err := http.Get("http://localhost:8080/get_sales_orders")
+	resp, err := http.Get(baseURL + "/get_sales_orders")
 	if err != nil {
 		return fmt.Errorf("erro ao chamar get_sales_orders: %v", err)
 	}
@@ -282,7 +283,7 @@ func processItemsSalesOrder(bearerToken string) error {
 func sendItemToCreate(item types.ItemsSalesOrders) error {
 	orderItem := convertToItemsSalesOrder(item)
 
-	url := "http://localhost:8080/create_items_sales_order"
+	url := baseURL + "/create_items_sales_order"
 
 	// Cria o payload a partir do item, que agora inclui o product_id corretamente
 	payload, err := json.Marshal(orderItem)
@@ -338,7 +339,7 @@ func updateSalesOrder() error {
 	}
 	defer logFile.Close()
 
-	resp, err := http.Get("http://localhost:8080/get_sales_orders")
+	resp, err := http.Get(baseURL + "/get_sales_orders")
 	if err != nil {
 		return fmt.Errorf("erro ao chamar get_sales_orders: %v", err)
 	}
@@ -357,7 +358,7 @@ func processProductsSalesOrders() error {
 	}
 	defer logFile.Close()
 
-	resp, err := http.Get("http://localhost:8080/get_sales_orders")
+	resp, err := http.Get(baseURL + "/get_sales_orders")
 	if err != nil {
 		return fmt.Errorf("erro ao chamar get_sales_orders: %v", err)
 	}
@@ -403,7 +404,7 @@ func createProductsSalesOrder(productsalesorder types.ProductSalesOrderPayload) 
 		return fmt.Errorf("error marshalling product sales order: %v", err)
 	}
 
-	req, err := http.NewRequest("POST", "http://localhost:8080/create_products_sales_order", bytes.NewBuffer(productsalesorderJSON))
+	req, err := http.NewRequest("POST", baseURL+"/create_products_sales_order", bytes.NewBuffer(productsalesorderJSON))
 	if err != nil {
 		return fmt.Errorf("error creating request: %v", err)
 	}
@@ -436,7 +437,7 @@ func createProductsSalesOrder_OLD(productsalesorder types.ProductSalesOrderPaylo
 		return fmt.Errorf("error marshalling product sales order: %v", err)
 	}
 
-	req, err := http.NewRequest("POST", "http://localhost:8080/create_products_sales_order", bytes.NewBuffer(productsalesorderJSON))
+	req, err := http.NewRequest("POST", baseURL+"/create_products_sales_order", bytes.NewBuffer(productsalesorderJSON))
 	if err != nil {
 		return fmt.Errorf("error creating request: %v", err)
 	}
@@ -469,7 +470,7 @@ func handleGetSalesOrder(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Pedido de Vendas inválido: %v", err))
 		return
 	}
-	salesOrder, err := bling.GetSalesOrdersIDInBling(bearerToken, int64(salesOrderID))
+	salesOrder, err := bling.GetSalesOrdersIDInBling(token, int64(salesOrderID))
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return

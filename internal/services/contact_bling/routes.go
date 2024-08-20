@@ -14,12 +14,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// const (
-//
-//	bearerToken = "fe258fdddd72ed376bacb9572c6e0b8395d7e0c0"
-//
-// )
-var token = os.Getenv("ACCESS_TOKEN_BLING")
+var (
+	token   = os.Getenv("ACCESS_TOKEN_BLING")
+	baseURL = utils.GetBaseURL()
+)
 
 func RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/import_contacts", handleImportBlingContactsToSoldim).Methods(http.MethodGet)
@@ -44,7 +42,7 @@ func handleImportBlingContactsToSoldim(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		req, err := http.NewRequest("POST", "http://localhost:8080/create_contact", bytes.NewBuffer(channelJSON))
+		req, err := http.NewRequest("POST", baseURL+"/create_contact", bytes.NewBuffer(channelJSON))
 		if err != nil {
 			fmt.Printf("Error creating request: %v\n", err)
 			continue

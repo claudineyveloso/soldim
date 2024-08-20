@@ -1,4 +1,4 @@
-package saleschannelbling
+package saleschannelblintoken
 
 import (
 	"bytes"
@@ -6,14 +6,16 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 
 	"github.com/claudineyveloso/soldim.git/internal/bling"
 	"github.com/claudineyveloso/soldim.git/internal/utils"
 	"github.com/gorilla/mux"
 )
 
-const (
-	bearerToken = "fe258fdddd72ed376bacb9572c6e0b8395d7e0c0"
+var (
+	token   = os.Getenv("ACCESS_TOKEN_BLING")
+	baseURL = utils.GetBaseURL()
 )
 
 func RegisterRoutes(router *mux.Router) {
@@ -23,7 +25,7 @@ func RegisterRoutes(router *mux.Router) {
 
 func handleImportBlingSalesChannelToSoldim(w http.ResponseWriter, r *http.Request) {
 	// Obtenha os canais de venda do Bling
-	channels, err := bling.GetSalesChannelsFromBling(bearerToken)
+	channels, err := bling.GetSalesChannelsFromBling(token)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error getting sales channels from Bling: %v", err), http.StatusInternalServerError)
 		return
@@ -37,7 +39,7 @@ func handleImportBlingSalesChannelToSoldim(w http.ResponseWriter, r *http.Reques
 			continue
 		}
 
-		req, err := http.NewRequest("POST", "http://localhost:8080/create_sales_channel", bytes.NewBuffer(channelJSON))
+		req, err := http.NewRequest("POST", baseURL+"/create_sales_channel", bytes.NewBuffer(channelJSON))
 		if err != nil {
 			fmt.Printf("Error creating request: %v\n", err)
 			continue
@@ -76,7 +78,7 @@ func handleImportBlingSalesChannelToSoldim(w http.ResponseWriter, r *http.Reques
 }
 
 func handleGetSaleChannel(w http.ResponseWriter, r *http.Request) {
-	channels, err := bling.GetSalesChannelsFromBling(bearerToken)
+	channels, err := bling.GetSalesChannelsFromBling(token)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter canais de vendas: %v", err), http.StatusInternalServerError)
 		return
