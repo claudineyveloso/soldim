@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 
-	api_heroku "github.com/claudineyveloso/soldim.git/internal/services/api-heroku"
 	"github.com/claudineyveloso/soldim.git/internal/services/contact"
 	contactbling "github.com/claudineyveloso/soldim.git/internal/services/contact_bling"
 	"github.com/claudineyveloso/soldim.git/internal/services/deposit"
@@ -16,6 +15,7 @@ import (
 	"github.com/claudineyveloso/soldim.git/internal/services/draft"
 	generatetoken "github.com/claudineyveloso/soldim.git/internal/services/generate_token"
 	"github.com/claudineyveloso/soldim.git/internal/services/healthy"
+	"github.com/claudineyveloso/soldim.git/internal/services/heroku"
 	itemssalesorder "github.com/claudineyveloso/soldim.git/internal/services/items_sales_order"
 	"github.com/claudineyveloso/soldim.git/internal/services/product"
 	productbling "github.com/claudineyveloso/soldim.git/internal/services/product_bling"
@@ -64,7 +64,7 @@ func (s *APIServer) Run() error {
 	r := mux.NewRouter()
 	r.Use(loggingMiddleware)
 	healthy.RegisterRoutes(r)
-	api_heroku.RegisterRoutes(r)
+	heroku.RegisterRoutes(r)
 	webhook.RegisterRoutes(r)
 	generatetoken.RegisterRoutes(r)
 	refreshtoken.RegisterRoutes(r)

@@ -1,4 +1,4 @@
-package api_heroku
+package heroku
 
 import (
 	"encoding/json"
