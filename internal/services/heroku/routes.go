@@ -2,12 +2,11 @@ package heroku
 
 import (
 	"net/http"
-	"os"
 
 	"github.com/gorilla/mux"
 )
 
-var token = os.Getenv("ACCESS_TOKEN_BLING")
+// var token = os.Getenv("ACCESS_TOKEN_BLING")
 
 func RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/api_contacts_bling", handleGetAPIHeroku).Methods(http.MethodGet)
