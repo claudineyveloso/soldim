@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	api_heroku "github.com/claudineyveloso/soldim.git/internal/services/api-heroku"
 	"github.com/claudineyveloso/soldim.git/internal/services/contact"
 	contactbling "github.com/claudineyveloso/soldim.git/internal/services/contact_bling"
 	"github.com/claudineyveloso/soldim.git/internal/services/deposit"
@@ -63,6 +64,7 @@ func (s *APIServer) Run() error {
 	r := mux.NewRouter()
 	r.Use(loggingMiddleware)
 	healthy.RegisterRoutes(r)
+	api_heroku.RegisterRoutes(r)
 	webhook.RegisterRoutes(r)
 	generatetoken.RegisterRoutes(r)
 	refreshtoken.RegisterRoutes(r)
@@ -146,7 +148,7 @@ func (s *APIServer) Run() error {
 
 	env := os.Getenv("ENVIRONMENT")
 	var address string
-	fmt.Println("ENVIRONMENT" + env)
+	fmt.Println("ENVIRONMENT " + env)
 
 	if env == "prod" {
 		// Use a porta fornecida pelo Heroku
