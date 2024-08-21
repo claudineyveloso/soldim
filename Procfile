@@ -1,1 +1,1 @@
-web: ./soldim-api
+web: go run cmd/soldim/main.go
