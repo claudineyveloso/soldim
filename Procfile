@@ -1,1 +1,1 @@
-web: web: ./soldim-api
+web: web: ./api-soldim
