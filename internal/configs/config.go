@@ -29,9 +29,9 @@ func InitConfig() Config {
 	if env == "prod" {
 		host = getEnv("PROD_DB_HOST", "c3nv2ev86aje4j.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com")
 		port = getEnv("PROD_DB_PORT", "5432")
-		dbUser = getEnv("PROD_DB_USER", "ubdf63fk93srak")
-		dbPassword = getEnv("PROD_DB_PASSWORD", "p0bbf01e0f32d9418241d1b2648266168cf33fd25553f6e8e136bb810eb05a031")
-		dbName = getEnv("PROD_DB_NAME", "d2ae3397d5p2s7")
+		dbUser = getEnv("PROD_DB_USER", "u4ej2dbfr6ffbh")
+		dbPassword = getEnv("PROD_DB_PASSWORD", "p3e754b33d32e829ae7057cc9f9336e16e174fffb797521e33ab69f14697d389b")
+		dbName = getEnv("PROD_DB_NAME", "d3odnh12btmcta")
 	} else {
 		host = getEnv("DEV_DB_HOST", "localhost")
 		port = getEnv("DEV_DB_PORT", "5432")
