@@ -248,6 +248,21 @@ CREATE TABLE IF NOT EXISTS stores (
 );
 
 
+DROP TABLE IF EXISTS "contacts";
+CREATE TABLE IF NOT EXISTS contacts (
+  id              BIGINT PRIMARY KEY,
+  nome            VARCHAR(255) NOT NULL DEFAULT '',
+  codigo          VARCHAR(100) NOT NULL DEFAULT '',
+  situacao        VARCHAR(100) NOT NULL DEFAULT '',
+  numeroDocumento VARCHAR(100) NOT NULL DEFAULT '',
+  telefone        VARCHAR(30) NOT NULL DEFAULT '',
+  celular         VARCHAR(30) NOT NULL DEFAULT '',
+  created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- create unique index name_contact_idx on contacts (nome);
+
 DROP TABLE IF EXISTS "sales_orders";
 CREATE TABLE IF NOT EXISTS sales_orders (
   id                    BIGINT PRIMARY KEY,
@@ -370,26 +385,10 @@ create unique index sku_sap_idx on triages (sku_sap);
 create unique index sku_wms_idx on triages (sku_wms);
 
 
-DROP TABLE IF EXISTS "contacts";
-CREATE TABLE IF NOT EXISTS contacts (
-  id              BIGINT PRIMARY KEY,
-  nome            VARCHAR(255) NOT NULL DEFAULT '',
-  codigo          VARCHAR(100) NOT NULL DEFAULT '',
-  situacao        VARCHAR(100) NOT NULL DEFAULT '',
-  numeroDocumento VARCHAR(100) NOT NULL DEFAULT '',
-  telefone        VARCHAR(30) NOT NULL DEFAULT '',
-  celular         VARCHAR(30) NOT NULL DEFAULT '',
-  created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
--- create unique index name_contact_idx on contacts (nome);
-
-
 DROP TABLE IF EXISTS "suppliers_users";
 CREATE TABLE IF NOT EXISTS suppliers_users (
   supplier_id BIGINT NOT NULL DEFAULT 0,
-  user_id     UUID NOT NULL DEFAULT 0,
+  user_id     UUID NOT NULL,
   created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
