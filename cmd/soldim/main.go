@@ -18,6 +18,7 @@ func main() {
 		DBPassword: configs.Envs.DBPassword,
 		DBName:     configs.Envs.DBName,
 	}
+
 	db, err := db.NewPostgresSQLStorage(cfg)
 	if err != nil {
 		log.Fatal(err)
