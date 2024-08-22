@@ -43,27 +43,26 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
+    "fmt"
+    "log"
+    "net/http"
+    "os"
 )
 
-// handler para a rota "/"
-func helloHandler(w http.ResponseWriter, r *http.Request) {
-	// Responde com "Hello, World!" para qualquer requisição GET na rota "/"
-	fmt.Fprintf(w, "Hello, World!")
-}
-
 func main() {
-	// Associa o handler helloHandler com a rota "/"
-	http.HandleFunc("/", helloHandler)
+    // Use a porta fornecida pelo Heroku ou uma porta padrão (8080)
+    port := os.Getenv("PORT")
+    if port == "" {
+        port = "8080"
+    }
 
-	// Define a porta em que o servidor vai escutar
-	port := "8080"
-	fmt.Printf("Servidor rodando em http://localhost:%s/\n", port)
+    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+        fmt.Fprintln(w, "Hello, world!")
+    })
 
-	// Inicia o servidor HTTP
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Fatalf("Erro ao iniciar o servidor: %v", err)
-	}
+    log.Printf("Listening on port %s...", port)
+    err := http.ListenAndServe(":"+port, nil)
+    if err != nil {
+        log.Fatal(err)
+    }
 }
