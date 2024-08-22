@@ -56,9 +56,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func main() {
     http.HandleFunc("/", handler)
 
+    // Use a porta fornecida pela variável de ambiente PORT
     port := os.Getenv("PORT")
     if port == "" {
-        log.Fatal("Porta não definida")
+        log.Fatal("Porta não definida na variável de ambiente PORT")
     }
 
     log.Printf("Escutando na porta %s...", port)
