@@ -24,13 +24,13 @@ func main() {
 	// Inicializa o banco de dados (verificação de conexão)
 	initStorage(dbConn)
 
-	// Obtém a porta da variável de ambiente
+	// Obtém a porta da variável de ambiente $PORT fornecida pelo Heroku
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080" // Define a porta padrão se não for encontrada
 	}
 
-	// Inicializa o servidor da API
+	// Inicializa o servidor da API na porta correta
 	server := api.NewAPIServer(fmt.Sprintf(":%s", port), dbConn)
 	if err := server.Run(); err != nil {
 		log.Fatalf("Erro ao iniciar o servidor: %v", err)
