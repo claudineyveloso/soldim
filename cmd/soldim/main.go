@@ -11,34 +11,63 @@ import (
 )
 
 func main() {
-	cfg := configs.Config{
-		Host:       configs.Envs.Host,
-		Port:       configs.Envs.Port,
-		DBUser:     configs.Envs.DBUser,
-		DBPassword: configs.Envs.DBPassword,
-		DBName:     configs.Envs.DBName,
-	}
+	// Configuração
+	cfg := configs.Envs
 
-	db, err := db.NewPostgresSQLStorage(cfg)
+	// Inicialização do banco de dados
+	dbConn, err := db.NewPostgresSQLStorage(cfg)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Erro ao conectar ao banco de dados: %v", err)
 	}
 
-	initStorage(db)
+	if err := initStorage(dbConn); err != nil {
+		log.Fatalf("Erro ao inicializar o banco de dados: %v", err)
+	}
 
-	server := api.NewAPIServer(fmt.Sprintf(":%s", configs.Envs.Port), db)
+	// Inicialização do servidor
+	server := api.NewAPIServer(fmt.Sprintf(":%s", cfg.Port), dbConn)
 	if err := server.Run(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("Erro ao iniciar o servidor: %v", err)
 	}
 }
 
-func initStorage(db *sql.DB) {
-	err := db.Ping()
-	if err != nil {
-		log.Fatal(err)
+func initStorage(db *sql.DB) error {
+	if err := db.Ping(); err != nil {
+		return fmt.Errorf("falha ao conectar ao banco de dados: %w", err)
 	}
-	log.Println("DB: Successfully connected!")
+	log.Println("DB: Conectado com sucesso!")
+	return nil
 }
+
+// func main() {
+// 	cfg := configs.Config{
+// 		Host:       configs.Envs.Host,
+// 		Port:       configs.Envs.Port,
+// 		DBUser:     configs.Envs.DBUser,
+// 		DBPassword: configs.Envs.DBPassword,
+// 		DBName:     configs.Envs.DBName,
+// 	}
+//
+// 	db, err := db.NewPostgresSQLStorage(cfg)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+//
+// 	initStorage(db)
+//
+// 	server := api.NewAPIServer(fmt.Sprintf(":%s", configs.Envs.Port), db)
+// 	if err := server.Run(); err != nil {
+// 		log.Fatal(err)
+// 	}
+// }
+//
+// func initStorage(db *sql.DB) {
+// 	err := db.Ping()
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	log.Println("DB: Successfully connected!")
+// }
 
 // package main
 //
