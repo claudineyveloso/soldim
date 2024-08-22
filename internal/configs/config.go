@@ -40,16 +40,6 @@ func InitConfig() Config {
 		dbName = getEnv("DEV_DB_NAME", "soldim_development")
 	}
 
-	// return Config{
-	// 	PublicHost:             os.Getenv("PUBLIC_HOST"),
-	// 	Port:                   os.Getenv("DB_PORT"),
-	// 	DBUser:                 os.Getenv("DB_USER"),
-	// 	DBPassword:             os.Getenv("DB_PASSWORD"),
-	// 	DBName:                 os.Getenv("DB_NAME"),
-	// 	JWTSecret:              getEnv("JWT_SECRET", "not-so-secret-now-is-it?"),
-	// 	JWTExpirationInSeconds: getEnvAsInt("JWT_EXPIRATION_IN_SECONDS", 3600*24*7),
-	// }
-
 	return Config{
 		Environment:            env,
 		Host:                   host,
