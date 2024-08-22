@@ -49,20 +49,18 @@ import (
     "os"
 )
 
+func handler(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "Hello, world!")
+}
+
 func main() {
-    // Use a porta fornecida pelo Heroku ou uma porta padrão (8080)
+    http.HandleFunc("/", handler)
+
     port := os.Getenv("PORT")
     if port == "" {
-        port = "8080"
+        log.Fatal("Porta não definida")
     }
 
-    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        fmt.Fprintln(w, "Hello, world!")
-    })
-
-    log.Printf("Listening on port %s...", port)
-    err := http.ListenAndServe(":"+port, nil)
-    if err != nil {
-        log.Fatal(err)
-    }
+    log.Printf("Escutando na porta %s...", port)
+    log.Fatal(http.ListenAndServe(":"+port, nil))
 }
