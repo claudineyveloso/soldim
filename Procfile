@@ -1,1 +1,1 @@
-web: bin/soldim-api
+web: soldim-api
