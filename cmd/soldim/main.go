@@ -60,9 +60,10 @@ func main() {
     // Use a porta fornecida pela variável de ambiente PORT
     port := os.Getenv("PORT")
     if port == "" {
-        log.Fatal("Porta não definida na variável de ambiente PORT")
+      port = "8080"
+      log.Fatal("Porta não definida na variável de ambiente PORT")
     }
 
-    log.Printf("Escutando na porta %s...", port)
+    log.Printf("Servidor rodando em http://localhost:%s/", port)
     log.Fatal(http.ListenAndServe(":"+port, nil))
 }
