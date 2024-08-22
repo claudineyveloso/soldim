@@ -10,7 +10,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func NewPostgresSQLStorageAAA(cfg configs.Config) (*sql.DB, error) {
+func NewPostgresSQLStorage(cfg configs.Config) (*sql.DB, error) {
 	var connStr string
 
 	// Verifica se a DATABASE_URL está definida no ambiente
@@ -41,7 +41,7 @@ func NewPostgresSQLStorageAAA(cfg configs.Config) (*sql.DB, error) {
 	return dbConn, nil
 }
 
-func NewPostgresSQLStorage(cfg configs.Config) (*sql.DB, error) {
+func NewPostgresSQLStorageBBB(cfg configs.Config) (*sql.DB, error) {
 	sslMode := "disable"
 	if cfg.Environment == "prod" {
 		sslMode = "require" // Use SSL in production
