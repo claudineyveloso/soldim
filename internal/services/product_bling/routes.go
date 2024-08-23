@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -23,7 +22,7 @@ import (
 var (
 	limitePorPagina = 100
 
-	token   = os.Getenv("ACCESS_TOKEN_BLING")
+	token   = "f23f0af2c55aa495a65c7408d4ba16bd58205626"
 	baseURL = utils.GetBaseURL()
 )
 

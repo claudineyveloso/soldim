@@ -82,8 +82,6 @@ func (h *Handler) handleUpdateToken(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleGetToken(w http.ResponseWriter, r *http.Request) {
-	// bucketID := auth.GetUserIDFromContext(r.Context())
-	// fmt.Println("Valor de userIDffsadfsda", bucketID)
 	token, err := h.tokenStore.GetToken()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter o Token: %v", err), http.StatusInternalServerError)
@@ -96,12 +94,12 @@ func (h *Handler) handleDeleteToken(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	str, ok := vars["tokenID"]
 	if !ok {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Token ausente!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Token ausente"))
 		return
 	}
 	parsedTokenID, err := uuid.Parse(str)
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Token inválido!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Token inválido"))
 		return
 	}
 
