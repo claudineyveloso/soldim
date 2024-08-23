@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/xuri/excelize/v2"
 )
 
 type Triage struct {
@@ -30,7 +31,7 @@ type Triage struct {
 }
 
 type TriageStore interface {
-	ImportTriagesFromFile(filePath string) error
+	ImportTriagesFromFile(f *excelize.File) error
 	CreateTriage(Triage) error
 	GetTriages() ([]*Triage, error)
 	GetTriageByID(id uuid.UUID) (*Triage, error)

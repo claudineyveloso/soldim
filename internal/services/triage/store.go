@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 	"time"
 
@@ -23,21 +22,12 @@ func NewStore(db *sql.DB) *Store {
 	return &Store{db: db}
 }
 
-func (s *Store) ImportTriagesFromFile(filePath string) error {
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		return fmt.Errorf("arquivo não encontrado: %s", filePath)
-	}
-	f, err := excelize.OpenFile(filePath)
-	if err != nil {
-		return fmt.Errorf("erro ao abrir o arquivo: %v", err)
-	}
-	defer f.Close()
-
+func (s *Store) ImportTriagesFromFile(f *excelize.File) error {
 	// Listar todas as planilhas
 	sheets := f.GetSheetList()
 	fmt.Printf("Planilhas disponíveis: %v\n", sheets)
 
-	// Verificar se "Sheet1" existe
+	// Verificar se "BRMG01" existe
 	sheetName := "BRMG01"
 	if !contains(sheets, sheetName) {
 		return fmt.Errorf("a planilha %s não existe. Planilhas disponíveis: %v", sheetName, sheets)
@@ -47,10 +37,11 @@ func (s *Store) ImportTriagesFromFile(filePath string) error {
 	if err != nil {
 		return fmt.Errorf("erro ao obter linhas da planilha: %v", err)
 	}
+
 	var triages []*types.Triage
 	for i, row := range rows { // Loop through all rows
 		if i < 3 {
-			// Pular a primeira linha (cabeçalho)
+			// Pular as primeiras 3 linhas (cabeçalhos)
 			continue
 		}
 		if len(row) < 14 { // Verificar se a linha tem pelo menos 14 colunas
@@ -82,6 +73,66 @@ func (s *Store) ImportTriagesFromFile(filePath string) error {
 
 	return s.ImportTriages(triages)
 }
+
+// func (s *Store) ImportTriagesFromFile(f *excelize.File) error {
+// 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+// 		return fmt.Errorf("arquivo não encontrado: %s", filePath)
+// 	}
+// 	f, err := excelize.OpenFile(filePath)
+// 	if err != nil {
+// 		return fmt.Errorf("erro ao abrir o arquivo: %v", err)
+// 	}
+// 	defer f.Close()
+
+// 	// Listar todas as planilhas
+// 	sheets := f.GetSheetList()
+// 	fmt.Printf("Planilhas disponíveis: %v\n", sheets)
+
+// 	// Verificar se "Sheet1" existe
+// 	sheetName := "BRMG01"
+// 	if !contains(sheets, sheetName) {
+// 		return fmt.Errorf("a planilha %s não existe. Planilhas disponíveis: %v", sheetName, sheets)
+// 	}
+
+// 	rows, err := f.GetRows(sheetName)
+// 	if err != nil {
+// 		return fmt.Errorf("erro ao obter linhas da planilha: %v", err)
+// 	}
+// 	var triages []*types.Triage
+// 	for i, row := range rows { // Loop through all rows
+// 		if i < 3 {
+// 			// Pular a primeira linha (cabeçalho)
+// 			continue
+// 		}
+// 		if len(row) < 14 { // Verificar se a linha tem pelo menos 14 colunas
+// 			log.Printf("Linha %d com dados insuficientes: %v\n", i+1, row)
+// 			continue
+// 		}
+
+// 		// Adicionar log para verificar o número de colunas
+// 		log.Printf("Processando linha %d com %d colunas\n", i+1, len(row))
+
+// 		triage := &types.Triage{
+// 			Type:              row[0],
+// 			Grid:              row[1],
+// 			SkuSap:            parseInt32(row[2]),
+// 			SkuWms:            row[3],
+// 			Description:       row[4],
+// 			CustID:            parseInt64(row[5]),
+// 			Seller:            row[6],
+// 			QuantitySupplied:  parseInt32(row[7]),
+// 			FinalQuantity:     parseInt32(row[8]),
+// 			UnitaryValue:      parseFloat(row[9]),
+// 			TotalValueOffered: parseFloat(row[10]),
+// 			FinalTotalValue:   parseFloat(row[11]),
+// 			Category:          row[12],
+// 			SubCategory:       row[13],
+// 		}
+// 		triages = append(triages, triage)
+// 	}
+
+// 	return s.ImportTriages(triages)
+// }
 
 // Função para verificar se uma planilha existe na lista
 func contains(slice []string, item string) bool {

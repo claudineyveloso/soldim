@@ -9,6 +9,7 @@ import (
 	"github.com/claudineyveloso/soldim.git/internal/utils"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	"github.com/xuri/excelize/v2"
 )
 
 type Handler struct {
@@ -59,12 +60,12 @@ func (h *Handler) handleGetTriage(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	str, ok := vars["triageID"]
 	if !ok {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID da Triagem ausente!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID da Triagem ausente"))
 		return
 	}
 	parsedTriageID, err := uuid.Parse(str)
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Triagem inválido!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Triagem inválido"))
 		return
 	}
 
@@ -78,9 +79,20 @@ func (h *Handler) handleGetTriage(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) handleImportTriage(w http.ResponseWriter, r *http.Request) {
 	filePath := "internal/files/LOTE_188.xlsx"
-	if err := h.triageStore.ImportTriagesFromFile(filePath); err != nil {
+
+	// Abra o arquivo Excel usando excelize
+	f, err := excelize.OpenFile(filePath)
+	if err != nil {
+		http.Error(w, "erro ao abrir o arquivo: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer f.Close()
+
+	// Importe as triagens ou faça o que precisa com o arquivo Excel
+	if err := h.triageStore.ImportTriagesFromFile(f); err != nil {
 		http.Error(w, "erro ao importar triagens: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	w.WriteHeader(http.StatusCreated)
 }
