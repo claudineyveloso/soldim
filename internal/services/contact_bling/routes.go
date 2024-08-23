@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/claudineyveloso/soldim.git/internal/bling"
 	"github.com/claudineyveloso/soldim.git/internal/utils"
@@ -15,7 +14,7 @@ import (
 )
 
 var (
-	token   = os.Getenv("ACCESS_TOKEN_BLING")
+	token   = "da0beaf90e34923a3e8c91f6d744137c4abe7b4e"
 	baseURL = utils.GetBaseURL()
 )
 
