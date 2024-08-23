@@ -11,7 +11,7 @@ func RegisterRoutes(router *mux.Router) {
 }
 
 func handleGetHealthy(w http.ResponseWriter, r *http.Request) {
-	_, err := w.Write([]byte("Veja-Bem vindo à plataforma Soldim!!"))
+	_, err := w.Write([]byte("Bem vindo à ao Soldim!!"))
 	if err != nil {
 		http.Error(w, "Erro ao escrever resposta", http.StatusInternalServerError)
 		return
