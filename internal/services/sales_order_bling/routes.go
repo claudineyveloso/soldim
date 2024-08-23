@@ -19,7 +19,7 @@ import (
 
 var (
 	limitePorPagina = 100
-	token           = "f23f0af2c55aa495a65c7408d4ba16bd58205626"
+	token           = "1f9a842195eb889041d18446691a9b158d2f07dc"
 	baseURL         = utils.GetBaseURL()
 )
 
