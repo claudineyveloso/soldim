@@ -378,11 +378,12 @@ CREATE TABLE IF NOT EXISTS triages (
   sent_to_bling       BOOLEAN NOT NULL DEFAULT FALSE,
   defect              BOOLEAN NOT NULL DEFAULT FALSE,
   created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  updated_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  UNIQUE (type, sku_sap),
+  UNIQUE (type, sku_wms)
 );
 
-create unique index sku_sap_idx on triages (sku_sap);
-create unique index sku_wms_idx on triages (sku_wms);
 
 
 DROP TABLE IF EXISTS "suppliers_users";

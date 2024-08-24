@@ -77,6 +77,9 @@ func (s *Store) GetLastSearchByID() (*types.Search, error) {
 	ctx := context.Background()
 	dbSearch, err := queries.GetLastSearch(ctx)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
 	search := convertDBSearchToSearch(dbSearch)

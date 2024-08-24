@@ -105,8 +105,12 @@ func (h *Handler) handleCreateSearch(w http.ResponseWriter, r *http.Request) {
 		"status":  http.StatusOK,
 	}
 
+	// Log do response antes da serialização
+	log.Printf("Response data: %+v", response)
+
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
+		log.Printf("Erro ao serializar JSON: %v", err)
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -117,8 +121,6 @@ func (h *Handler) handleCreateSearch(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleGetSearches(w http.ResponseWriter, r *http.Request) {
-	// bucketID := auth.GetUserIDFromContext(r.Context())
-	// fmt.Println("Valor de userIDffsadfsda", bucketID)
 	searches, err := h.searchStore.GetSearches()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter a procura de produto: %v", err), http.StatusInternalServerError)
@@ -135,8 +137,6 @@ func (h *Handler) handleGetSearches(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleGetLastSearch(w http.ResponseWriter, r *http.Request) {
-	// bucketID := auth.GetUserIDFromContext(r.Context())
-	// fmt.Println("Valor de userIDffsadfsda", bucketID)
 	searches, err := h.searchStore.GetLastSearchByID()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter a procura de produto: %v", err), http.StatusInternalServerError)
