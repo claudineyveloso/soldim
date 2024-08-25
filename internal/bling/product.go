@@ -89,7 +89,7 @@ func GetProductsFromBling(bearerToken string, page int, limit int, name string, 
 	return produtos, totalPages, nil
 }
 
-func CreateProductInBling(bearerToken string, product types.Product) error {
+func CreateProductInBling(bearerToken string, product types.ProductBlingPayload) error {
 	client := &http.Client{}
 
 	// Construindo a URL para a criação de produtos

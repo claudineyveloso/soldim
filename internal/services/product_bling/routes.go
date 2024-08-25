@@ -506,11 +506,13 @@ func handleCreateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Decodifica o JSON do corpo da requisição para a estrutura Product
-	var newProduct types.Product
+	var newProduct types.ProductBlingPayload
 	if err := json.NewDecoder(r.Body).Decode(&newProduct); err != nil {
 		http.Error(w, "Erro ao decodificar JSON", http.StatusBadRequest)
 		return
 	}
+
+	newProduct.DataValidade = time.Now().Format("2006-01-02")
 
 	// Fecha o corpo da requisição após o processamento
 	defer r.Body.Close()
