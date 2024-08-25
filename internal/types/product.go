@@ -210,6 +210,33 @@ type ProductPayload struct {
 	SupplierID                 NullableInt64 `json:"supplier_id"`
 }
 
+type ProductBlingPayload struct {
+	ID                         int64     `json:"id"`
+	Nome                       string    `json:"nome"`
+	Codigo                     string    `json:"codigo"`
+	Preco                      float64   `json:"preco"`
+	Tipo                       string    `json:"tipo"`
+	Situacao                   string    `json:"situacao"`
+	Formato                    string    `json:"formato"`
+	DescricaoCurta             string    `json:"descricao_curta"`
+	DataValidade               time.Time `json:"data_validade"`
+	Unidade                    string    `json:"unidade"`
+	PesoLiquido                float64   `json:"peso_liquido"`
+	PesoBruto                  float64   `json:"peso_bruto"`
+	Volumes                    int32     `json:"volumes"`
+	ItensPorCaixa              int32     `json:"itens_por_caixa"`
+	Gtin                       string    `json:"gtin"`
+	GtinEmbalagem              string    `json:"gtin_embalagem"`
+	TipoProducao               string    `json:"tipo_producao"`
+	Condicao                   int32     `json:"condicao"`
+	FreteGratis                bool      `json:"frete_gratis"`
+	Marca                      string    `json:"marca"`
+	DescricaoComplementar      string    `json:"descricao_complementar"`
+	LinkExterno                string    `json:"link_externo"`
+	Observacoes                string    `json:"observacoes"`
+	DescricaoEmbalagemDiscreta string    `json:"descricao_embalagem_discreta"`
+}
+
 type ProductResponse struct {
 	Products []Product `json:"products"`
 	Total    int       `json:"total"`

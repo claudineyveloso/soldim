@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS searches_result (
   search_id   UUID not null,
   created_at  timestamp not null,
   updated_at  timestamp not null,
-  CONSTRAINT fk_search
+  CONSTRAINT fk_search_result
     FOREIGN KEY (search_id)
     REFERENCES searches (id)
     ON DELETE CASCADE
@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS drafts (
   search_id   UUID not null,
   created_at  timestamp not null,
   updated_at  timestamp not null,
-    CONSTRAINT fk_search
+    CONSTRAINT fk_search_drafts
     FOREIGN KEY (search_id)
     REFERENCES searches (id)
     ON DELETE CASCADE
