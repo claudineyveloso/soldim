@@ -28,7 +28,7 @@ func GetDepositsFromBling(bearerToken string) ([]types.Deposit, error) {
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
 		bodyString := string(bodyBytes)
-		return nil, fmt.Errorf("falha na requisição: %s", bodyString)
+		return nil, fmt.Errorf("falha na requisição dos depósitos da Bling: %s", bodyString)
 	}
 
 	bodyBytes, err := io.ReadAll(resp.Body)

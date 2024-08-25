@@ -23,6 +23,12 @@ func RegisterRoutes(router *mux.Router) {
 }
 
 func handleImportBlingDepositsToSoldim(w http.ResponseWriter, r *http.Request) {
+	token, err := utils.FetchAccessToken()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error fetching access token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 	// Obtenha os depositos do Bling
 	channels, err := bling.GetDepositsFromBling(token)
 	if err != nil {

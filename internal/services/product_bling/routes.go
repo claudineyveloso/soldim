@@ -22,7 +22,6 @@ import (
 var (
 	limitePorPagina = 100
 
-	token   = "1f9a842195eb889041d18446691a9b158d2f07dc"
 	baseURL = utils.GetBaseURL()
 )
 
@@ -36,6 +35,12 @@ func RegisterRoutes(router *mux.Router) {
 }
 
 func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
+	token, err := utils.FetchAccessToken()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error fetching access token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
 	name := r.URL.Query().Get("name")
@@ -434,6 +439,11 @@ func processSupplierForProduct(product types.Product, bearerToken string, rateLi
 
 func handleGetProduct(w http.ResponseWriter, r *http.Request) {
 	// bearerToken := "981b387171e4db2550a80c80eb1fbd7c6af0a807" // r.Header.Get("Authorization")
+	token, err := utils.FetchAccessToken()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error fetching access token: %v", err), http.StatusInternalServerError)
+		return
+	}
 
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
@@ -484,6 +494,12 @@ func handleGetProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleCreateProduct(w http.ResponseWriter, r *http.Request) {
+	token, err := utils.FetchAccessToken()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error fetching access token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
 		return
@@ -501,7 +517,7 @@ func handleCreateProduct(w http.ResponseWriter, r *http.Request) {
 
 	// bearerToken := "981b387171e4db2550a80c80eb1fbd7c6af0a807" // r.Header.Get("Authorization")
 	// Chama a função para criar o produto no Bling
-	err := bling.CreateProductInBling(token, newProduct)
+	err = bling.CreateProductInBling(token, newProduct)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao criar produto: %v", err), http.StatusInternalServerError)
 		log.Fatalf("Erro ao criar produto: %v", err)
@@ -514,6 +530,12 @@ func handleCreateProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleUpdateProduct(w http.ResponseWriter, r *http.Request) {
+	token, err := utils.FetchAccessToken()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error fetching access token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 	if r.Method != http.MethodPut {
 		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
 		return
@@ -556,6 +578,12 @@ func handleUpdateProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleDeleteProduct(w http.ResponseWriter, r *http.Request) {
+	token, err := utils.FetchAccessToken()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error fetching access token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 	if r.Method != http.MethodDelete {
 		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
 		return
@@ -588,6 +616,11 @@ func handleDeleteProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetProductId(w http.ResponseWriter, r *http.Request) {
+	token, err := utils.FetchAccessToken()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error fetching access token: %v", err), http.StatusInternalServerError)
+		return
+	}
 	if r.Method != http.MethodGet {
 		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
 		return

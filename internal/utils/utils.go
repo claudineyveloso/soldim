@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -12,7 +13,21 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-var Validate = validator.New()
+type TokenResponse struct {
+	ID           string `json:"id"`
+	AccessToken  string `json:"access_token"`
+	ExpiresIn    int    `json:"expires_in"`
+	TokenType    string `json:"token_type"`
+	Scope        string `json:"scope"`
+	RefreshToken string `json:"refresh_token"`
+	CreatedAt    string `json:"created_at"`
+	UpdatedAt    string `json:"updated_at"`
+}
+
+var (
+	Validate = validator.New()
+	baseURL  = GetBaseURL()
+)
 
 // Retorna a URL base dependendo do ambiente
 func GetBaseURL() string {
@@ -147,4 +162,72 @@ func LogErrorToFile(logMessage string) {
 	if err != nil {
 		fmt.Printf("Error writing to log file: %v\n", err)
 	}
+}
+
+func FetchAccessToken() (string, error) {
+	// URL da API para obter o token de acesso
+	url := baseURL + "/get_token"
+
+	// Envia a requisição para obter o token
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", fmt.Errorf("erro ao enviar requisição: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Lê a resposta
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("erro ao ler resposta: %v", err)
+	}
+
+	// Verifica o status da resposta
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("resposta da API não OK: %s", resp.Status)
+	}
+
+	// Decodifica a resposta JSON como um array de TokenResponse
+	var responseArray []TokenResponse
+	if err := json.Unmarshal(body, &responseArray); err != nil {
+		return "", fmt.Errorf("erro ao decodificar resposta: %v", err)
+	}
+
+	// Verifica se o array tem pelo menos um item
+	if len(responseArray) < 1 {
+		return "", fmt.Errorf("resposta inesperada: array vazio")
+	}
+
+	// Retorna o access_token do primeiro item no array
+	return responseArray[0].AccessToken, nil
+}
+
+func FetchAccessTokenaaa() (string, error) {
+	req, err := http.NewRequest("GET", baseURL+"/get_token", nil)
+	if err != nil {
+		return "", fmt.Errorf("error creating request: %v", err)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("error sending request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("failed to get access token. Status: %v, Response: %s", resp.Status, string(body))
+	}
+
+	var result map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", fmt.Errorf("error decoding response: %v", err)
+	}
+
+	token, ok := result["access_token"].(string)
+	if !ok {
+		return "", fmt.Errorf("access_token not found in response")
+	}
+
+	return token, nil
 }

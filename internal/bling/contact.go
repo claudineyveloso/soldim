@@ -29,7 +29,7 @@ func GetContactsFromBling(bearerToken string) ([]types.Contact, error) {
 		bodyString := string(bodyBytes)
 		log.Println("Status Code:", resp.StatusCode)
 		log.Println("Response Body:", bodyString)
-		return nil, fmt.Errorf("falha na requisição: %s", bodyString)
+		return nil, fmt.Errorf("falha na requisição dos contatos da Bling: %s", bodyString)
 	}
 
 	bodyBytes, err := io.ReadAll(resp.Body)

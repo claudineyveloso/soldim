@@ -13,10 +13,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var (
-	token   = "1f9a842195eb889041d18446691a9b158d2f07dc"
-	baseURL = utils.GetBaseURL()
-)
+var baseURL = utils.GetBaseURL()
 
 func RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/import_contacts", handleImportBlingContactsToSoldim).Methods(http.MethodGet)
@@ -25,6 +22,11 @@ func RegisterRoutes(router *mux.Router) {
 
 func handleImportBlingContactsToSoldim(w http.ResponseWriter, r *http.Request) {
 	log.Println("/import_contacts endpoint hit")
+	token, err := utils.FetchAccessToken()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error fetching access token: %v", err), http.StatusInternalServerError)
+		return
+	}
 	// Obtenha os contatos do Bling
 	channels, err := bling.GetContactsFromBling(token)
 	if err != nil {
@@ -80,6 +82,12 @@ func handleImportBlingContactsToSoldim(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetContacts(w http.ResponseWriter, r *http.Request) {
+	token, err := utils.FetchAccessToken()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error fetching access token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 	channels, err := bling.GetContactsFromBling(token)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter contatos: %v", err), http.StatusInternalServerError)

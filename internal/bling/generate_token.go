@@ -46,7 +46,7 @@ func GetTokenFromBling(clientID, clientSecret, authorizationCode, tokenURL strin
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
 		bodyString := string(bodyBytes)
-		return "", fmt.Errorf("falha na requisição: %s", bodyString)
+		return "", fmt.Errorf("falha na requisição para gerar um token: %s", bodyString)
 	}
 
 	bodyBytes, err := io.ReadAll(resp.Body)

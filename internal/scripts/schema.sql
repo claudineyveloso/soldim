@@ -130,6 +130,7 @@ CREATE TABLE IF NOT EXISTS products (
   updated_at                  timestamp not null
 );
 
+create unique index codigo_sku_idx on products (codigo);
 
 DROP TABLE IF EXISTS "sales_channel";
 CREATE TABLE sales_channel (
