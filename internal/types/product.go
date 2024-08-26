@@ -211,29 +211,37 @@ type ProductPayload struct {
 }
 
 type ProductBlingPayload struct {
-	Nome                       string  `json:"nome"`
-	Codigo                     string  `json:"codigo"`
-	Preco                      float64 `json:"preco"`
-	Tipo                       string  `json:"tipo"`
-	Situacao                   string  `json:"situacao"`
-	Formato                    string  `json:"formato"`
-	DescricaoCurta             string  `json:"descricaoCurta"`
-	DataValidade               string  `json:"dataValidade"`
-	Unidade                    string  `json:"unidade"`
-	PesoLiquido                float64 `json:"pesoLiquido"`
-	PesoBruto                  float64 `json:"pesoBruto"`
-	Volumes                    int32   `json:"volumes"`
-	ItensPorCaixa              int32   `json:"itensPorCaixa"`
-	Gtin                       string  `json:"gtin"`
-	GtinEmbalagem              string  `json:"gtinEmbalagem"`
-	TipoProducao               string  `json:"tipoProducao"`
-	Condicao                   int32   `json:"condicao"`
-	FreteGratis                bool    `json:"freteGratis"`
-	Marca                      string  `json:"marca"`
-	DescricaoComplementar      string  `json:"descricaoComplementar"`
-	LinkExterno                string  `json:"linkExterno"`
-	Observacoes                string  `json:"observacoes"`
-	DescricaoEmbalagemDiscreta string  `json:"descricaoEmbalagemDiscreta"`
+	Nome                       string                   `json:"nome"`
+	Codigo                     string                   `json:"codigo"`
+	Preco                      float64                  `json:"preco"`
+	Tipo                       string                   `json:"tipo"`
+	Situacao                   string                   `json:"situacao"`
+	Formato                    string                   `json:"formato"`
+	DescricaoCurta             string                   `json:"descricaoCurta"`
+	DataValidade               string                   `json:"dataValidade"`
+	Unidade                    string                   `json:"unidade"`
+	PesoLiquido                float64                  `json:"pesoLiquido"`
+	PesoBruto                  float64                  `json:"pesoBruto"`
+	Volumes                    int32                    `json:"volumes"`
+	ItensPorCaixa              int32                    `json:"itensPorCaixa"`
+	Gtin                       string                   `json:"gtin"`
+	GtinEmbalagem              string                   `json:"gtinEmbalagem"`
+	TipoProducao               string                   `json:"tipoProducao"`
+	Condicao                   int32                    `json:"condicao"`
+	FreteGratis                bool                     `json:"freteGratis"`
+	Marca                      string                   `json:"marca"`
+	DescricaoComplementar      string                   `json:"descricaoComplementar"`
+	LinkExterno                string                   `json:"linkExterno"`
+	Observacoes                string                   `json:"observacoes"`
+	DescricaoEmbalagemDiscreta string                   `json:"descricaoEmbalagemDiscreta"`
+	Estoque                    ProductStockBlingPayload `json:"estoque"` // Campo para o estoque
+}
+
+type ProductStockBlingPayload struct {
+	Minimo       int32  `json:"minimo"`
+	Maximo       int32  `json:"maximo"`
+	Crossdocking int32  `json:"crossdocking"`
+	Localizacao  string `json:"localizacao"`
 }
 
 type ProductResponse struct {
