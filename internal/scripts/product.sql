@@ -148,7 +148,7 @@ WHERE
     ($1::text IS NULL OR $1 = '' OR p.nome ILIKE '%' || $1 || '%')
     AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2::text)
     AND ($3::text IS NULL OR $3 = '' OR sp.supplier_id = $3::int)
-    ORDER BY p.nome;
+    ORDER BY p.id DESC;
 
 -- name: GetProductByName :one
 WITH aggregated_stocks AS (
