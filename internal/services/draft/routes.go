@@ -203,7 +203,16 @@ func (h *Handler) handleUpdateDraft(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("Payload inválido: %v", errors))
 		return
 	}
-	err := h.draftStore.UpdateDraft(draft)
+
+	// Converte o draft para JSON para impressão
+	draftJSON, err := json.MarshalIndent(draft, "", "  ")
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+	fmt.Println("Draft: ", string(draftJSON))
+
+	err = h.draftStore.UpdateDraft(draft)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
