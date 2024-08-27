@@ -31,14 +31,23 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 }
 
 func (h *Handler) handleGetDrafts(w http.ResponseWriter, r *http.Request) {
-	// bucketID := auth.GetUserIDFromContext(r.Context())
-	// fmt.Println("Valor de userIDffsadfsda", bucketID)
-	draft, err := h.draftStore.GetDrafts()
+	drafts, err := h.draftStore.GetDrafts()
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Erro ao obter o Rascunho: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Erro ao obter os Rascunhos : %v", err), http.StatusInternalServerError)
 		return
 	}
-	utils.WriteJSON(w, http.StatusOK, draft)
+
+	data, err := json.Marshal(struct {
+		Drafts []*types.Draft `json:"drafts"`
+	}{Drafts: drafts})
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erro ao serializar os produtos: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(data)
 }
 
 func (h *Handler) handleCreateDraft(w http.ResponseWriter, r *http.Request) {
