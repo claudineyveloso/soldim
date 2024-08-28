@@ -14,28 +14,68 @@ import (
 )
 
 const createDraft = `-- name: CreateDraft :exec
-INSERT INTO drafts ( ID, image_url, description, source, price, promotion, link, search_id, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+INSERT INTO drafts ( ID, codigo, tipo, situacao, formato, image_url, description, dataValidade, unidade, pesoLiquido, pesoBruto, volumes, itensPorCaixa, gtin, gtinEmbalagem, tipoProducao, condicao, freteGratis, marca, descricaoComplementar ,linkExterno, observacoes, descricaoEmbalagemDiscreta, source, price, promotion, link, search_id, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30)
 `
 
 type CreateDraftParams struct {
-	ID          uuid.UUID `json:"id"`
-	ImageUrl    string    `json:"image_url"`
-	Description string    `json:"description"`
-	Source      string    `json:"source"`
-	Price       float64   `json:"price"`
-	Promotion   bool      `json:"promotion"`
-	Link        string    `json:"link"`
-	SearchID    uuid.UUID `json:"search_id"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID                         uuid.UUID `json:"id"`
+	Codigo                     string    `json:"codigo"`
+	Tipo                       string    `json:"tipo"`
+	Situacao                   string    `json:"situacao"`
+	Formato                    string    `json:"formato"`
+	ImageUrl                   string    `json:"image_url"`
+	Description                string    `json:"description"`
+	Datavalidade               time.Time `json:"datavalidade"`
+	Unidade                    string    `json:"unidade"`
+	Pesoliquido                float64   `json:"pesoliquido"`
+	Pesobruto                  float64   `json:"pesobruto"`
+	Volumes                    int32     `json:"volumes"`
+	Itensporcaixa              int32     `json:"itensporcaixa"`
+	Gtin                       string    `json:"gtin"`
+	Gtinembalagem              string    `json:"gtinembalagem"`
+	Tipoproducao               string    `json:"tipoproducao"`
+	Condicao                   int32     `json:"condicao"`
+	Fretegratis                bool      `json:"fretegratis"`
+	Marca                      string    `json:"marca"`
+	Descricaocomplementar      string    `json:"descricaocomplementar"`
+	Linkexterno                string    `json:"linkexterno"`
+	Observacoes                string    `json:"observacoes"`
+	Descricaoembalagemdiscreta string    `json:"descricaoembalagemdiscreta"`
+	Source                     string    `json:"source"`
+	Price                      float64   `json:"price"`
+	Promotion                  bool      `json:"promotion"`
+	Link                       string    `json:"link"`
+	SearchID                   uuid.UUID `json:"search_id"`
+	CreatedAt                  time.Time `json:"created_at"`
+	UpdatedAt                  time.Time `json:"updated_at"`
 }
 
 func (q *Queries) CreateDraft(ctx context.Context, arg CreateDraftParams) error {
 	_, err := q.db.ExecContext(ctx, createDraft,
 		arg.ID,
+		arg.Codigo,
+		arg.Tipo,
+		arg.Situacao,
+		arg.Formato,
 		arg.ImageUrl,
 		arg.Description,
+		arg.Datavalidade,
+		arg.Unidade,
+		arg.Pesoliquido,
+		arg.Pesobruto,
+		arg.Volumes,
+		arg.Itensporcaixa,
+		arg.Gtin,
+		arg.Gtinembalagem,
+		arg.Tipoproducao,
+		arg.Condicao,
+		arg.Fretegratis,
+		arg.Marca,
+		arg.Descricaocomplementar,
+		arg.Linkexterno,
+		arg.Observacoes,
+		arg.Descricaoembalagemdiscreta,
 		arg.Source,
 		arg.Price,
 		arg.Promotion,
@@ -68,7 +108,36 @@ func (q *Queries) DeleteDraftBySearchID(ctx context.Context, searchID uuid.UUID)
 }
 
 const getDraft = `-- name: GetDraft :one
-SELECT id, image_url, description, source, price, promotion, link, search_id, created_at, updated_at
+SELECT ID,
+        codigo, 
+        tipo,
+        situacao,
+        formato,
+        image_url,
+        description,
+        dataValidade,
+        unidade,
+        pesoLiquido,
+        pesoBruto,
+        volumes,
+        itensPorCaixa,
+        gtin,
+        gtinEmbalagem,
+        tipoProducao,
+        condicao,
+        freteGratis,
+        marca,
+        descricaoComplementar,
+        linkExterno,
+        observacoes ,
+        descricaoEmbalagemDiscreta ,
+        source,
+        price,
+        promotion,
+        link,
+        search_id,
+        created_at,
+        updated_at
 FROM drafts
 WHERE drafts.id = $1
 `
@@ -78,8 +147,28 @@ func (q *Queries) GetDraft(ctx context.Context, id uuid.UUID) (Draft, error) {
 	var i Draft
 	err := row.Scan(
 		&i.ID,
+		&i.Codigo,
+		&i.Tipo,
+		&i.Situacao,
+		&i.Formato,
 		&i.ImageUrl,
 		&i.Description,
+		&i.Datavalidade,
+		&i.Unidade,
+		&i.Pesoliquido,
+		&i.Pesobruto,
+		&i.Volumes,
+		&i.Itensporcaixa,
+		&i.Gtin,
+		&i.Gtinembalagem,
+		&i.Tipoproducao,
+		&i.Condicao,
+		&i.Fretegratis,
+		&i.Marca,
+		&i.Descricaocomplementar,
+		&i.Linkexterno,
+		&i.Observacoes,
+		&i.Descricaoembalagemdiscreta,
 		&i.Source,
 		&i.Price,
 		&i.Promotion,
@@ -92,7 +181,36 @@ func (q *Queries) GetDraft(ctx context.Context, id uuid.UUID) (Draft, error) {
 }
 
 const getDraftByDescription = `-- name: GetDraftByDescription :many
-SELECT id, image_url, description, source, price, promotion, link, search_id, created_at, updated_at
+SELECT ID,
+        codigo, 
+        tipo,
+        situacao,
+        formato,
+        image_url,
+        description,
+        dataValidade,
+        unidade,
+        pesoLiquido,
+        pesoBruto,
+        volumes,
+        itensPorCaixa,
+        gtin,
+        gtinEmbalagem,
+        tipoProducao,
+        condicao,
+        freteGratis,
+        marca,
+        descricaoComplementar,
+        linkExterno,
+        observacoes ,
+        descricaoEmbalagemDiscreta ,
+        source,
+        price,
+        promotion,
+        link,
+        search_id,
+        created_at,
+        updated_at
 FROM drafts
 WHERE drafts.description LIKE '%' || $1 || '%'
 `
@@ -108,8 +226,28 @@ func (q *Queries) GetDraftByDescription(ctx context.Context, dollar_1 sql.NullSt
 		var i Draft
 		if err := rows.Scan(
 			&i.ID,
+			&i.Codigo,
+			&i.Tipo,
+			&i.Situacao,
+			&i.Formato,
 			&i.ImageUrl,
 			&i.Description,
+			&i.Datavalidade,
+			&i.Unidade,
+			&i.Pesoliquido,
+			&i.Pesobruto,
+			&i.Volumes,
+			&i.Itensporcaixa,
+			&i.Gtin,
+			&i.Gtinembalagem,
+			&i.Tipoproducao,
+			&i.Condicao,
+			&i.Fretegratis,
+			&i.Marca,
+			&i.Descricaocomplementar,
+			&i.Linkexterno,
+			&i.Observacoes,
+			&i.Descricaoembalagemdiscreta,
 			&i.Source,
 			&i.Price,
 			&i.Promotion,
@@ -132,7 +270,36 @@ func (q *Queries) GetDraftByDescription(ctx context.Context, dollar_1 sql.NullSt
 }
 
 const getDraftBySearchId = `-- name: GetDraftBySearchId :one
-SELECT id, image_url, description, source, price, promotion, link, search_id, created_at, updated_at
+SELECT ID,
+        codigo, 
+        tipo,
+        situacao,
+        formato,
+        image_url,
+        description,
+        dataValidade,
+        unidade,
+        pesoLiquido,
+        pesoBruto,
+        volumes,
+        itensPorCaixa,
+        gtin,
+        gtinEmbalagem,
+        tipoProducao,
+        condicao,
+        freteGratis,
+        marca,
+        descricaoComplementar,
+        linkExterno,
+        observacoes ,
+        descricaoEmbalagemDiscreta ,
+        source,
+        price,
+        promotion,
+        link,
+        search_id,
+        created_at,
+        updated_at
 FROM drafts
 WHERE drafts.search_id = $1
 `
@@ -142,8 +309,28 @@ func (q *Queries) GetDraftBySearchId(ctx context.Context, searchID uuid.UUID) (D
 	var i Draft
 	err := row.Scan(
 		&i.ID,
+		&i.Codigo,
+		&i.Tipo,
+		&i.Situacao,
+		&i.Formato,
 		&i.ImageUrl,
 		&i.Description,
+		&i.Datavalidade,
+		&i.Unidade,
+		&i.Pesoliquido,
+		&i.Pesobruto,
+		&i.Volumes,
+		&i.Itensporcaixa,
+		&i.Gtin,
+		&i.Gtinembalagem,
+		&i.Tipoproducao,
+		&i.Condicao,
+		&i.Fretegratis,
+		&i.Marca,
+		&i.Descricaocomplementar,
+		&i.Linkexterno,
+		&i.Observacoes,
+		&i.Descricaoembalagemdiscreta,
 		&i.Source,
 		&i.Price,
 		&i.Promotion,
@@ -156,7 +343,36 @@ func (q *Queries) GetDraftBySearchId(ctx context.Context, searchID uuid.UUID) (D
 }
 
 const getDrafts = `-- name: GetDrafts :many
-SELECT id, image_url, description, source, price, promotion, link, search_id, created_at, updated_at
+SELECT ID, 
+        codigo, 
+        tipo,
+        situacao,
+        formato,
+        image_url,
+        description,
+        dataValidade,
+        unidade,
+        pesoLiquido,
+        pesoBruto,
+        volumes,
+        itensPorCaixa,
+        gtin,
+        gtinEmbalagem,
+        tipoProducao,
+        condicao,
+        freteGratis,
+        marca,
+        descricaoComplementar,
+        linkExterno,
+        observacoes ,
+        descricaoEmbalagemDiscreta ,
+        source,
+        price,
+        promotion,
+        link,
+        search_id,
+        created_at,
+        updated_at
 FROM drafts ORDER BY created_at DESC
 `
 
@@ -171,8 +387,28 @@ func (q *Queries) GetDrafts(ctx context.Context) ([]Draft, error) {
 		var i Draft
 		if err := rows.Scan(
 			&i.ID,
+			&i.Codigo,
+			&i.Tipo,
+			&i.Situacao,
+			&i.Formato,
 			&i.ImageUrl,
 			&i.Description,
+			&i.Datavalidade,
+			&i.Unidade,
+			&i.Pesoliquido,
+			&i.Pesobruto,
+			&i.Volumes,
+			&i.Itensporcaixa,
+			&i.Gtin,
+			&i.Gtinembalagem,
+			&i.Tipoproducao,
+			&i.Condicao,
+			&i.Fretegratis,
+			&i.Marca,
+			&i.Descricaocomplementar,
+			&i.Linkexterno,
+			&i.Observacoes,
+			&i.Descricaoembalagemdiscreta,
 			&i.Source,
 			&i.Price,
 			&i.Promotion,
@@ -195,36 +431,99 @@ func (q *Queries) GetDrafts(ctx context.Context) ([]Draft, error) {
 }
 
 const updateDraft = `-- name: UpdateDraft :exec
-UPDATE drafts SET description = $2, 
-  image_url = $3,
-  source = $4,
-  price  = $5,
-  promotion = $6,
-  link = $7,
-  updated_at = $8
+UPDATE drafts SET codigo = $2, 
+        tipo = $3,
+        situacao = $4,
+        formato = $5,
+        image_url = $6,
+        description = $7,
+        dataValidade = $8,
+        unidade = $9,
+        pesoLiquido = $10,
+        pesoBruto = $11,
+        volumes = $12,
+        itensPorCaixa = $13,
+        gtin = $14,
+        gtinEmbalagem = $15,
+        tipoProducao = $16,
+        condicao = $17,
+        freteGratis = $18,
+        marca = $19,
+        descricaoComplementar = $20,
+        linkExterno = $21,
+        observacoes = $22,
+        descricaoEmbalagemDiscreta = $23,
+        source = $24,
+        price = $25,
+        promotion = $26,
+        link = $27,
+        search_id = $28,
+        updated_at = $29
 WHERE drafts.id = $1
 `
 
 type UpdateDraftParams struct {
-	ID          uuid.UUID `json:"id"`
-	Description string    `json:"description"`
-	ImageUrl    string    `json:"image_url"`
-	Source      string    `json:"source"`
-	Price       float64   `json:"price"`
-	Promotion   bool      `json:"promotion"`
-	Link        string    `json:"link"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID                         uuid.UUID `json:"id"`
+	Codigo                     string    `json:"codigo"`
+	Tipo                       string    `json:"tipo"`
+	Situacao                   string    `json:"situacao"`
+	Formato                    string    `json:"formato"`
+	ImageUrl                   string    `json:"image_url"`
+	Description                string    `json:"description"`
+	Datavalidade               time.Time `json:"datavalidade"`
+	Unidade                    string    `json:"unidade"`
+	Pesoliquido                float64   `json:"pesoliquido"`
+	Pesobruto                  float64   `json:"pesobruto"`
+	Volumes                    int32     `json:"volumes"`
+	Itensporcaixa              int32     `json:"itensporcaixa"`
+	Gtin                       string    `json:"gtin"`
+	Gtinembalagem              string    `json:"gtinembalagem"`
+	Tipoproducao               string    `json:"tipoproducao"`
+	Condicao                   int32     `json:"condicao"`
+	Fretegratis                bool      `json:"fretegratis"`
+	Marca                      string    `json:"marca"`
+	Descricaocomplementar      string    `json:"descricaocomplementar"`
+	Linkexterno                string    `json:"linkexterno"`
+	Observacoes                string    `json:"observacoes"`
+	Descricaoembalagemdiscreta string    `json:"descricaoembalagemdiscreta"`
+	Source                     string    `json:"source"`
+	Price                      float64   `json:"price"`
+	Promotion                  bool      `json:"promotion"`
+	Link                       string    `json:"link"`
+	SearchID                   uuid.UUID `json:"search_id"`
+	UpdatedAt                  time.Time `json:"updated_at"`
 }
 
 func (q *Queries) UpdateDraft(ctx context.Context, arg UpdateDraftParams) error {
 	_, err := q.db.ExecContext(ctx, updateDraft,
 		arg.ID,
-		arg.Description,
+		arg.Codigo,
+		arg.Tipo,
+		arg.Situacao,
+		arg.Formato,
 		arg.ImageUrl,
+		arg.Description,
+		arg.Datavalidade,
+		arg.Unidade,
+		arg.Pesoliquido,
+		arg.Pesobruto,
+		arg.Volumes,
+		arg.Itensporcaixa,
+		arg.Gtin,
+		arg.Gtinembalagem,
+		arg.Tipoproducao,
+		arg.Condicao,
+		arg.Fretegratis,
+		arg.Marca,
+		arg.Descricaocomplementar,
+		arg.Linkexterno,
+		arg.Observacoes,
+		arg.Descricaoembalagemdiscreta,
 		arg.Source,
 		arg.Price,
 		arg.Promotion,
 		arg.Link,
+		arg.SearchID,
 		arg.UpdatedAt,
 	)
 	return err
