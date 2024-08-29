@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/claudineyveloso/soldim.git/internal/configs"
@@ -12,8 +11,6 @@ import (
 
 func NewPostgresSQLStorage(cfg configs.Config) (*sql.DB, error) {
 	var connStr string
-
-	log.Printf("Valor das variaveis de configs:%v/", cfg)
 
 	// Verifica se DATABASE_URL está definida
 	if dbURL := os.Getenv("DATABASE_URL"); dbURL != "" {

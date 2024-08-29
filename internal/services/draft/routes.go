@@ -58,7 +58,7 @@ func (h *Handler) handleCreateDraft(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := utils.Validate.Struct(draft); err != nil {
 		errors := err.(validator.ValidationErrors)
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("Payload inválido: %v", errors))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("payload inválido: %v", errors))
 		return
 	}
 	err := h.draftStore.CreateDraft(draft)
@@ -88,12 +88,12 @@ func (h *Handler) handleDeleteDraft(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	str, ok := vars["draftID"]
 	if !ok {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Draft ausente!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Draft ausente"))
 		return
 	}
 	parsedDraftsID, err := uuid.Parse(str)
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Draft inválido!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Draft inválido"))
 		return
 	}
 
@@ -121,12 +121,12 @@ func (h *Handler) handleDeleteDraftBySearchID(w http.ResponseWriter, r *http.Req
 	vars := mux.Vars(r)
 	str, ok := vars["searchID"]
 	if !ok {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Search ausente!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Search ausente"))
 		return
 	}
 	parsedSearchesID, err := uuid.Parse(str)
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Search inválido!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Search inválido"))
 		return
 	}
 
@@ -154,12 +154,12 @@ func (h *Handler) handleGetDraft(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	str, ok := vars["draftID"]
 	if !ok {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Rascunho ausente!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Rascunho ausente"))
 		return
 	}
 	parsedDraftsID, err := uuid.Parse(str)
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Rascunho inválido!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Rascunho inválido"))
 		return
 	}
 
@@ -175,12 +175,12 @@ func (h *Handler) handleGetDraftBySearchID(w http.ResponseWriter, r *http.Reques
 	vars := mux.Vars(r)
 	str, ok := vars["searchID"]
 	if !ok {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Search ausente!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Search ausente"))
 		return
 	}
 	parsedSearchID, err := uuid.Parse(str)
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Search inválido!"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("ID do Search inválido"))
 		return
 	}
 
@@ -200,7 +200,7 @@ func (h *Handler) handleUpdateDraft(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := utils.Validate.Struct(draft); err != nil {
 		errors := err.(validator.ValidationErrors)
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("Payload inválido: %v", errors))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("payload inválido: %v", errors))
 		return
 	}
 
