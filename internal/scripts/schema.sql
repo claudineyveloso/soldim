@@ -111,8 +111,6 @@ CREATE TABLE IF NOT EXISTS drafts (
     ON DELETE CASCADE
 );
 
-create unique index codigo_sku_draft_idx on drafts (codigo);
-
 DROP TABLE IF EXISTS "parameters";
 CREATE TABLE IF NOT EXISTS parameters (
   id                  UUID PRIMARY KEY,
