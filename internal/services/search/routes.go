@@ -84,7 +84,7 @@ func (h *Handler) handleCreateSearch(w http.ResponseWriter, r *http.Request) {
 	// Gravar o produto com o menor preço na tabela de draft
 	draft := types.DraftPayload{
 		ID:          uuid.New(),
-		ImageURL:    productWithLowestPrice.ImageURL,
+		ImageUrl:    productWithLowestPrice.ImageURL,
 		Description: productWithLowestPrice.Description,
 		Source:      productWithLowestPrice.Source,
 		Price:       productWithLowestPrice.Price,

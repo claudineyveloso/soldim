@@ -30,7 +30,7 @@ func (s *Store) CreateDraft(draft types.DraftPayload) error {
 
 	createDraftParams := db.CreateDraftParams{
 		ID:          draft.ID,
-		ImageUrl:    draft.ImageURL,
+		ImageUrl:    draft.ImageUrl,
 		Source:      draft.Source,
 		Price:       draft.Price,
 		Description: draft.Description,
@@ -74,7 +74,7 @@ func (s *Store) UpdateDraft(draft types.DraftPayload) error {
 
 	updateDraftParams := db.UpdateDraftParams{
 		ID:          draft.ID,
-		ImageUrl:    draft.ImageURL,
+		ImageUrl:    draft.ImageUrl,
 		Source:      draft.Source,
 		Price:       draft.Price,
 		Description: draft.Description,
@@ -137,7 +137,7 @@ func (s *Store) DeleteDraftBySearchID(searchID uuid.UUID) error {
 func convertDBDraftToDraft(dbDraft db.Draft) *types.Draft {
 	draft := &types.Draft{
 		ID:          dbDraft.ID,
-		ImageURL:    dbDraft.ImageUrl,
+		ImageUrl:    dbDraft.ImageUrl,
 		Description: dbDraft.Description,
 		Source:      dbDraft.Source,
 		Price:       dbDraft.Price,
