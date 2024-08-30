@@ -146,6 +146,7 @@ CREATE TABLE IF NOT EXISTS products (
   linkExterno                 varchar not null default '',
   observacoes                 varchar not null default '',
   descricaoEmbalagemDiscreta  varchar not null default '',
+  new_record                  boolean not null default true,
   created_at                  timestamp not null,
   updated_at                  timestamp not null
 );

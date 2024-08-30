@@ -161,6 +161,7 @@ type Product struct {
 	Linkexterno                string    `json:"linkexterno"`
 	Observacoes                string    `json:"observacoes"`
 	Descricaoembalagemdiscreta string    `json:"descricaoembalagemdiscreta"`
+	NewRecord                  bool      `json:"new_record"`
 	CreatedAt                  time.Time `json:"created_at"`
 	UpdatedAt                  time.Time `json:"updated_at"`
 }

@@ -12,8 +12,8 @@ import (
 )
 
 const createProduct = `-- name: CreateProduct :exec
-INSERT INTO products (ID, idProdutoPai, nome, codigo, preco, tipo, situacao, formato, descricao_curta, imagem_url, dataValidade, unidade, pesoLiquido, pesoBruto, volumes, itensPorCaixa, gtin, gtinEmbalagem, tipoProducao, condicao, freteGratis, marca, descricaoComplementar, linkExterno, observacoes, descricaoEmbalagemDiscreta, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28)
+INSERT INTO products (ID, idProdutoPai, nome, codigo, preco, tipo, situacao, formato, descricao_curta, imagem_url, dataValidade, unidade, pesoLiquido, pesoBruto, volumes, itensPorCaixa, gtin, gtinEmbalagem, tipoProducao, condicao, freteGratis, marca, descricaoComplementar, linkExterno, observacoes, descricaoEmbalagemDiscreta, new_record, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29)
 `
 
 type CreateProductParams struct {
@@ -43,6 +43,7 @@ type CreateProductParams struct {
 	Linkexterno                string    `json:"linkexterno"`
 	Observacoes                string    `json:"observacoes"`
 	Descricaoembalagemdiscreta string    `json:"descricaoembalagemdiscreta"`
+	NewRecord                  bool      `json:"new_record"`
 	CreatedAt                  time.Time `json:"created_at"`
 	UpdatedAt                  time.Time `json:"updated_at"`
 }
@@ -75,6 +76,7 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) er
 		arg.Linkexterno,
 		arg.Observacoes,
 		arg.Descricaoembalagemdiscreta,
+		arg.NewRecord,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
@@ -141,6 +143,7 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
+    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -191,6 +194,7 @@ type GetProductRow struct {
 	Linkexterno                string        `json:"linkexterno"`
 	Observacoes                string        `json:"observacoes"`
 	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
+	NewRecord                  bool          `json:"new_record"`
 	CreatedAt                  time.Time     `json:"created_at"`
 	UpdatedAt                  time.Time     `json:"updated_at"`
 	SaldoFisicoTotal           int64         `json:"saldo_fisico_total"`
@@ -232,6 +236,7 @@ func (q *Queries) GetProduct(ctx context.Context, id int64) (GetProductRow, erro
 		&i.Linkexterno,
 		&i.Observacoes,
 		&i.Descricaoembalagemdiscreta,
+		&i.NewRecord,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.SaldoFisicoTotal,
@@ -295,6 +300,7 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
+    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -345,6 +351,7 @@ type GetProductByNameRow struct {
 	Linkexterno                string        `json:"linkexterno"`
 	Observacoes                string        `json:"observacoes"`
 	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
+	NewRecord                  bool          `json:"new_record"`
 	CreatedAt                  time.Time     `json:"created_at"`
 	UpdatedAt                  time.Time     `json:"updated_at"`
 	SaldoFisicoTotal           int64         `json:"saldo_fisico_total"`
@@ -386,6 +393,7 @@ func (q *Queries) GetProductByName(ctx context.Context, nome string) (GetProduct
 		&i.Linkexterno,
 		&i.Observacoes,
 		&i.Descricaoembalagemdiscreta,
+		&i.NewRecord,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.SaldoFisicoTotal,
@@ -427,6 +435,7 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
+    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -480,6 +489,7 @@ type GetProductBySupplierIDRow struct {
 	Linkexterno                string    `json:"linkexterno"`
 	Observacoes                string    `json:"observacoes"`
 	Descricaoembalagemdiscreta string    `json:"descricaoembalagemdiscreta"`
+	NewRecord                  bool      `json:"new_record"`
 	CreatedAt                  time.Time `json:"created_at"`
 	UpdatedAt                  time.Time `json:"updated_at"`
 	SaldoFisicoTotal           int64     `json:"saldo_fisico_total"`
@@ -521,6 +531,7 @@ func (q *Queries) GetProductBySupplierID(ctx context.Context, supplierID int64) 
 		&i.Linkexterno,
 		&i.Observacoes,
 		&i.Descricaoembalagemdiscreta,
+		&i.NewRecord,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.SaldoFisicoTotal,
@@ -584,6 +595,7 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
+    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -647,6 +659,7 @@ type GetProductEmptyStockRow struct {
 	Linkexterno                string        `json:"linkexterno"`
 	Observacoes                string        `json:"observacoes"`
 	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
+	NewRecord                  bool          `json:"new_record"`
 	CreatedAt                  time.Time     `json:"created_at"`
 	UpdatedAt                  time.Time     `json:"updated_at"`
 	SaldoFisicoTotal           int64         `json:"saldo_fisico_total"`
@@ -694,6 +707,7 @@ func (q *Queries) GetProductEmptyStock(ctx context.Context, arg GetProductEmptyS
 			&i.Linkexterno,
 			&i.Observacoes,
 			&i.Descricaoembalagemdiscreta,
+			&i.NewRecord,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.SaldoFisicoTotal,
@@ -782,6 +796,7 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
+    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -845,6 +860,7 @@ type GetProductNoMovementsRow struct {
 	Linkexterno                string         `json:"linkexterno"`
 	Observacoes                string         `json:"observacoes"`
 	Descricaoembalagemdiscreta string         `json:"descricaoembalagemdiscreta"`
+	NewRecord                  bool           `json:"new_record"`
 	CreatedAt                  time.Time      `json:"created_at"`
 	UpdatedAt                  time.Time      `json:"updated_at"`
 	SaldoFisicoTotal           int64          `json:"saldo_fisico_total"`
@@ -899,6 +915,7 @@ func (q *Queries) GetProductNoMovements(ctx context.Context, arg GetProductNoMov
 			&i.Linkexterno,
 			&i.Observacoes,
 			&i.Descricaoembalagemdiscreta,
+			&i.NewRecord,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.SaldoFisicoTotal,
@@ -979,6 +996,7 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
+    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -1039,6 +1057,7 @@ type GetProductsRow struct {
 	Linkexterno                string        `json:"linkexterno"`
 	Observacoes                string        `json:"observacoes"`
 	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
+	NewRecord                  bool          `json:"new_record"`
 	CreatedAt                  time.Time     `json:"created_at"`
 	UpdatedAt                  time.Time     `json:"updated_at"`
 	SaldoFisicoTotal           int64         `json:"saldo_fisico_total"`
@@ -1086,6 +1105,7 @@ func (q *Queries) GetProducts(ctx context.Context, arg GetProductsParams) ([]Get
 			&i.Linkexterno,
 			&i.Observacoes,
 			&i.Descricaoembalagemdiscreta,
+			&i.NewRecord,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.SaldoFisicoTotal,
@@ -1135,7 +1155,8 @@ UPDATE products SET idProdutoPai = $2,
   linkExterno = $24,
   observacoes = $25,
   descricaoEmbalagemDiscreta = $26,
-  updated_at = $27
+  new_record = $27,
+  updated_at = $28
 WHERE products.id = $1
 `
 
@@ -1166,6 +1187,7 @@ type UpdateProductParams struct {
 	Linkexterno                string    `json:"linkexterno"`
 	Observacoes                string    `json:"observacoes"`
 	Descricaoembalagemdiscreta string    `json:"descricaoembalagemdiscreta"`
+	NewRecord                  bool      `json:"new_record"`
 	UpdatedAt                  time.Time `json:"updated_at"`
 }
 
@@ -1197,6 +1219,7 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) er
 		arg.Linkexterno,
 		arg.Observacoes,
 		arg.Descricaoembalagemdiscreta,
+		arg.NewRecord,
 		arg.UpdatedAt,
 	)
 	return err

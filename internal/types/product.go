@@ -74,6 +74,7 @@ type Product struct {
 	Linkexterno                string        `json:"link_externo"`
 	Observacoes                string        `json:"observacoes"`
 	Descricaoembalagemdiscreta string        `json:"descricao_embalagem_discreta"`
+	NewRecord                  bool          `json:"new_record"`
 	CreatedAt                  time.Time     `json:"created_at"`
 	UpdatedAt                  time.Time     `json:"updated_at"`
 	SaldoFisicoTotal           int64         `json:"saldo_fisico_total"`
@@ -199,6 +200,7 @@ type ProductPayload struct {
 	Linkexterno                string        `json:"link_externo"`
 	Observacoes                string        `json:"observacoes"`
 	Descricaoembalagemdiscreta string        `json:"descricao_embalagem_discreta"`
+	NewRecord                  bool          `json:"new_record"`
 	CreatedAt                  time.Time     `json:"created_at"`
 	UpdatedAt                  time.Time     `json:"updated_at"`
 	SaldoFisicoTotal           NullableInt   `json:"saldo_fisico_total"`

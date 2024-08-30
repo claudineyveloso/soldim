@@ -45,6 +45,10 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 	limitStr := r.URL.Query().Get("limit")
 	name := r.URL.Query().Get("name")
 	criterioStr := "5"
+	dataInclusaoInicial := r.URL.Query().Get("dataInclusaoInicial")
+	dataInclusaoFinal := r.URL.Query().Get("dataInclusaoFinal")
+	dataAlteracaoInicial := r.URL.Query().Get("dataAlteracaoInicial")
+	dataAlteracaoFinal := r.URL.Query().Get("dataAlteracaoFinal")
 	page, err := strconv.Atoi(pageStr)
 	if err != nil || page < 1 {
 		page = 1
@@ -66,7 +70,7 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 	limit = 100
 
 	for {
-		products, totalPages, err := bling.GetProductsFromBling(token, page, limit, name, criterio)
+		products, totalPages, err := bling.GetProductsFromBling(token, page, limit, name, criterio, dataInclusaoInicial, dataInclusaoFinal, dataAlteracaoInicial, dataAlteracaoFinal)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -450,6 +454,11 @@ func handleGetProduct(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
 	criterioStr := r.URL.Query().Get("criterio")
 
+	dataInclusaoInicial := r.URL.Query().Get("dataInclusaoInicial")
+	dataInclusaoFinal := r.URL.Query().Get("dataInclusaoFinal")
+	dataAlteracaoInicial := r.URL.Query().Get("dataAlteracaoInicial")
+	dataAlteracaoFinal := r.URL.Query().Get("dataAlteracaoFinal")
+
 	page, err := strconv.Atoi(pageStr)
 	if err != nil || page < 1 {
 		page = 1
@@ -465,7 +474,7 @@ func handleGetProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Printf("Requesting page: %d with limit: %d and name: %s\n", page, limit, name)
-	products, totalPages, err := bling.GetProductsFromBling(token, page, limit, name, criterio)
+	products, totalPages, err := bling.GetProductsFromBling(token, page, limit, name, criterio, dataInclusaoInicial, dataInclusaoFinal, dataAlteracaoInicial, dataAlteracaoFinal)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

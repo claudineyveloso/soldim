@@ -14,7 +14,7 @@ import (
 
 const limitePorPagina = 100
 
-func GetProductsFromBling(bearerToken string, page int, limit int, name string, criterio int) ([]types.Product, int, error) {
+func GetProductsFromBling(bearerToken string, page int, limit int, name string, criterio int, dataInclusaoInicial, dataInclusaoFinal, dataAlteracaoInicial, dataAlteracaoFinal string) ([]types.Product, int, error) {
 	client := &http.Client{}
 
 	// Construindo a URL com os parâmetros página, limite e nome (se fornecido)
@@ -26,6 +26,19 @@ func GetProductsFromBling(bearerToken string, page int, limit int, name string, 
 		params.Add("nome", name)
 	}
 	params.Add("criterio", fmt.Sprintf("%d", criterio))
+
+	if dataInclusaoInicial != "" {
+		params.Add("dataInclusaoInicial", dataInclusaoInicial)
+	}
+	if dataInclusaoFinal != "" {
+		params.Add("dataInclusaoFinal", dataInclusaoFinal)
+	}
+	if dataAlteracaoInicial != "" {
+		params.Add("dataAlteracaoInicial", dataAlteracaoInicial)
+	}
+	if dataAlteracaoFinal != "" {
+		params.Add("dataAlteracaoFinal", dataAlteracaoFinal)
+	}
 
 	url := fmt.Sprintf("%s?%s", baseURL, params.Encode())
 	fmt.Printf("Enviando requisição para URL: %s\n", url)

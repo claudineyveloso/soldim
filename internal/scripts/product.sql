@@ -1,6 +1,6 @@
 -- name: CreateProduct :exec
-INSERT INTO products (ID, idProdutoPai, nome, codigo, preco, tipo, situacao, formato, descricao_curta, imagem_url, dataValidade, unidade, pesoLiquido, pesoBruto, volumes, itensPorCaixa, gtin, gtinEmbalagem, tipoProducao, condicao, freteGratis, marca, descricaoComplementar, linkExterno, observacoes, descricaoEmbalagemDiscreta, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28);
+INSERT INTO products (ID, idProdutoPai, nome, codigo, preco, tipo, situacao, formato, descricao_curta, imagem_url, dataValidade, unidade, pesoLiquido, pesoBruto, volumes, itensPorCaixa, gtin, gtinEmbalagem, tipoProducao, condicao, freteGratis, marca, descricaoComplementar, linkExterno, observacoes, descricaoEmbalagemDiscreta, new_record, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29);
 
 -- name: GetProduct :one
 WITH aggregated_stocks AS (
@@ -52,6 +52,7 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
+    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -124,6 +125,7 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
+    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -200,6 +202,7 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
+    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -272,6 +275,7 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
+    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -367,6 +371,7 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
+    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -425,6 +430,7 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
+    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -476,7 +482,8 @@ UPDATE products SET idProdutoPai = $2,
   linkExterno = $24,
   observacoes = $25,
   descricaoEmbalagemDiscreta = $26,
-  updated_at = $27
+  new_record = $27,
+  updated_at = $28
 WHERE products.id = $1;
 
 -- name: DeleteProduct :exec

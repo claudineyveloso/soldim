@@ -24,6 +24,7 @@ func (s *Store) CreateProduct(product types.ProductPayload) error {
 	ctx := context.Background()
 
 	now := time.Now()
+	product.NewRecord = true
 	product.CreatedAt = now
 	product.UpdatedAt = now
 
@@ -53,6 +54,7 @@ func (s *Store) CreateProduct(product types.ProductPayload) error {
 		Linkexterno:                product.Linkexterno,
 		Observacoes:                product.Observacoes,
 		Descricaoembalagemdiscreta: product.Descricaoembalagemdiscreta,
+		NewRecord:                  product.NewRecord,
 		CreatedAt:                  product.CreatedAt,
 		UpdatedAt:                  product.UpdatedAt,
 	}
@@ -131,6 +133,7 @@ func (s *Store) UpdateProduct(product types.ProductPayload) error {
 	ctx := context.Background()
 
 	now := time.Now()
+	product.NewRecord = false
 	product.UpdatedAt = now
 
 	updateProductParams := db.UpdateProductParams{
@@ -159,6 +162,7 @@ func (s *Store) UpdateProduct(product types.ProductPayload) error {
 		Linkexterno:                product.Linkexterno,
 		Observacoes:                product.Observacoes,
 		Descricaoembalagemdiscreta: product.Descricaoembalagemdiscreta,
+		NewRecord:                  product.NewRecord,
 		UpdatedAt:                  product.UpdatedAt,
 	}
 
@@ -218,6 +222,7 @@ func convertDBProductToProduct(dbProduct db.GetProductsRow) *types.Product {
 		Linkexterno:                dbProduct.Linkexterno,
 		Observacoes:                dbProduct.Observacoes,
 		Descricaoembalagemdiscreta: dbProduct.Descricaoembalagemdiscreta,
+		NewRecord:                  dbProduct.NewRecord,
 		CreatedAt:                  dbProduct.CreatedAt,
 		UpdatedAt:                  dbProduct.UpdatedAt,
 		SaldoFisicoTotal:           dbProduct.SaldoFisico,
@@ -259,6 +264,7 @@ func convertGetProductRowToProduct(dbProduct db.GetProductRow) *types.Product {
 		Linkexterno:                dbProduct.Linkexterno,
 		Observacoes:                dbProduct.Observacoes,
 		Descricaoembalagemdiscreta: dbProduct.Descricaoembalagemdiscreta,
+		NewRecord:                  dbProduct.NewRecord,
 		CreatedAt:                  dbProduct.CreatedAt,
 		UpdatedAt:                  dbProduct.UpdatedAt,
 		SaldoFisicoTotal:           dbProduct.SaldoFisicoTotal,
