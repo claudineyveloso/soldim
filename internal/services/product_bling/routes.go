@@ -540,46 +540,6 @@ func handleCreateProduct(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Produto criado com sucesso!")
 }
 
-func handleCreateProductXXX(w http.ResponseWriter, r *http.Request) {
-	token, err := utils.FetchAccessToken()
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error fetching access token: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	if r.Method != http.MethodPost {
-		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Decodifica o JSON do corpo da requisição para a estrutura Product
-	var newProduct types.ProductBlingPayload
-	if err := json.NewDecoder(r.Body).Decode(&newProduct); err != nil {
-		http.Error(w, "Erro ao decodificar JSON", http.StatusBadRequest)
-		return
-	}
-
-	newProduct.DataValidade = time.Now().Format("2006-01-02")
-
-	// Fecha o corpo da requisição após o processamento
-	defer r.Body.Close()
-
-	fmt.Printf("Novo produto: %+v\n", newProduct)
-
-	// bearerToken := "981b387171e4db2550a80c80eb1fbd7c6af0a807" // r.Header.Get("Authorization")
-	// Chama a função para criar o produto no Bling
-	err = bling.CreateProductInBling(token, newProduct)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Erro ao criar produto: %v", err), http.StatusInternalServerError)
-		log.Fatalf("Erro ao criar produto: %v", err)
-		return
-	}
-
-	// Responde com sucesso
-	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, "Produto criado com sucesso!")
-}
-
 func handleUpdateProduct(w http.ResponseWriter, r *http.Request) {
 	token, err := utils.FetchAccessToken()
 	if err != nil {

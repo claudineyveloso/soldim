@@ -10,6 +10,7 @@ import (
 
 	"github.com/claudineyveloso/soldim.git/internal/db"
 	"github.com/claudineyveloso/soldim.git/internal/types"
+	"github.com/claudineyveloso/soldim.git/internal/utils"
 	"github.com/google/uuid"
 	"github.com/xuri/excelize/v2"
 )
@@ -52,6 +53,25 @@ func (s *Store) ImportTriagesFromFile(f *excelize.File) error {
 		// Adicionar log para verificar o número de colunas
 		log.Printf("Processando linha %d com %d colunas\n", i+1, len(row))
 
+		// Conversão segura dos valores monetários
+		unitaryValue, err := utils.ParseCurrency(row[9])
+		if err != nil {
+			log.Printf("Erro ao converter UnitaryValue na linha %d: %v", i+1, err)
+			unitaryValue = 0 // Ou outro valor padrão
+		}
+
+		totalValueOffered, err := utils.ParseCurrency(row[10])
+		if err != nil {
+			log.Printf("Erro ao converter TotalValueOffered na linha %d: %v", i+1, err)
+			totalValueOffered = 0 // Ou outro valor padrão
+		}
+
+		finalTotalValue, err := utils.ParseCurrency(row[11])
+		if err != nil {
+			log.Printf("Erro ao converter FinalTotalValue na linha %d: %v", i+1, err)
+			finalTotalValue = 0 // Ou outro valor padrão
+		}
+
 		triage := &types.Triage{
 			Type:              row[0],
 			Grid:              row[1],
@@ -62,9 +82,9 @@ func (s *Store) ImportTriagesFromFile(f *excelize.File) error {
 			Seller:            row[6],
 			QuantitySupplied:  parseInt32(row[7]),
 			FinalQuantity:     parseInt32(row[8]),
-			UnitaryValue:      parseFloat(row[9]),
-			TotalValueOffered: parseFloat(row[10]),
-			FinalTotalValue:   parseFloat(row[11]),
+			UnitaryValue:      unitaryValue,
+			TotalValueOffered: totalValueOffered,
+			FinalTotalValue:   finalTotalValue,
 			Category:          row[12],
 			SubCategory:       row[13],
 		}

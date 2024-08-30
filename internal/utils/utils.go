@@ -3,10 +3,13 @@ package utils
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -201,33 +204,41 @@ func FetchAccessToken() (string, error) {
 	return responseArray[0].AccessToken, nil
 }
 
-func FetchAccessTokenaaa() (string, error) {
-	req, err := http.NewRequest("GET", baseURL+"/get_token", nil)
+func ParseFloat(value string) float64 {
+	// Verificar se existe "R$" no valor e removê-lo se estiver presente
+	if strings.Contains(value, "R$") {
+		value = strings.Replace(value, "R$", "", -1)
+	}
+
+	// Remover espaços em branco e substituir "," por "."
+	value = strings.TrimSpace(strings.Replace(value, ",", ".", -1))
+
+	floatValue, err := strconv.ParseFloat(value, 64)
 	if err != nil {
-		return "", fmt.Errorf("error creating request: %v", err)
+		log.Printf("Erro ao converter %s para float64: %v\n", value, err)
+		return 0
+	}
+	return floatValue
+}
+
+func ParseCurrency(value string) (float64, error) {
+	// Verifica se o valor contém "R$"
+	if strings.Contains(value, "R$") {
+		// Remove "R$" e espaços em branco
+		value = strings.TrimSpace(strings.Replace(value, "R$", "", -1))
 	}
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	// Substitui vírgula por ponto (caso seja necessário)
+	value = strings.Replace(value, ",", ".", 1)
+
+	// Imprime o valor após a substituição para verificar o que está chegando
+	fmt.Println("Valor após substituir vírgula por ponto:", value)
+
+	// Tenta converter para float64
+	result, err := strconv.ParseFloat(value, 64)
 	if err != nil {
-		return "", fmt.Errorf("error sending request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return "", fmt.Errorf("failed to get access token. Status: %v, Response: %s", resp.Status, string(body))
+		return 0, errors.New("erro ao converter valor para float64: " + err.Error())
 	}
 
-	var result map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return "", fmt.Errorf("error decoding response: %v", err)
-	}
-
-	token, ok := result["access_token"].(string)
-	if !ok {
-		return "", fmt.Errorf("access_token not found in response")
-	}
-
-	return token, nil
+	return result, nil
 }
