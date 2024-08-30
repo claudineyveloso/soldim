@@ -262,6 +262,7 @@ type stock struct {
 type ProductStore interface {
 	CreateProduct(ProductPayload) error
 	GetProducts(nome, situacao string) ([]*Product, error)
+	GetProductsNew(new_record bool) ([]*Product, error)
 	GetProductByID(id int64) (*Product, error)
 	GetProductNoMovements(nome, situacao string) ([]*ProductNoMovements, error)
 	GetProductEmptyStock(nome, situacao string) ([]*ProductEmptyStock, error)

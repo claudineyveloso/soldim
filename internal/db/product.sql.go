@@ -1129,6 +1129,180 @@ func (q *Queries) GetProducts(ctx context.Context, arg GetProductsParams) ([]Get
 	return items, nil
 }
 
+const getProductsNew = `-- name: GetProductsNew :many
+WITH aggregated_stocks AS (
+    SELECT product_id,
+           SUM(saldo_fisico_total) AS saldo_fisico_total,
+           SUM(saldo_virtual_total) AS saldo_virtual_total
+    FROM stocks
+    GROUP BY product_id
+),
+aggregated_deposit_products AS (
+    SELECT product_id,
+           SUM(saldo_fisico) AS saldo_fisico,
+           SUM(saldo_virtual) AS saldo_virtual
+    FROM deposit_products
+    GROUP BY product_id
+),
+aggregated_supplier_products AS (
+    SELECT product_id,
+           AVG(preco_custo) AS preco_custo,
+           AVG(preco_compra) AS preco_compra,
+           supplier_id
+    FROM supplier_products
+    GROUP BY product_id, supplier_id
+)
+SELECT
+    p.ID,
+    p.idProdutoPai,
+    p.nome,
+    p.codigo,
+    p.preco,
+    p.tipo,
+    p.situacao,
+    p.formato,
+    p.descricao_curta,
+    p.imagem_url,
+    p.dataValidade,
+    p.unidade,
+    p.pesoLiquido,
+    p.pesoBruto,
+    p.volumes,
+    p.itensPorCaixa,
+    p.gtin,
+    p.gtinEmbalagem,
+    p.tipoProducao,
+    p.condicao,
+    p.freteGratis,
+    p.marca,
+    p.descricaoComplementar,
+    p.linkExterno,
+    p.observacoes,
+    p.descricaoEmbalagemDiscreta,
+    p.new_record,
+    p.created_at,
+    p.updated_at,
+    COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
+    COALESCE(s.saldo_virtual_total, 0) AS saldo_virtual_total,
+    COALESCE(dp.saldo_fisico, 0) AS saldo_fisico,
+    COALESCE(dp.saldo_virtual, 0) AS saldo_virtual,
+    COALESCE(sp.preco_custo, 0) AS preco_custo,
+    COALESCE(sp.preco_compra, 0) AS preco_compra,
+    sp.supplier_id
+FROM
+    products p
+LEFT JOIN
+    aggregated_stocks s
+    ON p.id = s.product_id
+LEFT JOIN
+    aggregated_deposit_products dp
+    ON p.id = dp.product_id
+LEFT JOIN
+    aggregated_supplier_products sp
+    ON p.id = sp.product_id
+WHERE p.new_record = $1
+    ORDER BY p.id DESC
+`
+
+type GetProductsNewRow struct {
+	ID                         int64         `json:"id"`
+	Idprodutopai               int64         `json:"idprodutopai"`
+	Nome                       string        `json:"nome"`
+	Codigo                     string        `json:"codigo"`
+	Preco                      float64       `json:"preco"`
+	Tipo                       string        `json:"tipo"`
+	Situacao                   string        `json:"situacao"`
+	Formato                    string        `json:"formato"`
+	DescricaoCurta             string        `json:"descricao_curta"`
+	ImagemUrl                  string        `json:"imagem_url"`
+	Datavalidade               time.Time     `json:"datavalidade"`
+	Unidade                    string        `json:"unidade"`
+	Pesoliquido                float64       `json:"pesoliquido"`
+	Pesobruto                  float64       `json:"pesobruto"`
+	Volumes                    int32         `json:"volumes"`
+	Itensporcaixa              int32         `json:"itensporcaixa"`
+	Gtin                       string        `json:"gtin"`
+	Gtinembalagem              string        `json:"gtinembalagem"`
+	Tipoproducao               string        `json:"tipoproducao"`
+	Condicao                   int32         `json:"condicao"`
+	Fretegratis                bool          `json:"fretegratis"`
+	Marca                      string        `json:"marca"`
+	Descricaocomplementar      string        `json:"descricaocomplementar"`
+	Linkexterno                string        `json:"linkexterno"`
+	Observacoes                string        `json:"observacoes"`
+	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
+	NewRecord                  bool          `json:"new_record"`
+	CreatedAt                  time.Time     `json:"created_at"`
+	UpdatedAt                  time.Time     `json:"updated_at"`
+	SaldoFisicoTotal           int64         `json:"saldo_fisico_total"`
+	SaldoVirtualTotal          int64         `json:"saldo_virtual_total"`
+	SaldoFisico                int64         `json:"saldo_fisico"`
+	SaldoVirtual               int64         `json:"saldo_virtual"`
+	PrecoCusto                 float64       `json:"preco_custo"`
+	PrecoCompra                float64       `json:"preco_compra"`
+	SupplierID                 sql.NullInt64 `json:"supplier_id"`
+}
+
+func (q *Queries) GetProductsNew(ctx context.Context, newRecord bool) ([]GetProductsNewRow, error) {
+	rows, err := q.db.QueryContext(ctx, getProductsNew, newRecord)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetProductsNewRow
+	for rows.Next() {
+		var i GetProductsNewRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Idprodutopai,
+			&i.Nome,
+			&i.Codigo,
+			&i.Preco,
+			&i.Tipo,
+			&i.Situacao,
+			&i.Formato,
+			&i.DescricaoCurta,
+			&i.ImagemUrl,
+			&i.Datavalidade,
+			&i.Unidade,
+			&i.Pesoliquido,
+			&i.Pesobruto,
+			&i.Volumes,
+			&i.Itensporcaixa,
+			&i.Gtin,
+			&i.Gtinembalagem,
+			&i.Tipoproducao,
+			&i.Condicao,
+			&i.Fretegratis,
+			&i.Marca,
+			&i.Descricaocomplementar,
+			&i.Linkexterno,
+			&i.Observacoes,
+			&i.Descricaoembalagemdiscreta,
+			&i.NewRecord,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.SaldoFisicoTotal,
+			&i.SaldoVirtualTotal,
+			&i.SaldoFisico,
+			&i.SaldoVirtual,
+			&i.PrecoCusto,
+			&i.PrecoCompra,
+			&i.SupplierID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateProduct = `-- name: UpdateProduct :exec
 UPDATE products SET idProdutoPai = $2,
   nome = $3,

@@ -128,6 +128,21 @@ func (s *Store) GetProductEmptyStock(nome, situacao string) ([]*types.ProductEmp
 	return products, nil
 }
 
+func (s *Store) GetProductsNew(new_record bool) ([]*types.Product, error) {
+	queries := db.New(s.db)
+	ctx := context.Background()
+	dbProducts, err := queries.GetProductsNew(ctx, new_record)
+	if err != nil {
+		return nil, err
+	}
+	var products []*types.Product
+	for _, dbProduct := range dbProducts {
+		product := convertGetProductNewRowToProductNew(dbProduct)
+		products = append(products, product)
+	}
+	return products, nil
+}
+
 func (s *Store) UpdateProduct(product types.ProductPayload) error {
 	queries := db.New(s.db)
 	ctx := context.Background()
@@ -237,6 +252,48 @@ func convertDBProductToProduct(dbProduct db.GetProductsRow) *types.Product {
 }
 
 func convertGetProductRowToProduct(dbProduct db.GetProductRow) *types.Product {
+	product := &types.Product{
+		ID:                         dbProduct.ID,
+		Idprodutopai:               dbProduct.Idprodutopai,
+		Nome:                       dbProduct.Nome,
+		Codigo:                     dbProduct.Codigo,
+		Preco:                      dbProduct.Preco,
+		ImagemUrl:                  dbProduct.ImagemUrl,
+		Tipo:                       dbProduct.Tipo,
+		Situacao:                   dbProduct.Situacao,
+		Formato:                    dbProduct.Formato,
+		DescricaoCurta:             dbProduct.DescricaoCurta,
+		Datavalidade:               dbProduct.Datavalidade,
+		Unidade:                    dbProduct.Unidade,
+		Pesoliquido:                dbProduct.Pesoliquido,
+		Pesobruto:                  dbProduct.Pesobruto,
+		Volumes:                    dbProduct.Volumes,
+		Itensporcaixa:              dbProduct.Itensporcaixa,
+		Gtin:                       dbProduct.Gtin,
+		Gtinembalagem:              dbProduct.Gtinembalagem,
+		Tipoproducao:               dbProduct.Tipoproducao,
+		Condicao:                   dbProduct.Condicao,
+		Fretegratis:                dbProduct.Fretegratis,
+		Marca:                      dbProduct.Marca,
+		Descricaocomplementar:      dbProduct.Descricaocomplementar,
+		Linkexterno:                dbProduct.Linkexterno,
+		Observacoes:                dbProduct.Observacoes,
+		Descricaoembalagemdiscreta: dbProduct.Descricaoembalagemdiscreta,
+		NewRecord:                  dbProduct.NewRecord,
+		CreatedAt:                  dbProduct.CreatedAt,
+		UpdatedAt:                  dbProduct.UpdatedAt,
+		SaldoFisicoTotal:           dbProduct.SaldoFisicoTotal,
+		SaldoVirtualTotal:          dbProduct.SaldoVirtualTotal,
+		SaldoFisico:                dbProduct.SaldoFisico,
+		SaldoVirtual:               dbProduct.SaldoVirtual,
+		PrecoCusto:                 dbProduct.PrecoCusto,
+		PrecoCompra:                dbProduct.PrecoCompra,
+		SupplierID:                 types.NullableInt64{NullInt64: dbProduct.SupplierID},
+	}
+	return product
+}
+
+func convertGetProductNewRowToProductNew(dbProduct db.GetProductsNewRow) *types.Product {
 	product := &types.Product{
 		ID:                         dbProduct.ID,
 		Idprodutopai:               dbProduct.Idprodutopai,

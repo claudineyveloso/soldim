@@ -152,6 +152,80 @@ WHERE
     AND ($3::text IS NULL OR $3 = '' OR sp.supplier_id = $3::int)
     ORDER BY p.id DESC;
 
+-- name: GetProductsNew :many
+WITH aggregated_stocks AS (
+    SELECT product_id,
+           SUM(saldo_fisico_total) AS saldo_fisico_total,
+           SUM(saldo_virtual_total) AS saldo_virtual_total
+    FROM stocks
+    GROUP BY product_id
+),
+aggregated_deposit_products AS (
+    SELECT product_id,
+           SUM(saldo_fisico) AS saldo_fisico,
+           SUM(saldo_virtual) AS saldo_virtual
+    FROM deposit_products
+    GROUP BY product_id
+),
+aggregated_supplier_products AS (
+    SELECT product_id,
+           AVG(preco_custo) AS preco_custo,
+           AVG(preco_compra) AS preco_compra,
+           supplier_id
+    FROM supplier_products
+    GROUP BY product_id, supplier_id
+)
+SELECT
+    p.ID,
+    p.idProdutoPai,
+    p.nome,
+    p.codigo,
+    p.preco,
+    p.tipo,
+    p.situacao,
+    p.formato,
+    p.descricao_curta,
+    p.imagem_url,
+    p.dataValidade,
+    p.unidade,
+    p.pesoLiquido,
+    p.pesoBruto,
+    p.volumes,
+    p.itensPorCaixa,
+    p.gtin,
+    p.gtinEmbalagem,
+    p.tipoProducao,
+    p.condicao,
+    p.freteGratis,
+    p.marca,
+    p.descricaoComplementar,
+    p.linkExterno,
+    p.observacoes,
+    p.descricaoEmbalagemDiscreta,
+    p.new_record,
+    p.created_at,
+    p.updated_at,
+    COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
+    COALESCE(s.saldo_virtual_total, 0) AS saldo_virtual_total,
+    COALESCE(dp.saldo_fisico, 0) AS saldo_fisico,
+    COALESCE(dp.saldo_virtual, 0) AS saldo_virtual,
+    COALESCE(sp.preco_custo, 0) AS preco_custo,
+    COALESCE(sp.preco_compra, 0) AS preco_compra,
+    sp.supplier_id
+FROM
+    products p
+LEFT JOIN
+    aggregated_stocks s
+    ON p.id = s.product_id
+LEFT JOIN
+    aggregated_deposit_products dp
+    ON p.id = dp.product_id
+LEFT JOIN
+    aggregated_supplier_products sp
+    ON p.id = sp.product_id
+WHERE p.new_record = $1
+    ORDER BY p.id DESC;
+
 -- name: GetProductByName :one
 WITH aggregated_stocks AS (
     SELECT product_id,
