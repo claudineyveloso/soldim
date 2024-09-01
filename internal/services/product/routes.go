@@ -220,8 +220,8 @@ func (h *Handler) handleGetProduct(w http.ResponseWriter, r *http.Request) {
 	product, err := h.productStore.GetProductByID(productID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			slog.Error("Produto não encontrado", slog.Int64("productID", productID))
-			utils.WriteError(w, http.StatusNotFound, fmt.Errorf("Produto com ID %d não encontrado", productID))
+			slog.Error("Produto não encontrado dentro de handleGetProduct", slog.Int64("productID", productID))
+			utils.WriteError(w, http.StatusNotFound, fmt.Errorf("produto com ID %d não encontrado", productID))
 			return
 		}
 		utils.WriteError(w, http.StatusInternalServerError, err)
