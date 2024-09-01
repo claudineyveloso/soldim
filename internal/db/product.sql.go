@@ -1145,12 +1145,14 @@ aggregated_deposit_products AS (
     GROUP BY product_id
 ),
 aggregated_supplier_products AS (
-    SELECT product_id,
+    SELECT DISTINCT ON (product_id)
+           product_id,
            AVG(preco_custo) AS preco_custo,
            AVG(preco_compra) AS preco_compra,
            supplier_id
     FROM supplier_products
     GROUP BY product_id, supplier_id
+    ORDER BY product_id, supplier_id ASC  -- Seleciona o supplier_id com menor valor
 )
 SELECT
     p.ID,
@@ -1201,7 +1203,7 @@ LEFT JOIN
     aggregated_supplier_products sp
     ON p.id = sp.product_id
 WHERE p.new_record = $1
-    ORDER BY p.id DESC
+ORDER BY p.id DESC
 `
 
 type GetProductsNewRow struct {

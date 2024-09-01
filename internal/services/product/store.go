@@ -3,6 +3,7 @@ package product
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"time"
@@ -147,6 +148,15 @@ func (s *Store) UpdateProduct(product types.ProductPayload) error {
 	queries := db.New(s.db)
 	ctx := context.Background()
 
+	productJSON, err := json.MarshalIndent(product, "", "  ")
+	if err != nil {
+		fmt.Println("Erro ao converter o produto para JSON:", err)
+		return err
+	}
+
+	// Imprime o JSON do produto
+	fmt.Println("Produto a ser atualizado:", string(productJSON))
+
 	now := time.Now()
 	product.NewRecord = false
 	product.UpdatedAt = now
@@ -180,6 +190,8 @@ func (s *Store) UpdateProduct(product types.ProductPayload) error {
 		NewRecord:                  product.NewRecord,
 		UpdatedAt:                  product.UpdatedAt,
 	}
+
+	fmt.Println(updateProductParams)
 
 	if err := queries.UpdateProduct(ctx, updateProductParams); err != nil {
 		fmt.Println("Erro ao atualizar um Produto:", err)

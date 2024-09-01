@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS products (
   tipoProducao                varchar(10) not null default '',
   condicao                    int not null default 0,
   freteGratis                 boolean not null default false,
-  marca                       varchar(10) not null default '',
+  marca                       varchar(50) not null default '',
   descricaoComplementar       varchar not null default '',
   linkExterno                 varchar not null default '',
   observacoes                 varchar not null default '',

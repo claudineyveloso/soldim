@@ -77,21 +77,41 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fmt.Printf("Processing page: %d with %d products\n", page, len(products))
-		processProducts(products, rateLimiter)
 
 		var wg sync.WaitGroup
-		wg.Add(1)
 
-		go func() {
-			defer wg.Done()
-			processStocks(products, token, rateLimiter)
-		}()
+		for _, product := range products {
+			// Verifique se o produto já existe
+			productExists, err := checkProductExists(product.ID)
+			if err != nil {
+				fmt.Printf("Error checking if product exists: %v\n", err)
+				continue // Se houver um erro na verificação, continue para o próximo produto
+			}
 
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			processSuppliers(products, token, rateLimiter)
-		}()
+			if productExists {
+				fmt.Printf("Product ID %d already exists, skipping...\n", product.ID)
+				continue // Se o produto já existir, pule para o próximo
+			}
+
+			// Se o produto não existir, processe-o
+			wg.Add(1)
+			go func(product types.Product) {
+				defer wg.Done()
+				processProducts([]types.Product{product}, rateLimiter)
+			}(product)
+
+			wg.Add(1)
+			go func(product types.Product) {
+				defer wg.Done()
+				processStocks([]types.Product{product}, token, rateLimiter)
+			}(product)
+
+			wg.Add(1)
+			go func(product types.Product) {
+				defer wg.Done()
+				processSuppliers([]types.Product{product}, token, rateLimiter)
+			}(product)
+		}
 
 		wg.Wait()
 
@@ -102,7 +122,7 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 		page++
 	}
 
-	resp, err := http.Get(baseURL + "/get_products")
+	resp, err := http.Get(baseURL + "/get_products_new?new_record=true")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -183,6 +203,7 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 			Linkexterno:                blingProduct.Linkexterno,
 			Observacoes:                blingProduct.Observacoes,
 			Descricaoembalagemdiscreta: blingProduct.Descricaoembalagemdiscreta,
+			NewRecord:                  blingProduct.NewRecord,
 			SaldoFisicoTotal:           blingProduct.SaldoFisicoTotal,
 			SaldoVirtualTotal:          blingProduct.SaldoVirtualTotal,
 			SaldoFisico:                blingProduct.SaldoFisico,
@@ -245,6 +266,23 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(jsonResponse)
+}
+
+func checkProductExists(productID int64) (bool, error) {
+	url := fmt.Sprintf(baseURL+"/get_product/%d", productID)
+	resp, err := http.Get(url)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return false, nil // Produto não existe
+	} else if resp.StatusCode != http.StatusOK {
+		return false, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	return true, nil // Produto existe
 }
 
 func processProducts(products []types.Product, rateLimiter *time.Ticker) {
