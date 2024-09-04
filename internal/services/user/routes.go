@@ -53,17 +53,18 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	secret := []byte(configs.Envs.JWTSecret)
-	token, err := auth.CreateJWT(secret, u.ID)
+	token, expiresAt, err := auth.CreateJWT(secret, u.ID)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	response := types.LoginResponse{
-		Email:    u.Email,
-		IsActive: u.IsActive,
-		UserType: u.UserType,
-		Token:    token,
+		Email:     u.Email,
+		IsActive:  u.IsActive,
+		UserType:  u.UserType,
+		Token:     token,
+		ExpiresAt: expiresAt,
 	}
 
 	utils.WriteJSON(w, http.StatusOK, response)

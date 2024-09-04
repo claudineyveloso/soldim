@@ -80,7 +80,8 @@ func WithJWTAuth(handlerFunc http.HandlerFunc, store types.UserStore) http.Handl
 }
 
 // Função para criar o JWT
-func CreateJWT(secret []byte, userID uuid.UUID) (string, error) {
+func CreateJWT(secret []byte, userID uuid.UUID) (string, time.Time, error) {
+	expiresAt := time.Now().Add(time.Hour * 24) // Token expira em 24 horas
 	// Define as claims do token
 	claims := &types.Claims{
 		UserID: userID,
@@ -96,10 +97,10 @@ func CreateJWT(secret []byte, userID uuid.UUID) (string, error) {
 	// Assina o token com a chave secreta
 	tokenString, err := token.SignedString(secret)
 	if err != nil {
-		return "", err
+		return "", time.Time{}, err
 	}
 
-	return tokenString, nil
+	return tokenString, expiresAt, nil
 }
 
 func ValidateToken(tokenString string) (bool, error) {

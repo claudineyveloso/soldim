@@ -50,10 +50,11 @@ type CreateLoginPayload struct {
 }
 
 type LoginResponse struct {
-	Email    string `json:"email"`
-	IsActive bool   `json:"is_active"`
-	UserType string `json:"user_type"`
-	Token    string `json:"token"`
+	Email     string    `json:"email"`
+	IsActive  bool      `json:"is_active"`
+	UserType  string    `json:"user_type"`
+	Token     string    `json:"token"`
+	ExpiresAt time.Time `json:"expires_at"`
 }
 
 type DisableUserPayload struct {
