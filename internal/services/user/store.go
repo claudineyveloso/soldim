@@ -36,13 +36,14 @@ func (s *Store) CreateUser(user types.UserPayload) error {
 	}
 
 	createUserParams := db.CreateUserParams{
-		ID:        user.ID,
-		Email:     user.Email,
-		Password:  string(hashedPassword),
-		IsActive:  user.IsActive,
-		UserType:  user.UserType,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+		ID:             user.ID,
+		Email:          user.Email,
+		Password:       string(hashedPassword),
+		IsActive:       user.IsActive,
+		UserType:       user.UserType,
+		SessionVersion: user.SessionVersion,
+		CreatedAt:      user.CreatedAt,
+		UpdatedAt:      user.UpdatedAt,
 	}
 
 	if err := queries.CreateUser(ctx, createUserParams); err != nil {
@@ -141,15 +142,34 @@ func (s *Store) DisableUser(ctx context.Context, user types.DisableUserPayload) 
 	return nil
 }
 
+func (s *Store) UpdateSessionVersion(userID uuid.UUID, sessionVersion string) error {
+	queries := db.New(s.db)
+	ctx := context.Background()
+
+	now := time.Now()
+	updateSessionVersionParams := db.UpdateSessionVersionParams{
+		ID:             userID,
+		SessionVersion: sessionVersion,
+		UpdatedAt:      now,
+	}
+
+	if err := queries.UpdateSessionVersion(ctx, updateSessionVersionParams); err != nil {
+		fmt.Println("Erro ao atualizar a versão da sessão:", err)
+		return err
+	}
+	return nil
+}
+
 func convertDBUserToUser(dbUser db.User) *types.User {
 	user := &types.User{
-		ID:        dbUser.ID,
-		Email:     dbUser.Email,
-		Password:  dbUser.Password,
-		IsActive:  dbUser.IsActive,
-		UserType:  dbUser.UserType,
-		CreatedAt: dbUser.CreatedAt,
-		UpdatedAt: dbUser.UpdatedAt,
+		ID:             dbUser.ID,
+		Email:          dbUser.Email,
+		Password:       dbUser.Password,
+		IsActive:       dbUser.IsActive,
+		UserType:       dbUser.UserType,
+		SessionVersion: dbUser.SessionVersion,
+		CreatedAt:      dbUser.CreatedAt,
+		UpdatedAt:      dbUser.UpdatedAt,
 	}
 	return user
 }

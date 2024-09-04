@@ -8,13 +8,14 @@ import (
 )
 
 type User struct {
-	ID        uuid.UUID `json:"id"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	IsActive  bool      `json:"is_active"`
-	UserType  string    `json:"user_type"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID             uuid.UUID `json:"id"`
+	Email          string    `json:"email"`
+	Password       string    `json:"password"`
+	IsActive       bool      `json:"is_active"`
+	UserType       string    `json:"user_type"`
+	SessionVersion string    `json:"session_version"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type Login struct {
@@ -23,13 +24,14 @@ type Login struct {
 }
 
 type UserPayload struct {
-	ID        uuid.UUID `json:"id"`
-	Email     string    `json:"email" validate:"required"`
-	Password  string    `json:"password" validate:"required"`
-	IsActive  bool      `json:"is_active"`
-	UserType  string    `json:"user_type" validate:"required"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID             uuid.UUID `json:"id"`
+	Email          string    `json:"email" validate:"required"`
+	Password       string    `json:"password" validate:"required"`
+	IsActive       bool      `json:"is_active"`
+	UserType       string    `json:"user_type" validate:"required"`
+	SessionVersion string    `json:"session_version"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type PasswordUserPayload struct {
@@ -71,5 +73,6 @@ type UserStore interface {
 	LoginUser(user CreateLoginPayload) (*User, error)
 	// DisableUser(ctx context.Context, user UserPayload) error
 	DisableUser(ctx context.Context, user DisableUserPayload) error
+	UpdateSessionVersion(id uuid.UUID, sessionVersion string) error
 	// UpdateUser(User) error
 }

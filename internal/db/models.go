@@ -306,11 +306,12 @@ type Triage struct {
 }
 
 type User struct {
-	ID        uuid.UUID `json:"id"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	IsActive  bool      `json:"is_active"`
-	UserType  string    `json:"user_type"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID             uuid.UUID `json:"id"`
+	Email          string    `json:"email"`
+	Password       string    `json:"password"`
+	IsActive       bool      `json:"is_active"`
+	UserType       string    `json:"user_type"`
+	SessionVersion string    `json:"session_version"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }

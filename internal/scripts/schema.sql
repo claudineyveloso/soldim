@@ -1,13 +1,14 @@
 -- Users
 DROP TABLE IF EXISTS "users";
 CREATE TABLE IF NOT EXISTS users (
-  id          UUID PRIMARY KEY,
-  email       varchar(100) not null,
-  password    varchar(100) not null,
-  is_active   boolean not null default true,
-  user_type   varchar(50) not null,
-  created_at  timestamp not null,
-  updated_at  timestamp not null
+  id              UUID PRIMARY KEY,
+  email           varchar(100) not null,
+  password        varchar(100) not null,
+  is_active       boolean not null default true,
+  user_type       varchar(50) not null,
+  session_version  varchar(255) not null,
+  created_at      timestamp not null,
+  updated_at      timestamp not null
 );
 create unique index email_idx on users (email);
 

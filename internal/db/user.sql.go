@@ -13,18 +13,19 @@ import (
 )
 
 const createUser = `-- name: CreateUser :exec
-INSERT INTO users ( ID, email, password, is_active, user_type, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+INSERT INTO users ( ID, email, password, is_active, user_type, session_version, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 `
 
 type CreateUserParams struct {
-	ID        uuid.UUID `json:"id"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	IsActive  bool      `json:"is_active"`
-	UserType  string    `json:"user_type"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID             uuid.UUID `json:"id"`
+	Email          string    `json:"email"`
+	Password       string    `json:"password"`
+	IsActive       bool      `json:"is_active"`
+	UserType       string    `json:"user_type"`
+	SessionVersion string    `json:"session_version"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
@@ -34,6 +35,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
 		arg.Password,
 		arg.IsActive,
 		arg.UserType,
+		arg.SessionVersion,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
@@ -56,7 +58,14 @@ func (q *Queries) DisableUser(ctx context.Context, arg DisableUserParams) error 
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, email, password, is_active, user_type, created_at, updated_at
+SELECT ID,
+        email,
+        password,
+        is_active,
+        user_type,
+        session_version,
+        created_at,
+        updated_at
 FROM users
 WHERE users.id = $1
 `
@@ -70,6 +79,7 @@ func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.Password,
 		&i.IsActive,
 		&i.UserType,
+		&i.SessionVersion,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -77,7 +87,14 @@ func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, password, is_active, user_type, created_at, updated_at
+SELECT ID,
+        email,
+        password,
+        is_active,
+        user_type,
+        session_version,
+        created_at,
+        updated_at
 FROM users
 WHERE users.email = $1
 `
@@ -91,6 +108,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Password,
 		&i.IsActive,
 		&i.UserType,
+		&i.SessionVersion,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -98,8 +116,15 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const getUsers = `-- name: GetUsers :many
-SELECT id, email, password, is_active, user_type, created_at, updated_at
-FROM users 
+SELECT ID,
+        email,
+        password,
+        is_active,
+        user_type,
+        session_version,
+        created_at,
+        updated_at
+FROM users
 ORDER BY users.email ASC
 `
 
@@ -118,6 +143,7 @@ func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
 			&i.Password,
 			&i.IsActive,
 			&i.UserType,
+			&i.SessionVersion,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -135,7 +161,14 @@ func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
 }
 
 const loginUser = `-- name: LoginUser :one
-SELECT id, email, password, is_active, user_type, created_at, updated_at
+SELECT ID,
+        email,
+        password,
+        is_active,
+        user_type,
+        session_version,
+        created_at,
+        updated_at
 FROM users
 WHERE users.email = $1 AND users.password = $2
 `
@@ -154,6 +187,7 @@ func (q *Queries) LoginUser(ctx context.Context, arg LoginUserParams) (User, err
 		&i.Password,
 		&i.IsActive,
 		&i.UserType,
+		&i.SessionVersion,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -172,6 +206,21 @@ type UpdatePasswordParams struct {
 
 func (q *Queries) UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error {
 	_, err := q.db.ExecContext(ctx, updatePassword, arg.ID, arg.Password, arg.UpdatedAt)
+	return err
+}
+
+const updateSessionVersion = `-- name: UpdateSessionVersion :exec
+UPDATE users SET session_version = $2, updated_at = $3 WHERE users.id = $1
+`
+
+type UpdateSessionVersionParams struct {
+	ID             uuid.UUID `json:"id"`
+	SessionVersion string    `json:"session_version"`
+	UpdatedAt      time.Time `json:"updated_at"`
+}
+
+func (q *Queries) UpdateSessionVersion(ctx context.Context, arg UpdateSessionVersionParams) error {
+	_, err := q.db.ExecContext(ctx, updateSessionVersion, arg.ID, arg.SessionVersion, arg.UpdatedAt)
 	return err
 }
 
