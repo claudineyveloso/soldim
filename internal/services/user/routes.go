@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/claudineyveloso/soldim.git/internal/configs"
 	"github.com/claudineyveloso/soldim.git/internal/services/auth"
@@ -117,7 +118,7 @@ func (h *Handler) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := utils.Validate.Struct(user); err != nil {
 		errors := err.(validator.ValidationErrors)
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("Payload inválido: %v", errors))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("payload inválido: %v", errors))
 		return
 	}
 	err := h.userStore.CreateUser(user)
@@ -130,15 +131,85 @@ func (h *Handler) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleGetUsers(w http.ResponseWriter, r *http.Request) {
+	// Define o token fixo
+	// tokenFixed := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZmQwZjNkMmUtYTQ3YS00NjI1LTgyMWYtZmQyODdkOThiNmZhIiwiZXhwIjoxNzI1NDk5NjIwLCJpYXQiOjE3MjU0MTMyMjB9.Z061GmVG-19Yj-Rnw9Y-_0WZ8xoN7hDibzIwgpaYcNk"
+
+	// Extrai o token do header Authorization
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		http.Error(w, "Token de autorização não fornecido", http.StatusUnauthorized)
+		return
+	}
+
+	// Extrai o token do formato "Bearer {token}"
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	token = strings.TrimSpace(token) // Remove possíveis espaços em branco
+
+	if token == "" || token == authHeader {
+		http.Error(w, "Formato de token inválido", http.StatusUnauthorized)
+		return
+	}
+
+	// Imprime os valores dos tokens para depuração
+	// fmt.Printf("Valor do tokenFixed: %q\n", tokenFixed)
+	// fmt.Printf("Valor do token recebido: %q\n", token)
+
+	// Compara os tokens
+	// if token != tokenFixed {
+	// 	http.Error(w, "Token de autorização inválido", http.StatusUnauthorized)
+	// 	return
+	// }
+
+	// Valida o token
+	isValid, err := auth.ValidateToken(token)
+	if err != nil || !isValid {
+		http.Error(w, "Token de autorização inválido", http.StatusUnauthorized)
+		return
+	}
+
+	// Obtém os usuários
 	users, err := h.userStore.GetUsers()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter usuários: %v", err), http.StatusInternalServerError)
 		return
 	}
+
 	utils.WriteJSON(w, http.StatusOK, users)
 }
 
 func (h *Handler) handleGetUser(w http.ResponseWriter, r *http.Request) {
+	// Define o token fixo
+	// tokenFixed := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZmQwZjNkMmUtYTQ3YS00NjI1LTgyMWYtZmQyODdkOThiNmZhIiwiZXhwIjoxNzI1NDk5NjIwLCJpYXQiOjE3MjU0MTMyMjB9.Z061GmVG-19Yj-Rnw9Y-_0WZ8xoN7hDibzIwgpaYcNk"
+
+	// Extrai o token do header Authorization
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		http.Error(w, "Token de autorização não fornecido", http.StatusUnauthorized)
+		return
+	}
+
+	// Extrai o token do formato "Bearer {token}"
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	token = strings.TrimSpace(token) // Remove possíveis espaços em branco
+
+	if token == "" || token == authHeader {
+		http.Error(w, "Formato de token inválido", http.StatusUnauthorized)
+		return
+	}
+
+	// Compara os tokens
+	// if token != tokenFixed {
+	// 	http.Error(w, "Token de autorização inválido", http.StatusUnauthorized)
+	// 	return
+	// }
+
+	// Valida o token
+	isValid, err := auth.ValidateToken(token)
+	if err != nil || !isValid {
+		http.Error(w, "Token de autorização inválido", http.StatusUnauthorized)
+		return
+	}
+
 	vars := mux.Vars(r)
 	str, ok := vars["userID"]
 	if !ok {
@@ -168,7 +239,7 @@ func (h *Handler) handleDisableUser(w http.ResponseWriter, r *http.Request) {
 	if err := utils.Validate.Struct(user); err != nil {
 		var validationErrors validator.ValidationErrors
 		if errors.As(err, &validationErrors) {
-			utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("Payload inválido: %v", validationErrors))
+			utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("payload inválido: %v", validationErrors))
 		} else {
 			utils.WriteError(w, http.StatusBadRequest, err)
 		}

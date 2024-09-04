@@ -2,9 +2,11 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/claudineyveloso/soldim.git/internal/configs"
@@ -17,6 +19,15 @@ import (
 type contextKey string
 
 const UserKey contextKey = "userID"
+
+// Defina sua chave secreta (deve ser mantida segura e não compartilhada)
+var secretKey = []byte(os.Getenv("JWT_SECRET_KEY"))
+
+// Claims define a estrutura do payload do JWT
+type Claims struct {
+	UserID string `json:"user_id"`
+	jwt.RegisteredClaims
+}
 
 func WithJWTAuth(handlerFunc http.HandlerFunc, store types.UserStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -68,20 +79,53 @@ func WithJWTAuth(handlerFunc http.HandlerFunc, store types.UserStore) http.Handl
 	}
 }
 
+// Função para criar o JWT
 func CreateJWT(secret []byte, userID uuid.UUID) (string, error) {
-	expiration := time.Second * time.Duration(configs.Envs.JWTExpirationInSeconds)
+	// Define as claims do token
+	claims := &types.Claims{
+		UserID: userID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)), // Token expira em 24 horas
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"userID":    userID, // strconv.Itoa(int(userID)),
-		"expiresAt": time.Now().Add(expiration).Unix(),
-	})
+	// Cria o token usando o método de assinatura HS256 e as claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
+	// Assina o token com a chave secreta
 	tokenString, err := token.SignedString(secret)
 	if err != nil {
 		return "", err
 	}
 
-	return tokenString, err
+	return tokenString, nil
+}
+
+func ValidateToken(tokenString string) (bool, error) {
+	claims := &Claims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("método de assinatura inesperado: %v", token.Header["alg"])
+		}
+		return []byte(configs.Envs.JWTSecret), nil
+	})
+	if err != nil {
+		fmt.Printf("Erro ao decodificar o token: %v\n", err)
+		return false, err
+	}
+
+	if !token.Valid {
+		fmt.Println("Token inválido")
+		return false, errors.New("token inválido")
+	}
+
+	if time.Now().After(claims.ExpiresAt.Time) {
+		fmt.Println("Token expirado")
+		return false, errors.New("token expirado")
+	}
+
+	return true, nil
 }
 
 func validateJWT(tokenString string) (*jwt.Token, error) {
