@@ -46,25 +46,24 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verifica se o usuário existe e as credenciais são válidas
+	// Checks if the user exists and the credentials are valid
 	user, err := h.userStore.LoginUser(loginPayload)
 	if err != nil {
 		utils.WriteError(w, http.StatusUnauthorized, fmt.Errorf("email ou senha inválidos"))
 		return
 	}
 
-	// Gere uma nova versão de sessão
-	sessionVersion := uuid.NewString() // Gera uma nova versão de sessão
+	// Generate a new session version
+	sessionVersion := uuid.NewString()
 
 	secret := []byte(configs.Envs.JWTSecret)
-	// Passa a nova sessionVersion para a criação do token
 	token, expiresAt, err := auth.CreateJWT(secret, user.ID, sessionVersion)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	// Atualize a versão da sessão no armazenamento
+	// Update session version in storage
 	if err := h.userStore.UpdateSessionVersion(user.ID, sessionVersion); err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
@@ -143,132 +142,50 @@ func (h *Handler) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleGetUsers(w http.ResponseWriter, r *http.Request) {
-	// Extrai o token do header Authorization
+	// Extract the token from the Authorization header
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
 		http.Error(w, "Token de autorização não fornecido", http.StatusUnauthorized)
 		return
 	}
 
-	// Extrai o token do formato "Bearer {token}"
+	// Extracts token of the format "Bearer {token}"
 	token := strings.TrimPrefix(authHeader, "Bearer ")
-	token = strings.TrimSpace(token) // Remove possíveis espaços em branco
+	token = strings.TrimSpace(token) // Remove possible whitespace
 
 	if token == "" || token == authHeader {
 		http.Error(w, "Formato de token inválido", http.StatusUnauthorized)
 		return
 	}
 
-	// Valida o token
-	isValid, err := auth.ValidateToken(token, h.userStore) // Passe a instância do userStore
+	// Validate the token
+	isValid, err := auth.ValidateToken(token, h.userStore) // Pass the userStore instance
 	if err != nil || !isValid {
 		fmt.Printf("Erro na validação do token: %v\n", err)
 		http.Error(w, "Token de autorização inválido", http.StatusUnauthorized)
 		return
 	}
 
-	// Obtém os usuários
+	// Get the users
 	users, err := h.userStore.GetUsers()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter usuários: %v", err), http.StatusInternalServerError)
 		return
 	}
 
-	// Retorna a lista de usuários como JSON
+	// Returns list of users as JSON
 	utils.WriteJSON(w, http.StatusOK, users)
 }
 
-// func (h *Handler) handleGetUsers(w http.ResponseWriter, r *http.Request) {
-// 	// Extrai o token do header Authorization
-// 	authHeader := r.Header.Get("Authorization")
-// 	if authHeader == "" {
-// 		http.Error(w, "Token de autorização não fornecido", http.StatusUnauthorized)
-// 		return
-// 	}
-
-// 	// Extrai o token do formato "Bearer {token}"
-// 	token := strings.TrimPrefix(authHeader, "Bearer ")
-// 	token = strings.TrimSpace(token) // Remove possíveis espaços em branco
-
-// 	if token == "" || token == authHeader {
-// 		http.Error(w, "Formato de token inválido", http.StatusUnauthorized)
-// 		return
-// 	}
-
-// 	// Valida o token
-// 	isValid, err := auth.ValidateToken(token, h.userStore) // Passe a instância do userStore
-// 	if err != nil || !isValid {
-// 		http.Error(w, "Token de autorização inválido", http.StatusUnauthorized)
-// 		return
-// 	}
-
-// 	// Obtém os usuários
-// 	users, err := h.userStore.GetUsers()
-// 	if err != nil {
-// 		http.Error(w, fmt.Sprintf("Erro ao obter usuários: %v", err), http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	// Retorna a lista de usuários como JSON
-// 	utils.WriteJSON(w, http.StatusOK, users)
-// }
-
-// func (h *Handler) handleGetUsersAAA(w http.ResponseWriter, r *http.Request) {
-// 	// Define o token fixo
-// 	// tokenFixed := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZmQwZjNkMmUtYTQ3YS00NjI1LTgyMWYtZmQyODdkOThiNmZhIiwiZXhwIjoxNzI1NDk5NjIwLCJpYXQiOjE3MjU0MTMyMjB9.Z061GmVG-19Yj-Rnw9Y-_0WZ8xoN7hDibzIwgpaYcNk"
-
-// 	// Extrai o token do header Authorization
-// 	authHeader := r.Header.Get("Authorization")
-// 	if authHeader == "" {
-// 		http.Error(w, "Token de autorização não fornecido", http.StatusUnauthorized)
-// 		return
-// 	}
-
-// 	// Extrai o token do formato "Bearer {token}"
-// 	token := strings.TrimPrefix(authHeader, "Bearer ")
-// 	token = strings.TrimSpace(token) // Remove possíveis espaços em branco
-
-// 	if token == "" || token == authHeader {
-// 		http.Error(w, "Formato de token inválido", http.StatusUnauthorized)
-// 		return
-// 	}
-
-// 	// Imprime os valores dos tokens para depuração
-// 	// fmt.Printf("Valor do tokenFixed: %q\n", tokenFixed)
-// 	// fmt.Printf("Valor do token recebido: %q\n", token)
-
-// 	// Compara os tokens
-// 	// if token != tokenFixed {
-// 	// 	http.Error(w, "Token de autorização inválido", http.StatusUnauthorized)
-// 	// 	return
-// 	// }
-
-// 	// Valida o token
-// 	isValid, err := auth.ValidateToken(token)
-// 	if err != nil || !isValid {
-// 		http.Error(w, "Token de autorização inválido", http.StatusUnauthorized)
-// 		return
-// 	}
-
-// 	// Obtém os usuários
-// 	users, err := h.userStore.GetUsers()
-// 	if err != nil {
-// 		http.Error(w, fmt.Sprintf("Erro ao obter usuários: %v", err), http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	utils.WriteJSON(w, http.StatusOK, users)
-// }
-
 func (h *Handler) handleGetUser(w http.ResponseWriter, r *http.Request) {
-	// Extrai o token do header Authorization
+	// Extract the token from the Authorization header
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
 		http.Error(w, "Token de autorização não fornecido", http.StatusUnauthorized)
 		return
 	}
 
-	// Extrai o token do formato "Bearer {token}"
+	// Extracts token of the format "Bearer {token}"
 	token := strings.TrimPrefix(authHeader, "Bearer ")
 	token = strings.TrimSpace(token) // Remove possíveis espaços em branco
 
@@ -277,14 +194,14 @@ func (h *Handler) handleGetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Valida o token
+	// Validate the token
 	isValid, err := auth.ValidateToken(token, h.userStore) // Passa o userStore para ValidateToken
 	if err != nil || !isValid {
 		http.Error(w, "Token de autorização inválido", http.StatusUnauthorized)
 		return
 	}
 
-	// Obtém o userID da URL
+	// Get then userID da URL
 	vars := mux.Vars(r)
 	str, ok := vars["userID"]
 	if !ok {
@@ -297,14 +214,14 @@ func (h *Handler) handleGetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Busca o usuário pelo ID
+	// Search for user by ID
 	user, err := h.userStore.GetUserByID(userID)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	// Retorna os dados do usuário
+	// Returns user data
 	utils.WriteJSON(w, http.StatusOK, user)
 }
 
