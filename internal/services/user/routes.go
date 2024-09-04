@@ -122,6 +122,29 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 // }
 
 func (h *Handler) handleCreateUser(w http.ResponseWriter, r *http.Request) {
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		http.Error(w, "Token de autorização não fornecido", http.StatusUnauthorized)
+		return
+	}
+
+	// Extracts token of the format "Bearer {token}"
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	token = strings.TrimSpace(token) // Remove possible whitespace
+
+	if token == "" || token == authHeader {
+		http.Error(w, "Formato de token inválido", http.StatusUnauthorized)
+		return
+	}
+
+	// Validate the token
+	isValid, err := auth.ValidateToken(token, h.userStore) // Pass the userStore instance
+	if err != nil || !isValid {
+		fmt.Printf("Erro na validação do token: %v\n", err)
+		http.Error(w, "Token de autorização inválido", http.StatusUnauthorized)
+		return
+	}
+
 	var user types.UserPayload
 	if err := utils.ParseJSON(r, &user); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
@@ -132,7 +155,7 @@ func (h *Handler) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("payload inválido: %v", errors))
 		return
 	}
-	err := h.userStore.CreateUser(user)
+	err = h.userStore.CreateUser(user)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
