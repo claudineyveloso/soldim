@@ -79,9 +79,6 @@ func GetProductsFromBling(bearerToken string, page int, limit int, name string, 
 		return nil, 0, fmt.Errorf("erro ao decodificar resposta: %v", err)
 	}
 
-	// Adicionando logs para verificar a estrutura deserializada
-	// fmt.Printf("Dados deserializados: %+v\n", responseData)
-
 	produtos := responseData.Data
 
 	// Verificando a contagem de produtos

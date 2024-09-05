@@ -34,6 +34,29 @@ func (q *Queries) CreateStock(ctx context.Context, arg CreateStockParams) error 
 	return err
 }
 
+const getStockByProductID = `-- name: GetStockByProductID :one
+SELECT product_id,
+        saldo_fisico_total,
+        saldo_virtual_total,
+        created_at,
+        updated_at
+FROM stocks
+WHERE product_id = $1
+`
+
+func (q *Queries) GetStockByProductID(ctx context.Context, productID int64) (Stock, error) {
+	row := q.db.QueryRowContext(ctx, getStockByProductID, productID)
+	var i Stock
+	err := row.Scan(
+		&i.ProductID,
+		&i.SaldoFisicoTotal,
+		&i.SaldoVirtualTotal,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getStocks = `-- name: GetStocks :many
 SELECT product_id,
         saldo_fisico_total,

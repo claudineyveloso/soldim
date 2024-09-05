@@ -60,3 +60,26 @@ func (s *Store) UpdateStock(stock types.Stock) error {
 	}
 	return nil
 }
+
+func (s *Store) GetStockByProductID(productID int64) (*types.Stock, error) {
+	queries := db.New(s.db)
+	ctx := context.Background()
+	dbStock, err := queries.GetStockByProductID(ctx, productID)
+	if err != nil {
+		return nil, err
+	}
+	stock := convertGetStocktToStock(dbStock)
+
+	return stock, nil
+}
+
+func convertGetStocktToStock(dbStock db.Stock) *types.Stock {
+	stock := &types.Stock{
+		ProductID:         dbStock.ProductID,
+		SaldoFisicoTotal:  dbStock.SaldoFisicoTotal,
+		SaldoVirtualTotal: dbStock.SaldoVirtualTotal,
+		CreatedAt:         dbStock.CreatedAt,
+		UpdatedAt:         dbStock.UpdatedAt,
+	}
+	return stock
+}

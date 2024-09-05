@@ -10,6 +10,15 @@ SELECT product_id,
         updated_at
 FROM stocks;
 
+-- name: GetStockByProductID :one
+SELECT product_id,
+        saldo_fisico_total,
+        saldo_virtual_total,
+        created_at,
+        updated_at
+FROM stocks
+WHERE product_id = $1;
+
 -- name: UpdateStock :exec
 UPDATE stocks SET saldo_fisico_total = $2, 
   saldo_virtual_total = $3, 

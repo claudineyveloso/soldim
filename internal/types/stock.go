@@ -28,4 +28,5 @@ type StockResponse struct {
 type StockStore interface {
 	CreateStock(Stock) error
 	UpdateStock(Stock) error
+	GetStockByProductID(productID int64) (*Stock, error)
 }

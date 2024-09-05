@@ -19,7 +19,6 @@ import (
 
 var (
 	limitePorPagina = 100
-	token           = "1f9a842195eb889041d18446691a9b158d2f07dc"
 	baseURL         = utils.GetBaseURL()
 )
 
@@ -33,6 +32,11 @@ func RegisterRoutes(router *mux.Router) {
 }
 
 func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request) {
+	token, err := utils.FetchAccessToken()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erro ao buscar token de acesso: %v", err), http.StatusInternalServerError)
+		return
+	}
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Printf("Recovered from panic: %v\n", r)
@@ -50,6 +54,9 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 	if err != nil || limit < 1 {
 		limit = limitePorPagina
 	}
+
+	rateLimiter := time.NewTicker(333 * time.Millisecond)
+	defer rateLimiter.Stop()
 
 	fmt.Printf("Requesting page: %d with limit: %d\n", page, limit)
 
@@ -97,7 +104,7 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 		}
 
 		fmt.Printf("Processing page: %d with %d products\n", page, len(sales))
-		processSales(sales)
+		processSales(sales, rateLimiter)
 
 		if page >= totalPages {
 			break
@@ -106,7 +113,7 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 		page++
 	}
 
-	err = processItemsSalesOrder(token)
+	err = processItemsSalesOrder(token, rateLimiter)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao processar itens dos pedidos de venda: %v", err), http.StatusInternalServerError)
 		return
@@ -194,8 +201,9 @@ func createContact(contact types.Contact) (*types.Contact, error) {
 	return existingContact, nil
 }
 
-func processSales(sales []types.SalesOrder) {
+func processSales(sales []types.SalesOrder, rateLimiter *time.Ticker) {
 	for _, sale := range sales {
+		<-rateLimiter.C
 		sale.SituationID = sale.Situacao.ID
 		sale.StoreID = sale.Loja.ID
 		salesOrderJSON, err := json.Marshal(sale)
@@ -231,7 +239,7 @@ func processSales(sales []types.SalesOrder) {
 	}
 }
 
-func processItemsSalesOrder(bearerToken string) error {
+func processItemsSalesOrder(bearerToken string, rateLimiter *time.Ticker) error {
 	// 1. Fazer a requisição para obter os IDs dos pedidos de venda
 	resp, err := http.Get(baseURL + "/get_sales_orders")
 	if err != nil {
@@ -258,6 +266,7 @@ func processItemsSalesOrder(bearerToken string) error {
 
 	// 4. Iterar sobre cada pedido de venda para processar os itens
 	for _, order := range response.SalesOrders {
+		<-rateLimiter.C
 		// Aqui fazemos a chamada para obter os detalhes do pedido de venda usando o ID
 		salesOrderDetails, err := bling.GetSalesOrdersIDInBling(bearerToken, order.ID)
 		if err != nil {
@@ -267,6 +276,8 @@ func processItemsSalesOrder(bearerToken string) error {
 
 		// 5. Processar cada item no pedido de venda retornado
 		for _, item := range salesOrderDetails.Itens {
+			<-rateLimiter.C
+			fmt.Printf("Processando item: %+v\n", item)
 			// productID := item.ProductID.ID
 			item.SalesOrderID = order.ID
 			err := sendItemToCreate(item)
@@ -274,6 +285,7 @@ func processItemsSalesOrder(bearerToken string) error {
 				fmt.Printf("Erro ao criar item %d do pedido %d: %v\n", item.ID, salesOrderDetails.ID, err)
 				continue
 			}
+			fmt.Printf("Item %d do pedido %d criado com sucesso.\n", item.ID, salesOrderDetails.ID)
 		}
 	}
 
@@ -459,6 +471,11 @@ func createProductsSalesOrder_OLD(productsalesorder types.ProductSalesOrderPaylo
 }
 
 func handleGetSalesOrder(w http.ResponseWriter, r *http.Request) {
+	token, err := utils.FetchAccessToken()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Erro ao buscar token de acesso: %v", err), http.StatusInternalServerError)
+		return
+	}
 	vars := mux.Vars(r)
 	salesOrderIDStr, ok := vars["salesOrderID"]
 	if !ok {

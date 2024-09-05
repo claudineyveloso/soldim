@@ -1,0 +1,38 @@
+###  GET /healthy in dev environment
+GET http://localhost:8080/healthy HTTP/1.1
+Content-Type: application/json
+Cache-Control: no-cache
+
+### GET /healthy in prod environment
+GET https://soldim-api-344942c665db.herokuapp.com/healthy
+Content-Type: application/json
+Cache-Control: no-cache
+
+###
+POST http://localhost:8080/refresh_token
+Content-Type: application/json
+
+###
+POST https://www.bling.com.br/Api/v3/oauth/token HTTP/1.1
+content-type: application/json
+
+{
+  "grant_type": "authorization_code",
+  "code": "e14b09aabea00af5fe15f583030ce564ea81a158"
+}
+
+###
+PUT localhost://localhost:8080/update_token
+Content-Type: application/json
+{
+  "id": "a3008748-4e7e-4c81-8e7c-63bab388eb6c",
+  "access_token": "5ccffa5d8b33282c7dee1d656e75c51a988a09d2",
+  "expires_in": 21600,
+  "token_type": "Bearer",
+  "scope": "98308 98309 98310 98314 104142 104163 107041 384761 575904 1563512 5990556 6631498 106168710 182224097 199272829 200802821 220621674 318257548 318257550 318257553 318257555 318257556 318257562 318257563 318257564 318257565 318257568 318257570 318257576 318257577 318257580 318257583 333936575 363921589 363921592 363921593 363921594 363921598 363921599 363953167 363953556 363953706 380039494 791588404 875116881 875116885 1649295804 1780272711 1869535257 5862218180 6239411327 6239420709 13645012976 13645012997 13645012998 13645013013 13645013025 13645013026",
+  "refresh_token": "55753723376ab8c50ac82f41e074ec33fc0a8b67"
+}
+
+GET http://localhost:8080/get_products HTTP/1.1
+Content-Type: application/json
+Cache-Control: no-cache

@@ -259,6 +259,43 @@ type stock struct {
 	Localizacao  string `json:"localizacao"`
 }
 
+type BlingWebhookResponse struct {
+	Retorno Retorno `json:"retorno"`
+}
+
+// Estrutura que contém a lista de estoques
+type Retorno struct {
+	Estoques []EstoqueWrapper `json:"estoques"`
+}
+
+// Wrapper para o objeto Estoque
+type EstoqueWrapper struct {
+	Estoque Estoque `json:"estoque"`
+}
+
+// Estrutura para o estoque
+type Estoque struct {
+	ID           int64             `json:"id"`
+	Codigo       string            `json:"codigo"`
+	Nome         string            `json:"nome"`
+	EstoqueAtual int               `json:"estoqueAtual"`
+	Depositos    []DepositoWrapper `json:"depositos"`
+}
+
+// Wrapper para o objeto Deposito
+type DepositoWrapper struct {
+	Deposito Deposito `json:"deposito"`
+}
+
+// Estrutura para o deposito
+type Deposito struct {
+	Desconsiderar string `json:"desconsiderar"`
+	ID            string `json:"id"`
+	Nome          string `json:"nome"`
+	Saldo         int    `json:"saldo"`
+	SaldoVirtual  int    `json:"saldoVirtual"`
+}
+
 type ProductStore interface {
 	CreateProduct(ProductPayload) error
 	GetProducts(nome, situacao string) ([]*Product, error)

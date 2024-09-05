@@ -34,7 +34,7 @@ import (
 	"github.com/claudineyveloso/soldim.git/internal/services/token"
 	"github.com/claudineyveloso/soldim.git/internal/services/triage"
 	"github.com/claudineyveloso/soldim.git/internal/services/user"
-	"github.com/claudineyveloso/soldim.git/internal/services/webhook"
+	webhookstock "github.com/claudineyveloso/soldim.git/internal/services/webhook_stock"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
@@ -65,7 +65,6 @@ func (s *APIServer) Run() error {
 	r.Use(loggingMiddleware)
 	healthy.RegisterRoutes(r)
 	heroku.RegisterRoutes(r)
-	webhook.RegisterRoutes(r)
 	generatetoken.RegisterRoutes(r)
 	refreshtoken.RegisterRoutes(r)
 	productbling.RegisterRoutes(r)
@@ -76,6 +75,8 @@ func (s *APIServer) Run() error {
 	userStore := user.NewStore(s.db)
 	userHandler := user.NewHandler(userStore)
 	userHandler.RegisterRoutes(r)
+
+	webhookstock.RegisterRoutes(r)
 
 	searchStore := search.NewStore(s.db)
 	searchresultStore := searchresult.NewStore(s.db)
