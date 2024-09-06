@@ -2,7 +2,6 @@ package productbling
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -16,7 +15,6 @@ import (
 	"github.com/claudineyveloso/soldim.git/internal/types"
 	"github.com/claudineyveloso/soldim.git/pkg/utils"
 	"github.com/gorilla/mux"
-	"golang.org/x/time/rate"
 )
 
 var (
@@ -98,19 +96,19 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 			go func(product types.Product) {
 				defer wg.Done()
 
-				processProducts([]types.Product{product}, rateLimiter)
+				utils.ProcessProducts([]types.Product{product}, rateLimiter)
 			}(product)
 
 			wg.Add(1)
 			go func(product types.Product) {
 				defer wg.Done()
-				processStocks([]types.Product{product}, token, rateLimiter)
+				utils.ProcessStocks([]types.Product{product}, token, rateLimiter)
 			}(product)
 
 			wg.Add(1)
 			go func(product types.Product) {
 				defer wg.Done()
-				processSuppliers([]types.Product{product}, token, rateLimiter)
+				utils.ProcessSuppliers([]types.Product{product}, token, rateLimiter)
 			}(product)
 		}
 
@@ -286,200 +284,199 @@ func checkProductExists(productID int64) (bool, error) {
 	return true, nil // Produto existe
 }
 
-func processProducts(products []types.Product, rateLimiter *time.Ticker) {
-	for _, product := range products {
-		<-rateLimiter.C
-		productJSON, err := json.Marshal(product)
-		if err != nil {
-			fmt.Printf("Error marshalling product: %v\n", err)
-			continue
-		}
+// func processProducts(products []types.Product, rateLimiter *time.Ticker) {
+// 	for _, product := range products {
+// 		<-rateLimiter.C
+// 		productJSON, err := json.Marshal(product)
+// 		if err != nil {
+// 			fmt.Printf("Error marshalling product: %v\n", err)
+// 			continue
+// 		}
+//
+// 		req, err := http.NewRequest("POST", baseURL+"/create_product", bytes.NewBuffer(productJSON))
+// 		if err != nil {
+// 			fmt.Printf("Error creating request: %v\n", err)
+// 			continue
+// 		}
+// 		req.Header.Set("Content-Type", "application/json")
+//
+// 		client := &http.Client{}
+// 		resp, err := client.Do(req)
+// 		if err != nil {
+// 			fmt.Printf("Error sending request: %v\n", err)
+// 			continue
+// 		}
+// 		defer resp.Body.Close()
+//
+// 		if resp.StatusCode != http.StatusOK {
+// 			fmt.Printf("Failed to create product. Status: %v\n", resp.Status)
+// 			continue
+// 		}
+//
+// 		fmt.Printf("Product created successfully: %v\n", product)
+// 	}
+// }
 
-		req, err := http.NewRequest("POST", baseURL+"/create_product", bytes.NewBuffer(productJSON))
-		if err != nil {
-			fmt.Printf("Error creating request: %v\n", err)
-			continue
-		}
-		req.Header.Set("Content-Type", "application/json")
+// func processStocks(products []types.Product, bearerToken string, rateLimiter *time.Ticker) {
+// 	var wg sync.WaitGroup
+// 	<-rateLimiter.C
+// 	// Criar um rate limiter que permite 3 requisições por segundo
+// 	limiter := rate.NewLimiter(rate.Every(time.Second/3), 1)
+//
+// 	for _, product := range products {
+// 		wg.Add(1)
+// 		go func(product types.Product) {
+// 			defer wg.Done()
+//
+// 			// Aguardar até que uma requisição possa ser feita
+// 			err := limiter.Wait(context.Background())
+// 			if err != nil {
+// 				fmt.Printf("Error waiting for rate limiter: %v\n", err)
+// 				return
+// 			}
+//
+// 			processStockForProduct(product, bearerToken, rateLimiter)
+// 		}(product)
+// 	}
+//
+// 	wg.Wait()
+// }
+//
+// func processStockForProduct(product types.Product, bearerToken string, rateLimiter *time.Ticker) {
+// 	<-rateLimiter.C
+// 	stockResponse, err := bling.GetStockProductFromBling(bearerToken, product.ID)
+// 	if err != nil {
+// 		fmt.Printf("Error fetching stock for product %d: %v\n", product.ID, err)
+// 		utils.LogErrorToFile(fmt.Sprintf("Error fetching stock for product %d: %v\n", product.ID, err))
+//
+// 		return
+// 	}
+//
+// 	// fmt.Printf("Parsed stock response for product %d: %+v\n", product.ID, stockResponse)
+//
+// 	for _, stockData := range stockResponse.Data {
+// 		// fmt.Printf("Processing stock data: %+v\n", stockData)
+//
+// 		// Criar o stock
+// 		stock := types.Stock{
+// 			ProductID:         stockData.Produto.ID,
+// 			SaldoFisicoTotal:  int32(stockData.SaldoFisicoTotal),
+// 			SaldoVirtualTotal: int32(stockData.SaldoVirtualTotal),
+// 		}
+//
+// 		stockJSON, err := json.Marshal(stock)
+// 		if err != nil {
+// 			fmt.Printf("Error marshalling stock for product %d: %v\n", product.ID, err)
+// 			continue
+// 		}
+//
+// 		// fmt.Printf("Sending stock data for product %d: %s\n", product.ID, string(stockJSON))
+//
+// 		stockResp, err := http.Post(baseURL+"/create_stock", "application/json", bytes.NewBuffer(stockJSON))
+// 		if err != nil {
+// 			fmt.Printf("Error sending stock data for product %d: %v\n", product.ID, err)
+// 			continue
+// 		}
+// 		defer stockResp.Body.Close()
+//
+// 		// Criar deposit products
+// 		for _, deposito := range stockData.Depositos {
+// 			// fmt.Printf("Processing deposit data: %+v\n", deposito)
+//
+// 			depositProduct := types.DepositProduct{
+// 				ProductID:    stockData.Produto.ID,
+// 				DepositID:    deposito.ID,
+// 				SaldoFisico:  int32(deposito.SaldoFisico),
+// 				SaldoVirtual: int32(deposito.SaldoVirtual),
+// 			}
+//
+// 			// fmt.Printf("Values assigned for deposit product for product %d: %+v\n", product.ID, depositProduct)
+//
+// 			depositProductJSON, err := json.Marshal(depositProduct)
+// 			if err != nil {
+// 				fmt.Printf("Error marshalling deposit product for product %d: %v\n", product.ID, err)
+// 				continue
+// 			}
+//
+// 			// fmt.Printf("Sending deposit product data for product %d: %s\n", product.ID, string(depositProductJSON))
+//
+// 			depositResp, err := http.Post(baseURL+"/create_deposit_product", "application/json", bytes.NewBuffer(depositProductJSON))
+// 			if err != nil {
+// 				fmt.Printf("Error sending deposit product data for product %d: %v\n", product.ID, err)
+// 				continue
+// 			}
+// 			defer depositResp.Body.Close()
+//
+// 			// depositRespBody, _ := io.ReadAll(depositResp.Body)
+// 			// fmt.Printf("Response from create_deposit_product for product %d: %s\n", product.ID, string(depositRespBody))
+// 		}
+// 	}
+// }
 
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		if err != nil {
-			fmt.Printf("Error sending request: %v\n", err)
-			continue
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			fmt.Printf("Failed to create product. Status: %v\n", resp.Status)
-			continue
-		}
-
-		fmt.Printf("Product created successfully: %v\n", product)
-	}
-}
-
-func processStocks(products []types.Product, bearerToken string, rateLimiter *time.Ticker) {
-	var wg sync.WaitGroup
-	<-rateLimiter.C
-	// Criar um rate limiter que permite 3 requisições por segundo
-	limiter := rate.NewLimiter(rate.Every(time.Second/3), 1)
-
-	for _, product := range products {
-		wg.Add(1)
-		go func(product types.Product) {
-			defer wg.Done()
-
-			// Aguardar até que uma requisição possa ser feita
-			err := limiter.Wait(context.Background())
-			if err != nil {
-				fmt.Printf("Error waiting for rate limiter: %v\n", err)
-				return
-			}
-
-			processStockForProduct(product, bearerToken, rateLimiter)
-		}(product)
-	}
-
-	wg.Wait()
-}
-
-func processStockForProduct(product types.Product, bearerToken string, rateLimiter *time.Ticker) {
-	<-rateLimiter.C
-	stockResponse, err := bling.GetStockProductFromBling(bearerToken, product.ID)
-	if err != nil {
-		fmt.Printf("Error fetching stock for product %d: %v\n", product.ID, err)
-		utils.LogErrorToFile(fmt.Sprintf("Error fetching stock for product %d: %v\n", product.ID, err))
-
-		return
-	}
-
-	// fmt.Printf("Parsed stock response for product %d: %+v\n", product.ID, stockResponse)
-
-	for _, stockData := range stockResponse.Data {
-		// fmt.Printf("Processing stock data: %+v\n", stockData)
-
-		// Criar o stock
-		stock := types.Stock{
-			ProductID:         stockData.Produto.ID,
-			SaldoFisicoTotal:  int32(stockData.SaldoFisicoTotal),
-			SaldoVirtualTotal: int32(stockData.SaldoVirtualTotal),
-		}
-
-		stockJSON, err := json.Marshal(stock)
-		if err != nil {
-			fmt.Printf("Error marshalling stock for product %d: %v\n", product.ID, err)
-			continue
-		}
-
-		// fmt.Printf("Sending stock data for product %d: %s\n", product.ID, string(stockJSON))
-
-		stockResp, err := http.Post(baseURL+"/create_stock", "application/json", bytes.NewBuffer(stockJSON))
-		if err != nil {
-			fmt.Printf("Error sending stock data for product %d: %v\n", product.ID, err)
-			continue
-		}
-		defer stockResp.Body.Close()
-
-		// Criar deposit products
-		for _, deposito := range stockData.Depositos {
-			// fmt.Printf("Processing deposit data: %+v\n", deposito)
-
-			depositProduct := types.DepositProduct{
-				ProductID:    stockData.Produto.ID,
-				DepositID:    deposito.ID,
-				SaldoFisico:  int32(deposito.SaldoFisico),
-				SaldoVirtual: int32(deposito.SaldoVirtual),
-			}
-
-			// fmt.Printf("Values assigned for deposit product for product %d: %+v\n", product.ID, depositProduct)
-
-			depositProductJSON, err := json.Marshal(depositProduct)
-			if err != nil {
-				fmt.Printf("Error marshalling deposit product for product %d: %v\n", product.ID, err)
-				continue
-			}
-
-			// fmt.Printf("Sending deposit product data for product %d: %s\n", product.ID, string(depositProductJSON))
-
-			depositResp, err := http.Post(baseURL+"/create_deposit_product", "application/json", bytes.NewBuffer(depositProductJSON))
-			if err != nil {
-				fmt.Printf("Error sending deposit product data for product %d: %v\n", product.ID, err)
-				continue
-			}
-			defer depositResp.Body.Close()
-
-			// depositRespBody, _ := io.ReadAll(depositResp.Body)
-			// fmt.Printf("Response from create_deposit_product for product %d: %s\n", product.ID, string(depositRespBody))
-		}
-	}
-}
-
-func processSuppliers(products []types.Product, bearerToken string, rateLimiter *time.Ticker) {
-	var wg sync.WaitGroup
-	<-rateLimiter.C
-	// Criar um rate limiter que permite 3 requisições por segundo
-	limiter := rate.NewLimiter(rate.Every(time.Second/3), 1)
-
-	for _, product := range products {
-		wg.Add(1)
-		go func(product types.Product) {
-			defer wg.Done()
-
-			// Aguardar até que uma requisição possa ser feita
-			err := limiter.Wait(context.Background())
-			if err != nil {
-				fmt.Printf("Error waiting for rate limiter: %v\n", err)
-				return
-			}
-
-			processSupplierForProduct(product, bearerToken, rateLimiter)
-		}(product)
-	}
-
-	wg.Wait()
-}
-
-func processSupplierForProduct(product types.Product, bearerToken string, rateLimiter *time.Ticker) {
-	<-rateLimiter.C
-	supplierResponse, err := bling.GetSupplierProductFromBling(bearerToken, product.ID, rateLimiter)
-	if err != nil {
-		fmt.Printf("Error fetching supplier for product %d: %v\n", product.ID, err)
-		return
-	}
-
-	for _, supplierData := range supplierResponse.Data {
-		// Criar o supplier product
-		supplierProduct := types.SupplierProduct{
-			ID:          supplierData.ID,
-			Descricao:   supplierData.Descricao,
-			PrecoCusto:  supplierData.PrecoCusto,
-			PrecoCompra: supplierData.PrecoCompra,
-			Padrao:      supplierData.Padrao,
-			SupplierID:  supplierData.Fornecedor.ID,
-			ProductID:   supplierData.Produto.ID,
-		}
-
-		supplierProductJSON, err := json.Marshal(supplierProduct)
-		if err != nil {
-			fmt.Printf("Error marshalling supplier product for product %d: %v\n", product.ID, err)
-			continue
-		}
-
-		fmt.Printf("Sending supplier product data for product %d: %s\n", product.ID, string(supplierProductJSON))
-		<-rateLimiter.C
-		supplierProductResp, err := http.Post(baseURL+"/create_supplier_product", "application/json", bytes.NewBuffer(supplierProductJSON))
-		if err != nil {
-			fmt.Printf("Error sending supplier product data for product %d: %v\n", product.ID, err)
-			continue
-		}
-		defer supplierProductResp.Body.Close()
-
-		supplierProductRespBody, _ := io.ReadAll(supplierProductResp.Body)
-		fmt.Printf("Response from create_supplier_product for product %d: %s\n", product.ID, string(supplierProductRespBody))
-	}
-}
-
+//	func processSuppliers(products []types.Product, bearerToken string, rateLimiter *time.Ticker) {
+//		var wg sync.WaitGroup
+//		<-rateLimiter.C
+//		// Criar um rate limiter que permite 3 requisições por segundo
+//		limiter := rate.NewLimiter(rate.Every(time.Second/3), 1)
+//
+//		for _, product := range products {
+//			wg.Add(1)
+//			go func(product types.Product) {
+//				defer wg.Done()
+//
+//				// Aguardar até que uma requisição possa ser feita
+//				err := limiter.Wait(context.Background())
+//				if err != nil {
+//					fmt.Printf("Error waiting for rate limiter: %v\n", err)
+//					return
+//				}
+//
+//				processSupplierForProduct(product, bearerToken, rateLimiter)
+//			}(product)
+//		}
+//
+//		wg.Wait()
+//	}
+//
+//	func processSupplierForProduct(product types.Product, bearerToken string, rateLimiter *time.Ticker) {
+//		<-rateLimiter.C
+//		supplierResponse, err := bling.GetSupplierProductFromBling(bearerToken, product.ID, rateLimiter)
+//		if err != nil {
+//			fmt.Printf("Error fetching supplier for product %d: %v\n", product.ID, err)
+//			return
+//		}
+//
+//		for _, supplierData := range supplierResponse.Data {
+//			// Criar o supplier product
+//			supplierProduct := types.SupplierProduct{
+//				ID:          supplierData.ID,
+//				Descricao:   supplierData.Descricao,
+//				PrecoCusto:  supplierData.PrecoCusto,
+//				PrecoCompra: supplierData.PrecoCompra,
+//				Padrao:      supplierData.Padrao,
+//				SupplierID:  supplierData.Fornecedor.ID,
+//				ProductID:   supplierData.Produto.ID,
+//			}
+//
+//			supplierProductJSON, err := json.Marshal(supplierProduct)
+//			if err != nil {
+//				fmt.Printf("Error marshalling supplier product for product %d: %v\n", product.ID, err)
+//				continue
+//			}
+//
+//			fmt.Printf("Sending supplier product data for product %d: %s\n", product.ID, string(supplierProductJSON))
+//			<-rateLimiter.C
+//			supplierProductResp, err := http.Post(baseURL+"/create_supplier_product", "application/json", bytes.NewBuffer(supplierProductJSON))
+//			if err != nil {
+//				fmt.Printf("Error sending supplier product data for product %d: %v\n", product.ID, err)
+//				continue
+//			}
+//			defer supplierProductResp.Body.Close()
+//
+//			supplierProductRespBody, _ := io.ReadAll(supplierProductResp.Body)
+//			fmt.Printf("Response from create_supplier_product for product %d: %s\n", product.ID, string(supplierProductRespBody))
+//		}
+//	}
 func handleGetProduct(w http.ResponseWriter, r *http.Request) {
 	// bearerToken := "981b387171e4db2550a80c80eb1fbd7c6af0a807" // r.Header.Get("Authorization")
 	token, err := utils.FetchAccessToken()
