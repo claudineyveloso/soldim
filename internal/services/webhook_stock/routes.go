@@ -16,6 +16,7 @@ func RegisterRoutes(router *mux.Router) {
 }
 
 func handleBlingWebhookStock(w http.ResponseWriter, r *http.Request) {
+	log.Println("Atualização de produto da Bling...")
 	// Verifica se o método é POST
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)

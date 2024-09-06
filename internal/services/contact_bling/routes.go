@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"github.com/claudineyveloso/soldim.git/internal/bling"
-	"github.com/claudineyveloso/soldim.git/internal/utils"
+	"github.com/claudineyveloso/soldim.git/pkg/utils"
 	"github.com/gorilla/mux"
 )
 

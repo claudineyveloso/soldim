@@ -9,7 +9,7 @@ import (
 
 	"github.com/claudineyveloso/soldim.git/internal/crawler"
 	"github.com/claudineyveloso/soldim.git/internal/types"
-	"github.com/claudineyveloso/soldim.git/internal/utils"
+	"github.com/claudineyveloso/soldim.git/pkg/utils"
 	"github.com/go-playground/validator"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"

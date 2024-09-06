@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/claudineyveloso/soldim.git/internal/types"
-	"github.com/claudineyveloso/soldim.git/internal/utils"
+	"github.com/claudineyveloso/soldim.git/pkg/utils"
 	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
 )

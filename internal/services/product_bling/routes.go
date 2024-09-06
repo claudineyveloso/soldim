@@ -14,7 +14,7 @@ import (
 
 	"github.com/claudineyveloso/soldim.git/internal/bling"
 	"github.com/claudineyveloso/soldim.git/internal/types"
-	"github.com/claudineyveloso/soldim.git/internal/utils"
+	"github.com/claudineyveloso/soldim.git/pkg/utils"
 	"github.com/gorilla/mux"
 	"golang.org/x/time/rate"
 )
@@ -97,6 +97,7 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 			wg.Add(1)
 			go func(product types.Product) {
 				defer wg.Done()
+
 				processProducts([]types.Product{product}, rateLimiter)
 			}(product)
 

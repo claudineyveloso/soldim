@@ -34,6 +34,7 @@ import (
 	"github.com/claudineyveloso/soldim.git/internal/services/token"
 	"github.com/claudineyveloso/soldim.git/internal/services/triage"
 	"github.com/claudineyveloso/soldim.git/internal/services/user"
+	webhooksales "github.com/claudineyveloso/soldim.git/internal/services/webhook_sales"
 	webhookstock "github.com/claudineyveloso/soldim.git/internal/services/webhook_stock"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -77,6 +78,7 @@ func (s *APIServer) Run() error {
 	userHandler.RegisterRoutes(r)
 
 	webhookstock.RegisterRoutes(r)
+	webhooksales.RegisterRoutes(r)
 
 	searchStore := search.NewStore(s.db)
 	searchresultStore := searchresult.NewStore(s.db)
