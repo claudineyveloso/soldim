@@ -9,7 +9,7 @@ import (
 	"github.com/claudineyveloso/soldim.git/internal/configs"
 	"github.com/claudineyveloso/soldim.git/internal/services/auth"
 	"github.com/claudineyveloso/soldim.git/internal/types"
-	"github.com/claudineyveloso/soldim.git/internal/utils"
+	"github.com/claudineyveloso/soldim.git/pkg/utils"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"

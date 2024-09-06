@@ -10,7 +10,7 @@ import (
 
 	"github.com/claudineyveloso/soldim.git/internal/db"
 	"github.com/claudineyveloso/soldim.git/internal/types"
-	"github.com/claudineyveloso/soldim.git/internal/utils"
+	"github.com/claudineyveloso/soldim.git/pkg/utils"
 	"github.com/google/uuid"
 	"github.com/xuri/excelize/v2"
 )
