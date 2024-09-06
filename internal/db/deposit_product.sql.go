@@ -76,6 +76,88 @@ func (q *Queries) GetDepositProducts(ctx context.Context) ([]DepositProduct, err
 	return items, nil
 }
 
+const getDepositProductsByDepositID = `-- name: GetDepositProductsByDepositID :many
+SELECT deposit_id,
+        product_id,
+        saldo_fisico,
+        saldo_virtual,
+        created_at,
+        updated_at
+FROM deposit_products 
+WHERE deposit_products.deposit_id = $1
+`
+
+func (q *Queries) GetDepositProductsByDepositID(ctx context.Context, depositID int64) ([]DepositProduct, error) {
+	rows, err := q.db.QueryContext(ctx, getDepositProductsByDepositID, depositID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []DepositProduct
+	for rows.Next() {
+		var i DepositProduct
+		if err := rows.Scan(
+			&i.DepositID,
+			&i.ProductID,
+			&i.SaldoFisico,
+			&i.SaldoVirtual,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getDepositProductsByProductID = `-- name: GetDepositProductsByProductID :many
+SELECT deposit_id,
+        product_id,
+        saldo_fisico,
+        saldo_virtual,
+        created_at,
+        updated_at
+FROM deposit_products 
+WHERE deposit_products.product_id = $1
+`
+
+func (q *Queries) GetDepositProductsByProductID(ctx context.Context, productID int64) ([]DepositProduct, error) {
+	rows, err := q.db.QueryContext(ctx, getDepositProductsByProductID, productID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []DepositProduct
+	for rows.Next() {
+		var i DepositProduct
+		if err := rows.Scan(
+			&i.DepositID,
+			&i.ProductID,
+			&i.SaldoFisico,
+			&i.SaldoVirtual,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateDepositProduct = `-- name: UpdateDepositProduct :exec
 UPDATE deposit_products SET saldo_fisico = $3, 
   saldo_virtual = $4, 

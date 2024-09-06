@@ -11,8 +11,29 @@ SELECT deposit_id,
         updated_at
 FROM deposit_products;
 
+-- name: GetDepositProductsByProductID :many
+SELECT deposit_id,
+        product_id,
+        saldo_fisico,
+        saldo_virtual,
+        created_at,
+        updated_at
+FROM deposit_products 
+WHERE deposit_products.product_id = $1;
+
+-- name: GetDepositProductsByDepositID :many
+SELECT deposit_id,
+        product_id,
+        saldo_fisico,
+        saldo_virtual,
+        created_at,
+        updated_at
+FROM deposit_products 
+WHERE deposit_products.deposit_id = $1;
+
 -- name: UpdateDepositProduct :exec
-UPDATE deposit_products SET saldo_fisico = $3, 
+UPDATE deposit_products 
+SET saldo_fisico = $3, 
   saldo_virtual = $4, 
   updated_at = $5
 WHERE deposit_products.deposit_id = $1 AND deposit_products.product_id = $2;

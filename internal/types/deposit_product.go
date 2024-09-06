@@ -3,7 +3,6 @@ package types
 import "time"
 
 type DepositProduct struct {
-	ID           int64     `json:"id"`
 	DepositID    int64     `json:"deposit_id"`
 	ProductID    int64     `json:"product_id"`
 	SaldoFisico  int32     `json:"saldo_fisico"`
@@ -15,4 +14,6 @@ type DepositProduct struct {
 type DepositProductStore interface {
 	CreateDepositProduct(DepositProduct) error
 	UpdateDepositProduct(DepositProduct) error
+	GetDepositProductByProductID(productID int64) ([]*DepositProduct, error)
+	GetDepositProductByDepositID(depositID int64) ([]*DepositProduct, error)
 }

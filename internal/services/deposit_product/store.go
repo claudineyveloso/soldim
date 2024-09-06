@@ -50,6 +50,8 @@ func (s *Store) UpdateDepositProduct(depositproduct types.DepositProduct) error 
 	depositproduct.UpdatedAt = now
 
 	updateDepositProductParams := db.UpdateDepositProductParams{
+		DepositID:    depositproduct.DepositID,
+		ProductID:    depositproduct.ProductID,
 		SaldoFisico:  depositproduct.SaldoFisico,
 		SaldoVirtual: depositproduct.SaldoVirtual,
 		UpdatedAt:    depositproduct.UpdatedAt,
@@ -60,4 +62,52 @@ func (s *Store) UpdateDepositProduct(depositproduct types.DepositProduct) error 
 		return err
 	}
 	return nil
+}
+
+func (s *Store) GetDepositProductByProductID(productID int64) ([]*types.DepositProduct, error) {
+	queries := db.New(s.db)
+	ctx := context.Background()
+	dbDepositProducts, err := queries.GetDepositProductsByProductID(ctx, productID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Converter todos os produtos
+	var products []*types.DepositProduct
+	for _, dbDepositProduct := range dbDepositProducts {
+		product := convertGetDepositProductRowToDepositProduct(dbDepositProduct)
+		products = append(products, product)
+	}
+
+	return products, nil
+}
+
+func (s *Store) GetDepositProductByDepositID(depositID int64) ([]*types.DepositProduct, error) {
+	queries := db.New(s.db)
+	ctx := context.Background()
+	dbDepositProducts, err := queries.GetDepositProductsByDepositID(ctx, depositID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Converter todos os produtos
+	var products []*types.DepositProduct
+	for _, dbDepositProduct := range dbDepositProducts {
+		product := convertGetDepositProductRowToDepositProduct(dbDepositProduct)
+		products = append(products, product)
+	}
+
+	return products, nil
+}
+
+func convertGetDepositProductRowToDepositProduct(dbDepositProduct db.DepositProduct) *types.DepositProduct {
+	DepositProduct := &types.DepositProduct{
+		DepositID:    dbDepositProduct.DepositID,
+		ProductID:    dbDepositProduct.ProductID,
+		SaldoFisico:  dbDepositProduct.SaldoFisico,
+		SaldoVirtual: dbDepositProduct.SaldoVirtual,
+		CreatedAt:    dbDepositProduct.CreatedAt,
+		UpdatedAt:    dbDepositProduct.UpdatedAt,
+	}
+	return DepositProduct
 }
