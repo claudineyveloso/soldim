@@ -27,7 +27,6 @@ func NewHandler(productStore types.ProductStore) *Handler {
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/create_product", h.handleCreateProduct).Methods(http.MethodPost)
 	router.HandleFunc("/get_products", h.handleGetProducts).Methods(http.MethodGet)
-	router.HandleFunc("/get_products_new", h.handleGetProductsNew).Methods(http.MethodGet)
 	router.HandleFunc("/get_products_empty_stock", h.handleGetProductsEmptyStock).Methods(http.MethodGet)
 	router.HandleFunc("/get_products_no_movements", h.handleGetProductsNoMovements).Methods(http.MethodGet)
 	router.HandleFunc("/get_product/{productID}", h.handleGetProduct).Methods(http.MethodGet)
@@ -40,31 +39,6 @@ func (h *Handler) handleGetProducts(w http.ResponseWriter, r *http.Request) {
 	situacao := r.URL.Query().Get("situacao")
 
 	products, err := h.productStore.GetProducts(nome, situacao)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Erro ao obter os produtos : %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	data, err := json.Marshal(struct {
-		Products []*types.Product `json:"products"`
-	}{Products: products})
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Erro ao serializar os produtos: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(data)
-}
-
-func (h *Handler) handleGetProductsNew(w http.ResponseWriter, r *http.Request) {
-	newRecordStr := r.URL.Query().Get("new_record")
-	newRecord := false
-	if newRecordStr == "true" {
-		newRecord = true
-	}
-	products, err := h.productStore.GetProductsNew(newRecord)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao obter os produtos : %v", err), http.StatusInternalServerError)
 		return

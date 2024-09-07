@@ -15,9 +15,11 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func ProcessSuppliers(products []types.Product, bearerToken string, rateLimiter *time.Ticker) {
+func ProcessSuppliers(products []types.Product, bearerToken string) {
 	var wg sync.WaitGroup
-	<-rateLimiter.C
+	rateLimiter := time.NewTicker(333 * time.Millisecond) // Alterar
+	defer rateLimiter.Stop()
+
 	// Criar um rate limiter que permite 3 requisições por segundo
 	limiter := rate.NewLimiter(rate.Every(time.Second/3), 1)
 
@@ -32,17 +34,16 @@ func ProcessSuppliers(products []types.Product, bearerToken string, rateLimiter 
 				fmt.Printf("Error waiting for rate limiter: %v\n", err)
 				return
 			}
-
-			processSupplierForProduct(product, bearerToken, rateLimiter)
+			<-rateLimiter.C
+			processSupplierForProduct(product, bearerToken)
 		}(product)
 	}
 
 	wg.Wait()
 }
 
-func processSupplierForProduct(product types.Product, bearerToken string, rateLimiter *time.Ticker) {
-	<-rateLimiter.C
-	supplierResponse, err := bling.GetSupplierProductFromBling(bearerToken, product.ID, rateLimiter)
+func processSupplierForProduct(product types.Product, bearerToken string) {
+	supplierResponse, err := bling.GetSupplierProductFromBling(bearerToken, product.ID)
 	if err != nil {
 		fmt.Printf("Error fetching supplier for product %d: %v\n", product.ID, err)
 		return
@@ -67,7 +68,6 @@ func processSupplierForProduct(product types.Product, bearerToken string, rateLi
 		}
 
 		fmt.Printf("Sending supplier product data for product %d: %s\n", product.ID, string(supplierProductJSON))
-		<-rateLimiter.C
 		supplierProductResp, err := http.Post(baseURL+"/create_supplier_product", "application/json", bytes.NewBuffer(supplierProductJSON))
 		if err != nil {
 			fmt.Printf("Error sending supplier product data for product %d: %v\n", product.ID, err)

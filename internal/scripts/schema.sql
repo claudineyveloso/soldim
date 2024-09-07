@@ -126,6 +126,7 @@ CREATE TABLE IF NOT EXISTS products (
   nome                        varchar(255) not null,
   codigo                      varchar(100) not null default '',
   preco                       float not null default 0.00,
+  precoCusto                  float not null default 0.00,
   tipo                        varchar(10) not null default '',
   situacao                    varchar(10) not null default '',
   formato                     varchar(10) not null default '',
@@ -147,7 +148,6 @@ CREATE TABLE IF NOT EXISTS products (
   linkExterno                 varchar not null default '',
   observacoes                 varchar not null default '',
   descricaoEmbalagemDiscreta  varchar not null default '',
-  new_record                  boolean not null default true,
   created_at                  timestamp not null,
   updated_at                  timestamp not null
 );

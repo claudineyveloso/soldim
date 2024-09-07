@@ -1,5 +1,5 @@
 -- name: CreateProduct :exec
-INSERT INTO products (ID, idProdutoPai, nome, codigo, preco, tipo, situacao, formato, descricao_curta, imagem_url, dataValidade, unidade, pesoLiquido, pesoBruto, volumes, itensPorCaixa, gtin, gtinEmbalagem, tipoProducao, condicao, freteGratis, marca, descricaoComplementar, linkExterno, observacoes, descricaoEmbalagemDiscreta, new_record, created_at, updated_at)
+INSERT INTO products (ID, idProdutoPai, nome, codigo, preco, precoCusto, tipo, situacao, formato, descricao_curta, imagem_url, dataValidade, unidade, pesoLiquido, pesoBruto, volumes, itensPorCaixa, gtin, gtinEmbalagem, tipoProducao, condicao, freteGratis, marca, descricaoComplementar, linkExterno, observacoes, descricaoEmbalagemDiscreta, created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29);
 
 -- name: GetProduct :one
@@ -31,6 +31,7 @@ SELECT
     p.nome,
     p.codigo,
     p.preco,
+    p.precoCusto,
     p.tipo,
     p.situacao,
     p.formato,
@@ -52,7 +53,6 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
-    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -104,6 +104,7 @@ SELECT
     p.nome,
     p.codigo,
     p.preco,
+    p.precoCusto,
     p.tipo,
     p.situacao,
     p.formato,
@@ -125,7 +126,6 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
-    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -151,82 +151,6 @@ WHERE
     AND ($2::text IS NULL OR $2 = '' OR p.situacao = $2::text)
     AND ($3::text IS NULL OR $3 = '' OR sp.supplier_id = $3::int)
     ORDER BY p.id DESC;
-
--- name: GetProductsNew :many
-WITH aggregated_stocks AS (
-    SELECT product_id,
-           SUM(saldo_fisico_total) AS saldo_fisico_total,
-           SUM(saldo_virtual_total) AS saldo_virtual_total
-    FROM stocks
-    GROUP BY product_id
-),
-aggregated_deposit_products AS (
-    SELECT product_id,
-           SUM(saldo_fisico) AS saldo_fisico,
-           SUM(saldo_virtual) AS saldo_virtual
-    FROM deposit_products
-    GROUP BY product_id
-),
-aggregated_supplier_products AS (
-    SELECT DISTINCT ON (product_id)
-           product_id,
-           AVG(preco_custo) AS preco_custo,
-           AVG(preco_compra) AS preco_compra,
-           supplier_id
-    FROM supplier_products
-    GROUP BY product_id, supplier_id
-    ORDER BY product_id, supplier_id ASC  -- Seleciona o supplier_id com menor valor
-)
-SELECT
-    p.ID,
-    p.idProdutoPai,
-    p.nome,
-    p.codigo,
-    p.preco,
-    p.tipo,
-    p.situacao,
-    p.formato,
-    p.descricao_curta,
-    p.imagem_url,
-    p.dataValidade,
-    p.unidade,
-    p.pesoLiquido,
-    p.pesoBruto,
-    p.volumes,
-    p.itensPorCaixa,
-    p.gtin,
-    p.gtinEmbalagem,
-    p.tipoProducao,
-    p.condicao,
-    p.freteGratis,
-    p.marca,
-    p.descricaoComplementar,
-    p.linkExterno,
-    p.observacoes,
-    p.descricaoEmbalagemDiscreta,
-    p.new_record,
-    p.created_at,
-    p.updated_at,
-    COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
-    COALESCE(s.saldo_virtual_total, 0) AS saldo_virtual_total,
-    COALESCE(dp.saldo_fisico, 0) AS saldo_fisico,
-    COALESCE(dp.saldo_virtual, 0) AS saldo_virtual,
-    COALESCE(sp.preco_custo, 0) AS preco_custo,
-    COALESCE(sp.preco_compra, 0) AS preco_compra,
-    sp.supplier_id
-FROM
-    products p
-LEFT JOIN
-    aggregated_stocks s
-    ON p.id = s.product_id
-LEFT JOIN
-    aggregated_deposit_products dp
-    ON p.id = dp.product_id
-LEFT JOIN
-    aggregated_supplier_products sp
-    ON p.id = sp.product_id
-WHERE p.new_record = $1
-ORDER BY p.id DESC;
 
 -- name: GetProductByName :one
 WITH aggregated_stocks AS (
@@ -257,6 +181,7 @@ SELECT
     p.nome,
     p.codigo,
     p.preco,
+    p.precoCusto,
     p.tipo,
     p.situacao,
     p.formato,
@@ -278,7 +203,6 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
-    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -330,6 +254,7 @@ SELECT
     p.nome,
     p.codigo,
     p.preco,
+    p.precoCusto,
     p.tipo,
     p.situacao,
     p.formato,
@@ -351,7 +276,6 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
-    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -426,6 +350,7 @@ SELECT
     p.nome,
     p.codigo,
     p.preco,
+    p.precoCusto,
     p.tipo,
     p.situacao,
     p.formato,
@@ -447,7 +372,6 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
-    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -485,6 +409,7 @@ SELECT
     p.nome,
     p.codigo,
     p.preco,
+    p.precoCusto,
     p.tipo,
     p.situacao,
     p.formato,
@@ -506,7 +431,6 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
-    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -537,28 +461,28 @@ UPDATE products SET idProdutoPai = $2,
   nome = $3,
   codigo = $4,
   preco = $5,
-  tipo  = $6,
-  situacao = $7,
-  formato = $8,
-  descricao_curta = $9,
-  imagem_url = $10,
-  dataValidade = $11,
-  unidade = $12,
-  pesoLiquido = $13,
-  pesoBruto = $14,
-  volumes = $15,
-  itensPorCaixa = $16,
-  gtin = $17,
-  gtinEmbalagem = $18,
-  tipoProducao = $19,
-  condicao = $20,
-  freteGratis = $21,
-  marca = $22,
-  descricaoComplementar = $23,
-  linkExterno = $24,
-  observacoes = $25,
-  descricaoEmbalagemDiscreta = $26,
-  new_record = $27,
+  precoCusto = $6,
+  tipo  = $7,
+  situacao = $8,
+  formato = $9,
+  descricao_curta = $10,
+  imagem_url = $11,
+  dataValidade = $12,
+  unidade = $13,
+  pesoLiquido = $14,
+  pesoBruto = $15,
+  volumes = $16,
+  itensPorCaixa = $17,
+  gtin = $18,
+  gtinEmbalagem = $19,
+  tipoProducao = $20,
+  condicao = $21,
+  freteGratis = $22,
+  marca = $23,
+  descricaoComplementar = $24,
+  linkExterno = $25,
+  observacoes = $26,
+  descricaoEmbalagemDiscreta = $27,
   updated_at = $28
 WHERE products.id = $1;
 

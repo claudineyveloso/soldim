@@ -12,7 +12,7 @@ import (
 )
 
 const createProduct = `-- name: CreateProduct :exec
-INSERT INTO products (ID, idProdutoPai, nome, codigo, preco, tipo, situacao, formato, descricao_curta, imagem_url, dataValidade, unidade, pesoLiquido, pesoBruto, volumes, itensPorCaixa, gtin, gtinEmbalagem, tipoProducao, condicao, freteGratis, marca, descricaoComplementar, linkExterno, observacoes, descricaoEmbalagemDiscreta, new_record, created_at, updated_at)
+INSERT INTO products (ID, idProdutoPai, nome, codigo, preco, precoCusto, tipo, situacao, formato, descricao_curta, imagem_url, dataValidade, unidade, pesoLiquido, pesoBruto, volumes, itensPorCaixa, gtin, gtinEmbalagem, tipoProducao, condicao, freteGratis, marca, descricaoComplementar, linkExterno, observacoes, descricaoEmbalagemDiscreta, created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29)
 `
 
@@ -22,6 +22,7 @@ type CreateProductParams struct {
 	Nome                       string    `json:"nome"`
 	Codigo                     string    `json:"codigo"`
 	Preco                      float64   `json:"preco"`
+	Precocusto                 float64   `json:"precocusto"`
 	Tipo                       string    `json:"tipo"`
 	Situacao                   string    `json:"situacao"`
 	Formato                    string    `json:"formato"`
@@ -43,7 +44,6 @@ type CreateProductParams struct {
 	Linkexterno                string    `json:"linkexterno"`
 	Observacoes                string    `json:"observacoes"`
 	Descricaoembalagemdiscreta string    `json:"descricaoembalagemdiscreta"`
-	NewRecord                  bool      `json:"new_record"`
 	CreatedAt                  time.Time `json:"created_at"`
 	UpdatedAt                  time.Time `json:"updated_at"`
 }
@@ -55,6 +55,7 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) er
 		arg.Nome,
 		arg.Codigo,
 		arg.Preco,
+		arg.Precocusto,
 		arg.Tipo,
 		arg.Situacao,
 		arg.Formato,
@@ -76,7 +77,6 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) er
 		arg.Linkexterno,
 		arg.Observacoes,
 		arg.Descricaoembalagemdiscreta,
-		arg.NewRecord,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
@@ -122,6 +122,7 @@ SELECT
     p.nome,
     p.codigo,
     p.preco,
+    p.precoCusto,
     p.tipo,
     p.situacao,
     p.formato,
@@ -143,7 +144,6 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
-    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -173,6 +173,7 @@ type GetProductRow struct {
 	Nome                       string        `json:"nome"`
 	Codigo                     string        `json:"codigo"`
 	Preco                      float64       `json:"preco"`
+	Precocusto                 float64       `json:"precocusto"`
 	Tipo                       string        `json:"tipo"`
 	Situacao                   string        `json:"situacao"`
 	Formato                    string        `json:"formato"`
@@ -194,7 +195,6 @@ type GetProductRow struct {
 	Linkexterno                string        `json:"linkexterno"`
 	Observacoes                string        `json:"observacoes"`
 	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
-	NewRecord                  bool          `json:"new_record"`
 	CreatedAt                  time.Time     `json:"created_at"`
 	UpdatedAt                  time.Time     `json:"updated_at"`
 	SaldoFisicoTotal           int64         `json:"saldo_fisico_total"`
@@ -215,6 +215,7 @@ func (q *Queries) GetProduct(ctx context.Context, id int64) (GetProductRow, erro
 		&i.Nome,
 		&i.Codigo,
 		&i.Preco,
+		&i.Precocusto,
 		&i.Tipo,
 		&i.Situacao,
 		&i.Formato,
@@ -236,7 +237,6 @@ func (q *Queries) GetProduct(ctx context.Context, id int64) (GetProductRow, erro
 		&i.Linkexterno,
 		&i.Observacoes,
 		&i.Descricaoembalagemdiscreta,
-		&i.NewRecord,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.SaldoFisicoTotal,
@@ -279,6 +279,7 @@ SELECT
     p.nome,
     p.codigo,
     p.preco,
+    p.precoCusto,
     p.tipo,
     p.situacao,
     p.formato,
@@ -300,7 +301,6 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
-    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -330,6 +330,7 @@ type GetProductByNameRow struct {
 	Nome                       string        `json:"nome"`
 	Codigo                     string        `json:"codigo"`
 	Preco                      float64       `json:"preco"`
+	Precocusto                 float64       `json:"precocusto"`
 	Tipo                       string        `json:"tipo"`
 	Situacao                   string        `json:"situacao"`
 	Formato                    string        `json:"formato"`
@@ -351,7 +352,6 @@ type GetProductByNameRow struct {
 	Linkexterno                string        `json:"linkexterno"`
 	Observacoes                string        `json:"observacoes"`
 	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
-	NewRecord                  bool          `json:"new_record"`
 	CreatedAt                  time.Time     `json:"created_at"`
 	UpdatedAt                  time.Time     `json:"updated_at"`
 	SaldoFisicoTotal           int64         `json:"saldo_fisico_total"`
@@ -372,6 +372,7 @@ func (q *Queries) GetProductByName(ctx context.Context, nome string) (GetProduct
 		&i.Nome,
 		&i.Codigo,
 		&i.Preco,
+		&i.Precocusto,
 		&i.Tipo,
 		&i.Situacao,
 		&i.Formato,
@@ -393,7 +394,6 @@ func (q *Queries) GetProductByName(ctx context.Context, nome string) (GetProduct
 		&i.Linkexterno,
 		&i.Observacoes,
 		&i.Descricaoembalagemdiscreta,
-		&i.NewRecord,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.SaldoFisicoTotal,
@@ -414,6 +414,7 @@ SELECT
     p.nome,
     p.codigo,
     p.preco,
+    p.precoCusto,
     p.tipo,
     p.situacao,
     p.formato,
@@ -435,7 +436,6 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
-    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -468,6 +468,7 @@ type GetProductBySupplierIDRow struct {
 	Nome                       string    `json:"nome"`
 	Codigo                     string    `json:"codigo"`
 	Preco                      float64   `json:"preco"`
+	Precocusto                 float64   `json:"precocusto"`
 	Tipo                       string    `json:"tipo"`
 	Situacao                   string    `json:"situacao"`
 	Formato                    string    `json:"formato"`
@@ -489,7 +490,6 @@ type GetProductBySupplierIDRow struct {
 	Linkexterno                string    `json:"linkexterno"`
 	Observacoes                string    `json:"observacoes"`
 	Descricaoembalagemdiscreta string    `json:"descricaoembalagemdiscreta"`
-	NewRecord                  bool      `json:"new_record"`
 	CreatedAt                  time.Time `json:"created_at"`
 	UpdatedAt                  time.Time `json:"updated_at"`
 	SaldoFisicoTotal           int64     `json:"saldo_fisico_total"`
@@ -510,6 +510,7 @@ func (q *Queries) GetProductBySupplierID(ctx context.Context, supplierID int64) 
 		&i.Nome,
 		&i.Codigo,
 		&i.Preco,
+		&i.Precocusto,
 		&i.Tipo,
 		&i.Situacao,
 		&i.Formato,
@@ -531,7 +532,6 @@ func (q *Queries) GetProductBySupplierID(ctx context.Context, supplierID int64) 
 		&i.Linkexterno,
 		&i.Observacoes,
 		&i.Descricaoembalagemdiscreta,
-		&i.NewRecord,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.SaldoFisicoTotal,
@@ -574,6 +574,7 @@ SELECT
     p.nome,
     p.codigo,
     p.preco,
+    p.precoCusto,
     p.tipo,
     p.situacao,
     p.formato,
@@ -595,7 +596,6 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
-    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -638,6 +638,7 @@ type GetProductEmptyStockRow struct {
 	Nome                       string        `json:"nome"`
 	Codigo                     string        `json:"codigo"`
 	Preco                      float64       `json:"preco"`
+	Precocusto                 float64       `json:"precocusto"`
 	Tipo                       string        `json:"tipo"`
 	Situacao                   string        `json:"situacao"`
 	Formato                    string        `json:"formato"`
@@ -659,7 +660,6 @@ type GetProductEmptyStockRow struct {
 	Linkexterno                string        `json:"linkexterno"`
 	Observacoes                string        `json:"observacoes"`
 	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
-	NewRecord                  bool          `json:"new_record"`
 	CreatedAt                  time.Time     `json:"created_at"`
 	UpdatedAt                  time.Time     `json:"updated_at"`
 	SaldoFisicoTotal           int64         `json:"saldo_fisico_total"`
@@ -686,6 +686,7 @@ func (q *Queries) GetProductEmptyStock(ctx context.Context, arg GetProductEmptyS
 			&i.Nome,
 			&i.Codigo,
 			&i.Preco,
+			&i.Precocusto,
 			&i.Tipo,
 			&i.Situacao,
 			&i.Formato,
@@ -707,7 +708,6 @@ func (q *Queries) GetProductEmptyStock(ctx context.Context, arg GetProductEmptyS
 			&i.Linkexterno,
 			&i.Observacoes,
 			&i.Descricaoembalagemdiscreta,
-			&i.NewRecord,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.SaldoFisicoTotal,
@@ -775,6 +775,7 @@ SELECT
     p.nome,
     p.codigo,
     p.preco,
+    p.precoCusto,
     p.tipo,
     p.situacao,
     p.formato,
@@ -796,7 +797,6 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
-    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -839,6 +839,7 @@ type GetProductNoMovementsRow struct {
 	Nome                       string         `json:"nome"`
 	Codigo                     string         `json:"codigo"`
 	Preco                      float64        `json:"preco"`
+	Precocusto                 float64        `json:"precocusto"`
 	Tipo                       string         `json:"tipo"`
 	Situacao                   string         `json:"situacao"`
 	Formato                    string         `json:"formato"`
@@ -860,7 +861,6 @@ type GetProductNoMovementsRow struct {
 	Linkexterno                string         `json:"linkexterno"`
 	Observacoes                string         `json:"observacoes"`
 	Descricaoembalagemdiscreta string         `json:"descricaoembalagemdiscreta"`
-	NewRecord                  bool           `json:"new_record"`
 	CreatedAt                  time.Time      `json:"created_at"`
 	UpdatedAt                  time.Time      `json:"updated_at"`
 	SaldoFisicoTotal           int64          `json:"saldo_fisico_total"`
@@ -894,6 +894,7 @@ func (q *Queries) GetProductNoMovements(ctx context.Context, arg GetProductNoMov
 			&i.Nome,
 			&i.Codigo,
 			&i.Preco,
+			&i.Precocusto,
 			&i.Tipo,
 			&i.Situacao,
 			&i.Formato,
@@ -915,7 +916,6 @@ func (q *Queries) GetProductNoMovements(ctx context.Context, arg GetProductNoMov
 			&i.Linkexterno,
 			&i.Observacoes,
 			&i.Descricaoembalagemdiscreta,
-			&i.NewRecord,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.SaldoFisicoTotal,
@@ -975,6 +975,7 @@ SELECT
     p.nome,
     p.codigo,
     p.preco,
+    p.precoCusto,
     p.tipo,
     p.situacao,
     p.formato,
@@ -996,7 +997,6 @@ SELECT
     p.linkExterno,
     p.observacoes,
     p.descricaoEmbalagemDiscreta,
-    p.new_record,
     p.created_at,
     p.updated_at,
     COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
@@ -1036,6 +1036,7 @@ type GetProductsRow struct {
 	Nome                       string        `json:"nome"`
 	Codigo                     string        `json:"codigo"`
 	Preco                      float64       `json:"preco"`
+	Precocusto                 float64       `json:"precocusto"`
 	Tipo                       string        `json:"tipo"`
 	Situacao                   string        `json:"situacao"`
 	Formato                    string        `json:"formato"`
@@ -1057,7 +1058,6 @@ type GetProductsRow struct {
 	Linkexterno                string        `json:"linkexterno"`
 	Observacoes                string        `json:"observacoes"`
 	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
-	NewRecord                  bool          `json:"new_record"`
 	CreatedAt                  time.Time     `json:"created_at"`
 	UpdatedAt                  time.Time     `json:"updated_at"`
 	SaldoFisicoTotal           int64         `json:"saldo_fisico_total"`
@@ -1084,6 +1084,7 @@ func (q *Queries) GetProducts(ctx context.Context, arg GetProductsParams) ([]Get
 			&i.Nome,
 			&i.Codigo,
 			&i.Preco,
+			&i.Precocusto,
 			&i.Tipo,
 			&i.Situacao,
 			&i.Formato,
@@ -1105,183 +1106,6 @@ func (q *Queries) GetProducts(ctx context.Context, arg GetProductsParams) ([]Get
 			&i.Linkexterno,
 			&i.Observacoes,
 			&i.Descricaoembalagemdiscreta,
-			&i.NewRecord,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.SaldoFisicoTotal,
-			&i.SaldoVirtualTotal,
-			&i.SaldoFisico,
-			&i.SaldoVirtual,
-			&i.PrecoCusto,
-			&i.PrecoCompra,
-			&i.SupplierID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getProductsNew = `-- name: GetProductsNew :many
-WITH aggregated_stocks AS (
-    SELECT product_id,
-           SUM(saldo_fisico_total) AS saldo_fisico_total,
-           SUM(saldo_virtual_total) AS saldo_virtual_total
-    FROM stocks
-    GROUP BY product_id
-),
-aggregated_deposit_products AS (
-    SELECT product_id,
-           SUM(saldo_fisico) AS saldo_fisico,
-           SUM(saldo_virtual) AS saldo_virtual
-    FROM deposit_products
-    GROUP BY product_id
-),
-aggregated_supplier_products AS (
-    SELECT DISTINCT ON (product_id)
-           product_id,
-           AVG(preco_custo) AS preco_custo,
-           AVG(preco_compra) AS preco_compra,
-           supplier_id
-    FROM supplier_products
-    GROUP BY product_id, supplier_id
-    ORDER BY product_id, supplier_id ASC  -- Seleciona o supplier_id com menor valor
-)
-SELECT
-    p.ID,
-    p.idProdutoPai,
-    p.nome,
-    p.codigo,
-    p.preco,
-    p.tipo,
-    p.situacao,
-    p.formato,
-    p.descricao_curta,
-    p.imagem_url,
-    p.dataValidade,
-    p.unidade,
-    p.pesoLiquido,
-    p.pesoBruto,
-    p.volumes,
-    p.itensPorCaixa,
-    p.gtin,
-    p.gtinEmbalagem,
-    p.tipoProducao,
-    p.condicao,
-    p.freteGratis,
-    p.marca,
-    p.descricaoComplementar,
-    p.linkExterno,
-    p.observacoes,
-    p.descricaoEmbalagemDiscreta,
-    p.new_record,
-    p.created_at,
-    p.updated_at,
-    COALESCE(s.saldo_fisico_total, 0) AS saldo_fisico_total,
-    COALESCE(s.saldo_virtual_total, 0) AS saldo_virtual_total,
-    COALESCE(dp.saldo_fisico, 0) AS saldo_fisico,
-    COALESCE(dp.saldo_virtual, 0) AS saldo_virtual,
-    COALESCE(sp.preco_custo, 0) AS preco_custo,
-    COALESCE(sp.preco_compra, 0) AS preco_compra,
-    sp.supplier_id
-FROM
-    products p
-LEFT JOIN
-    aggregated_stocks s
-    ON p.id = s.product_id
-LEFT JOIN
-    aggregated_deposit_products dp
-    ON p.id = dp.product_id
-LEFT JOIN
-    aggregated_supplier_products sp
-    ON p.id = sp.product_id
-WHERE p.new_record = $1
-ORDER BY p.id DESC
-`
-
-type GetProductsNewRow struct {
-	ID                         int64         `json:"id"`
-	Idprodutopai               int64         `json:"idprodutopai"`
-	Nome                       string        `json:"nome"`
-	Codigo                     string        `json:"codigo"`
-	Preco                      float64       `json:"preco"`
-	Tipo                       string        `json:"tipo"`
-	Situacao                   string        `json:"situacao"`
-	Formato                    string        `json:"formato"`
-	DescricaoCurta             string        `json:"descricao_curta"`
-	ImagemUrl                  string        `json:"imagem_url"`
-	Datavalidade               time.Time     `json:"datavalidade"`
-	Unidade                    string        `json:"unidade"`
-	Pesoliquido                float64       `json:"pesoliquido"`
-	Pesobruto                  float64       `json:"pesobruto"`
-	Volumes                    int32         `json:"volumes"`
-	Itensporcaixa              int32         `json:"itensporcaixa"`
-	Gtin                       string        `json:"gtin"`
-	Gtinembalagem              string        `json:"gtinembalagem"`
-	Tipoproducao               string        `json:"tipoproducao"`
-	Condicao                   int32         `json:"condicao"`
-	Fretegratis                bool          `json:"fretegratis"`
-	Marca                      string        `json:"marca"`
-	Descricaocomplementar      string        `json:"descricaocomplementar"`
-	Linkexterno                string        `json:"linkexterno"`
-	Observacoes                string        `json:"observacoes"`
-	Descricaoembalagemdiscreta string        `json:"descricaoembalagemdiscreta"`
-	NewRecord                  bool          `json:"new_record"`
-	CreatedAt                  time.Time     `json:"created_at"`
-	UpdatedAt                  time.Time     `json:"updated_at"`
-	SaldoFisicoTotal           int64         `json:"saldo_fisico_total"`
-	SaldoVirtualTotal          int64         `json:"saldo_virtual_total"`
-	SaldoFisico                int64         `json:"saldo_fisico"`
-	SaldoVirtual               int64         `json:"saldo_virtual"`
-	PrecoCusto                 float64       `json:"preco_custo"`
-	PrecoCompra                float64       `json:"preco_compra"`
-	SupplierID                 sql.NullInt64 `json:"supplier_id"`
-}
-
-func (q *Queries) GetProductsNew(ctx context.Context, newRecord bool) ([]GetProductsNewRow, error) {
-	rows, err := q.db.QueryContext(ctx, getProductsNew, newRecord)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetProductsNewRow
-	for rows.Next() {
-		var i GetProductsNewRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.Idprodutopai,
-			&i.Nome,
-			&i.Codigo,
-			&i.Preco,
-			&i.Tipo,
-			&i.Situacao,
-			&i.Formato,
-			&i.DescricaoCurta,
-			&i.ImagemUrl,
-			&i.Datavalidade,
-			&i.Unidade,
-			&i.Pesoliquido,
-			&i.Pesobruto,
-			&i.Volumes,
-			&i.Itensporcaixa,
-			&i.Gtin,
-			&i.Gtinembalagem,
-			&i.Tipoproducao,
-			&i.Condicao,
-			&i.Fretegratis,
-			&i.Marca,
-			&i.Descricaocomplementar,
-			&i.Linkexterno,
-			&i.Observacoes,
-			&i.Descricaoembalagemdiscreta,
-			&i.NewRecord,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.SaldoFisicoTotal,
@@ -1310,28 +1134,28 @@ UPDATE products SET idProdutoPai = $2,
   nome = $3,
   codigo = $4,
   preco = $5,
-  tipo  = $6,
-  situacao = $7,
-  formato = $8,
-  descricao_curta = $9,
-  imagem_url = $10,
-  dataValidade = $11,
-  unidade = $12,
-  pesoLiquido = $13,
-  pesoBruto = $14,
-  volumes = $15,
-  itensPorCaixa = $16,
-  gtin = $17,
-  gtinEmbalagem = $18,
-  tipoProducao = $19,
-  condicao = $20,
-  freteGratis = $21,
-  marca = $22,
-  descricaoComplementar = $23,
-  linkExterno = $24,
-  observacoes = $25,
-  descricaoEmbalagemDiscreta = $26,
-  new_record = $27,
+  precoCusto = $6,
+  tipo  = $7,
+  situacao = $8,
+  formato = $9,
+  descricao_curta = $10,
+  imagem_url = $11,
+  dataValidade = $12,
+  unidade = $13,
+  pesoLiquido = $14,
+  pesoBruto = $15,
+  volumes = $16,
+  itensPorCaixa = $17,
+  gtin = $18,
+  gtinEmbalagem = $19,
+  tipoProducao = $20,
+  condicao = $21,
+  freteGratis = $22,
+  marca = $23,
+  descricaoComplementar = $24,
+  linkExterno = $25,
+  observacoes = $26,
+  descricaoEmbalagemDiscreta = $27,
   updated_at = $28
 WHERE products.id = $1
 `
@@ -1342,6 +1166,7 @@ type UpdateProductParams struct {
 	Nome                       string    `json:"nome"`
 	Codigo                     string    `json:"codigo"`
 	Preco                      float64   `json:"preco"`
+	Precocusto                 float64   `json:"precocusto"`
 	Tipo                       string    `json:"tipo"`
 	Situacao                   string    `json:"situacao"`
 	Formato                    string    `json:"formato"`
@@ -1363,7 +1188,6 @@ type UpdateProductParams struct {
 	Linkexterno                string    `json:"linkexterno"`
 	Observacoes                string    `json:"observacoes"`
 	Descricaoembalagemdiscreta string    `json:"descricaoembalagemdiscreta"`
-	NewRecord                  bool      `json:"new_record"`
 	UpdatedAt                  time.Time `json:"updated_at"`
 }
 
@@ -1374,6 +1198,7 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) er
 		arg.Nome,
 		arg.Codigo,
 		arg.Preco,
+		arg.Precocusto,
 		arg.Tipo,
 		arg.Situacao,
 		arg.Formato,
@@ -1395,7 +1220,6 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) er
 		arg.Linkexterno,
 		arg.Observacoes,
 		arg.Descricaoembalagemdiscreta,
-		arg.NewRecord,
 		arg.UpdatedAt,
 	)
 	return err

@@ -140,6 +140,7 @@ type Product struct {
 	Nome                       string    `json:"nome"`
 	Codigo                     string    `json:"codigo"`
 	Preco                      float64   `json:"preco"`
+	Precocusto                 float64   `json:"precocusto"`
 	Tipo                       string    `json:"tipo"`
 	Situacao                   string    `json:"situacao"`
 	Formato                    string    `json:"formato"`
@@ -161,7 +162,6 @@ type Product struct {
 	Linkexterno                string    `json:"linkexterno"`
 	Observacoes                string    `json:"observacoes"`
 	Descricaoembalagemdiscreta string    `json:"descricaoembalagemdiscreta"`
-	NewRecord                  bool      `json:"new_record"`
 	CreatedAt                  time.Time `json:"created_at"`
 	UpdatedAt                  time.Time `json:"updated_at"`
 }

@@ -53,6 +53,7 @@ type Product struct {
 	Nome                       string        `json:"nome"`
 	Codigo                     string        `json:"codigo"`
 	Preco                      float64       `json:"preco"`
+	PrecoCusto                 float64       `json:"precoCusto"`
 	ImagemUrl                  string        `json:"imagem_url"`
 	Tipo                       string        `json:"tipo"`
 	Situacao                   string        `json:"situacao"`
@@ -65,8 +66,8 @@ type Product struct {
 	Volumes                    int32         `json:"volumes"`
 	Itensporcaixa              int32         `json:"itens_por_caixa"`
 	Gtin                       string        `json:"gtin"`
-	Gtinembalagem              string        `json:"gtin_embalagem"`
-	Tipoproducao               string        `json:"tipo_producao"`
+	Gtinembalagem              string        `json:"gtinEmbalagem"`
+	Tipoproducao               string        `json:"tipoProducao"`
 	Condicao                   int32         `json:"condicao"`
 	Fretegratis                bool          `json:"frete_gratis"`
 	Marca                      string        `json:"marca"`
@@ -81,7 +82,6 @@ type Product struct {
 	SaldoVirtualTotal          int64         `json:"saldo_virtual_total"`
 	SaldoFisico                int64         `json:"saldo_fisico"`
 	SaldoVirtual               int64         `json:"saldo_virtual"`
-	PrecoCusto                 float64       `json:"preco_custo"`
 	PrecoCompra                float64       `json:"preco_compra"`
 	SupplierID                 NullableInt64 `json:"supplier_id"`
 }
@@ -92,6 +92,7 @@ type ProductEmptyStock struct {
 	Nome                       string        `json:"nome"`
 	Codigo                     string        `json:"codigo"`
 	Preco                      float64       `json:"preco"`
+	PrecoCusto                 float64       `json:"precoCusto"`
 	Tipo                       string        `json:"tipo"`
 	Situacao                   string        `json:"situacao"`
 	Formato                    string        `json:"formato"`
@@ -104,8 +105,8 @@ type ProductEmptyStock struct {
 	Volumes                    int32         `json:"volumes"`
 	Itensporcaixa              int32         `json:"itensporcaixa"`
 	Gtin                       string        `json:"gtin"`
-	Gtinembalagem              string        `json:"gtinembalagem"`
-	Tipoproducao               string        `json:"tipoproducao"`
+	Gtinembalagem              string        `json:"gtinEmbalagem"`
+	Tipoproducao               string        `json:"tipoProducao"`
 	Condicao                   int32         `json:"condicao"`
 	Fretegratis                bool          `json:"fretegratis"`
 	Marca                      string        `json:"marca"`
@@ -119,7 +120,6 @@ type ProductEmptyStock struct {
 	SaldoVirtualTotal          int64         `json:"saldo_virtual_total"`
 	SaldoFisico                int64         `json:"saldo_fisico"`
 	SaldoVirtual               int64         `json:"saldo_virtual"`
-	PrecoCusto                 float64       `json:"preco_custo"`
 	PrecoCompra                float64       `json:"preco_compra"`
 	SupplierID                 NullableInt64 `json:"supplier_id"`
 }
@@ -130,6 +130,7 @@ type ProductNoMovements struct {
 	Nome                       string         `json:"nome"`
 	Codigo                     string         `json:"codigo"`
 	Preco                      float64        `json:"preco"`
+	PrecoCusto                 float64        `json:"precoCusto"`
 	Tipo                       string         `json:"tipo"`
 	Situacao                   string         `json:"situacao"`
 	Formato                    string         `json:"formato"`
@@ -142,8 +143,8 @@ type ProductNoMovements struct {
 	Volumes                    int32          `json:"volumes"`
 	Itensporcaixa              int32          `json:"itensporcaixa"`
 	Gtin                       string         `json:"gtin"`
-	Gtinembalagem              string         `json:"gtinembalagem"`
-	Tipoproducao               string         `json:"tipoproducao"`
+	Gtinembalagem              string         `json:"gtinEmbalagem"`
+	Tipoproducao               string         `json:"tipoProducao"`
 	Condicao                   int32          `json:"condicao"`
 	Fretegratis                bool           `json:"fretegratis"`
 	Marca                      string         `json:"marca"`
@@ -157,7 +158,6 @@ type ProductNoMovements struct {
 	SaldoVirtualTotal          int64          `json:"saldo_virtual_total"`
 	SaldoFisico                int64          `json:"saldo_fisico"`
 	SaldoVirtual               int64          `json:"saldo_virtual"`
-	PrecoCusto                 float64        `json:"preco_custo"`
 	PrecoCompra                float64        `json:"preco_compra"`
 	SupplierID                 NullableInt64  `json:"supplier_id"`
 	Numero                     sql.NullInt32  `json:"numero"`
@@ -179,6 +179,7 @@ type ProductPayload struct {
 	Nome                       string        `json:"nome"`
 	Codigo                     string        `json:"codigo"`
 	Preco                      float64       `json:"preco"`
+	PrecoCusto                 float64       `json:"precoCusto"`
 	ImagemUrl                  string        `json:"imagem_url"`
 	Tipo                       string        `json:"tipo"`
 	Situacao                   string        `json:"situacao"`
@@ -191,8 +192,8 @@ type ProductPayload struct {
 	Volumes                    int32         `json:"volumes"`
 	Itensporcaixa              int32         `json:"itens_por_caixa"`
 	Gtin                       string        `json:"gtin"`
-	Gtinembalagem              string        `json:"gtin_embalagem"`
-	Tipoproducao               string        `json:"tipo_producao"`
+	Gtinembalagem              string        `json:"gtinEmbalagem"`
+	Tipoproducao               string        `json:"tipoProducao"`
 	Condicao                   int32         `json:"condicao"`
 	Fretegratis                bool          `json:"frete_gratis"`
 	Marca                      string        `json:"marca"`
@@ -207,7 +208,6 @@ type ProductPayload struct {
 	SaldoVirtualTotal          NullableInt   `json:"saldo_virtual_total"`
 	SaldoFisico                NullableInt   `json:"saldo_fisico"`
 	SaldoVirtual               NullableInt   `json:"saldo_virtual"`
-	PrecoCusto                 NullableFloat `json:"preco_custo"`
 	PrecoCompra                NullableFloat `json:"preco_compra"`
 	SupplierID                 NullableInt64 `json:"supplier_id"`
 }
@@ -216,6 +216,7 @@ type ProductBlingPayload struct {
 	Nome                       string                   `json:"nome"`
 	Codigo                     string                   `json:"codigo"`
 	Preco                      float64                  `json:"preco"`
+	Precocusto                 float64                  `json:"precoCusto"`
 	Tipo                       string                   `json:"tipo"`
 	Situacao                   string                   `json:"situacao"`
 	Formato                    string                   `json:"formato"`
@@ -299,7 +300,6 @@ type Deposito struct {
 type ProductStore interface {
 	CreateProduct(ProductPayload) error
 	GetProducts(nome, situacao string) ([]*Product, error)
-	GetProductsNew(new_record bool) ([]*Product, error)
 	GetProductByID(id int64) (*Product, error)
 	GetProductNoMovements(nome, situacao string) ([]*ProductNoMovements, error)
 	GetProductEmptyStock(nome, situacao string) ([]*ProductEmptyStock, error)

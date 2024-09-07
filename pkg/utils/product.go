@@ -5,16 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/claudineyveloso/soldim.git/internal/types"
 )
 
 var limitePorPagina = 100
 
-func ProcessProducts(products []types.Product, rateLimiter *time.Ticker) {
+func ProcessProducts(products []types.Product) {
 	for _, product := range products {
-		<-rateLimiter.C
 		productJSON, err := json.Marshal(product)
 		if err != nil {
 			fmt.Printf("Error marshalling product: %v\n", err)
@@ -43,4 +41,21 @@ func ProcessProducts(products []types.Product, rateLimiter *time.Ticker) {
 
 		fmt.Printf("Product created successfully: %v\n", product)
 	}
+}
+
+func CheckProductExists(productID int64) (bool, error) {
+	url := fmt.Sprintf(baseURL+"/get_product/%d", productID)
+	resp, err := http.Get(url)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return false, nil // Produto não existe
+	} else if resp.StatusCode != http.StatusOK {
+		return false, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+
+	return true, nil // Produto existe
 }

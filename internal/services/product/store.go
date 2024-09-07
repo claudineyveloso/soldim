@@ -33,6 +33,7 @@ func (s *Store) CreateProduct(product types.ProductPayload) error {
 		Nome:                       product.Nome,
 		Codigo:                     product.Codigo,
 		Preco:                      product.Preco,
+		Precocusto:                 product.PrecoCusto,
 		ImagemUrl:                  product.ImagemUrl,
 		Tipo:                       product.Tipo,
 		Situacao:                   product.Situacao,
@@ -54,7 +55,6 @@ func (s *Store) CreateProduct(product types.ProductPayload) error {
 		Linkexterno:                product.Linkexterno,
 		Observacoes:                product.Observacoes,
 		Descricaoembalagemdiscreta: product.Descricaoembalagemdiscreta,
-		NewRecord:                  product.NewRecord,
 		CreatedAt:                  product.CreatedAt,
 		UpdatedAt:                  product.UpdatedAt,
 	}
@@ -128,21 +128,6 @@ func (s *Store) GetProductEmptyStock(nome, situacao string) ([]*types.ProductEmp
 	return products, nil
 }
 
-func (s *Store) GetProductsNew(new_record bool) ([]*types.Product, error) {
-	queries := db.New(s.db)
-	ctx := context.Background()
-	dbProducts, err := queries.GetProductsNew(ctx, new_record)
-	if err != nil {
-		return nil, err
-	}
-	var products []*types.Product
-	for _, dbProduct := range dbProducts {
-		product := convertGetProductNewRowToProductNew(dbProduct)
-		products = append(products, product)
-	}
-	return products, nil
-}
-
 func (s *Store) UpdateProduct(product types.ProductPayload) error {
 	queries := db.New(s.db)
 	ctx := context.Background()
@@ -156,6 +141,7 @@ func (s *Store) UpdateProduct(product types.ProductPayload) error {
 		Nome:                       product.Nome,
 		Codigo:                     product.Codigo,
 		Preco:                      product.Preco,
+		Precocusto:                 product.PrecoCusto,
 		ImagemUrl:                  product.ImagemUrl,
 		Tipo:                       product.Tipo,
 		Situacao:                   product.Situacao,
@@ -177,7 +163,6 @@ func (s *Store) UpdateProduct(product types.ProductPayload) error {
 		Linkexterno:                product.Linkexterno,
 		Observacoes:                product.Observacoes,
 		Descricaoembalagemdiscreta: product.Descricaoembalagemdiscreta,
-		NewRecord:                  product.NewRecord,
 		UpdatedAt:                  product.UpdatedAt,
 	}
 
@@ -216,6 +201,7 @@ func convertDBProductToProduct(dbProduct db.GetProductsRow) *types.Product {
 		Nome:                       dbProduct.Nome,
 		Codigo:                     dbProduct.Codigo,
 		Preco:                      dbProduct.Preco,
+		PrecoCusto:                 dbProduct.PrecoCusto,
 		ImagemUrl:                  dbProduct.ImagemUrl,
 		Tipo:                       dbProduct.Tipo,
 		Situacao:                   dbProduct.Situacao,
@@ -237,14 +223,12 @@ func convertDBProductToProduct(dbProduct db.GetProductsRow) *types.Product {
 		Linkexterno:                dbProduct.Linkexterno,
 		Observacoes:                dbProduct.Observacoes,
 		Descricaoembalagemdiscreta: dbProduct.Descricaoembalagemdiscreta,
-		NewRecord:                  dbProduct.NewRecord,
 		CreatedAt:                  dbProduct.CreatedAt,
 		UpdatedAt:                  dbProduct.UpdatedAt,
 		SaldoFisicoTotal:           dbProduct.SaldoFisico,
 		SaldoVirtualTotal:          dbProduct.SaldoVirtualTotal,
 		SaldoFisico:                dbProduct.SaldoFisico,
 		SaldoVirtual:               dbProduct.SaldoVirtual,
-		PrecoCusto:                 dbProduct.PrecoCusto,
 		PrecoCompra:                dbProduct.PrecoCompra,
 		SupplierID:                 types.NullableInt64{NullInt64: dbProduct.SupplierID},
 	}
@@ -258,6 +242,7 @@ func convertGetProductRowToProduct(dbProduct db.GetProductRow) *types.Product {
 		Nome:                       dbProduct.Nome,
 		Codigo:                     dbProduct.Codigo,
 		Preco:                      dbProduct.Preco,
+		PrecoCusto:                 dbProduct.PrecoCusto,
 		ImagemUrl:                  dbProduct.ImagemUrl,
 		Tipo:                       dbProduct.Tipo,
 		Situacao:                   dbProduct.Situacao,
@@ -279,56 +264,12 @@ func convertGetProductRowToProduct(dbProduct db.GetProductRow) *types.Product {
 		Linkexterno:                dbProduct.Linkexterno,
 		Observacoes:                dbProduct.Observacoes,
 		Descricaoembalagemdiscreta: dbProduct.Descricaoembalagemdiscreta,
-		NewRecord:                  dbProduct.NewRecord,
 		CreatedAt:                  dbProduct.CreatedAt,
 		UpdatedAt:                  dbProduct.UpdatedAt,
 		SaldoFisicoTotal:           dbProduct.SaldoFisicoTotal,
 		SaldoVirtualTotal:          dbProduct.SaldoVirtualTotal,
 		SaldoFisico:                dbProduct.SaldoFisico,
 		SaldoVirtual:               dbProduct.SaldoVirtual,
-		PrecoCusto:                 dbProduct.PrecoCusto,
-		PrecoCompra:                dbProduct.PrecoCompra,
-		SupplierID:                 types.NullableInt64{NullInt64: dbProduct.SupplierID},
-	}
-	return product
-}
-
-func convertGetProductNewRowToProductNew(dbProduct db.GetProductsNewRow) *types.Product {
-	product := &types.Product{
-		ID:                         dbProduct.ID,
-		Idprodutopai:               dbProduct.Idprodutopai,
-		Nome:                       dbProduct.Nome,
-		Codigo:                     dbProduct.Codigo,
-		Preco:                      dbProduct.Preco,
-		ImagemUrl:                  dbProduct.ImagemUrl,
-		Tipo:                       dbProduct.Tipo,
-		Situacao:                   dbProduct.Situacao,
-		Formato:                    dbProduct.Formato,
-		DescricaoCurta:             dbProduct.DescricaoCurta,
-		Datavalidade:               dbProduct.Datavalidade,
-		Unidade:                    dbProduct.Unidade,
-		Pesoliquido:                dbProduct.Pesoliquido,
-		Pesobruto:                  dbProduct.Pesobruto,
-		Volumes:                    dbProduct.Volumes,
-		Itensporcaixa:              dbProduct.Itensporcaixa,
-		Gtin:                       dbProduct.Gtin,
-		Gtinembalagem:              dbProduct.Gtinembalagem,
-		Tipoproducao:               dbProduct.Tipoproducao,
-		Condicao:                   dbProduct.Condicao,
-		Fretegratis:                dbProduct.Fretegratis,
-		Marca:                      dbProduct.Marca,
-		Descricaocomplementar:      dbProduct.Descricaocomplementar,
-		Linkexterno:                dbProduct.Linkexterno,
-		Observacoes:                dbProduct.Observacoes,
-		Descricaoembalagemdiscreta: dbProduct.Descricaoembalagemdiscreta,
-		NewRecord:                  dbProduct.NewRecord,
-		CreatedAt:                  dbProduct.CreatedAt,
-		UpdatedAt:                  dbProduct.UpdatedAt,
-		SaldoFisicoTotal:           dbProduct.SaldoFisicoTotal,
-		SaldoVirtualTotal:          dbProduct.SaldoVirtualTotal,
-		SaldoFisico:                dbProduct.SaldoFisico,
-		SaldoVirtual:               dbProduct.SaldoVirtual,
-		PrecoCusto:                 dbProduct.PrecoCusto,
 		PrecoCompra:                dbProduct.PrecoCompra,
 		SupplierID:                 types.NullableInt64{NullInt64: dbProduct.SupplierID},
 	}
@@ -341,6 +282,7 @@ func convertGetProductNoMovementRowToProductNoMovementRow(dbProductNoMovement db
 		Nome:                       dbProductNoMovement.Nome,
 		Codigo:                     dbProductNoMovement.Codigo,
 		Preco:                      dbProductNoMovement.Preco,
+		PrecoCusto:                 dbProductNoMovement.PrecoCusto,
 		Tipo:                       dbProductNoMovement.Tipo,
 		Situacao:                   dbProductNoMovement.Situacao,
 		Formato:                    dbProductNoMovement.Formato,
@@ -369,7 +311,6 @@ func convertGetProductNoMovementRowToProductNoMovementRow(dbProductNoMovement db
 		Dataprevista:               dbProductNoMovement.Dataprevista,
 		Totalprodutos:              dbProductNoMovement.Totalprodutos,
 		Totaldescontos:             dbProductNoMovement.Totaldescontos,
-		PrecoCusto:                 dbProductNoMovement.PrecoCusto,
 		PrecoCompra:                dbProductNoMovement.PrecoCompra,
 	}
 	return ProductNoMovements
@@ -382,6 +323,7 @@ func convertGetProductEmptyStockRowToProductEmptyStockRow(dbProductEmptyStock db
 		Nome:                       dbProductEmptyStock.Nome,
 		Codigo:                     dbProductEmptyStock.Codigo,
 		Preco:                      dbProductEmptyStock.Preco,
+		PrecoCusto:                 dbProductEmptyStock.PrecoCusto,
 		Tipo:                       dbProductEmptyStock.Tipo,
 		Situacao:                   dbProductEmptyStock.Situacao,
 		Formato:                    dbProductEmptyStock.Formato,
@@ -409,7 +351,6 @@ func convertGetProductEmptyStockRowToProductEmptyStockRow(dbProductEmptyStock db
 		SaldoVirtualTotal:          dbProductEmptyStock.SaldoVirtualTotal,
 		SaldoFisico:                dbProductEmptyStock.SaldoFisico,
 		SaldoVirtual:               dbProductEmptyStock.SaldoVirtual,
-		PrecoCusto:                 dbProductEmptyStock.PrecoCusto,
 		PrecoCompra:                dbProductEmptyStock.PrecoCompra,
 		SupplierID:                 types.NullableInt64{NullInt64: dbProductEmptyStock.SupplierID},
 	}
