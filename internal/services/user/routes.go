@@ -165,6 +165,7 @@ func (h *Handler) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleGetUsers(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("Authorization Header: %s\n", r.Header.Get("Authorization"))
 	// Extract the token from the Authorization header
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {

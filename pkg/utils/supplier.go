@@ -35,14 +35,14 @@ func ProcessSuppliers(products []types.Product, bearerToken string) {
 				return
 			}
 			<-rateLimiter.C
-			processSupplierForProduct(product, bearerToken)
+			processSupplierForProduct(product, bearerToken, rateLimiter)
 		}(product)
 	}
 
 	wg.Wait()
 }
 
-func processSupplierForProduct(product types.Product, bearerToken string) {
+func processSupplierForProduct(product types.Product, bearerToken string, rateLimiter *time.Ticker) {
 	supplierResponse, err := bling.GetSupplierProductFromBling(bearerToken, product.ID)
 	if err != nil {
 		fmt.Printf("Error fetching supplier for product %d: %v\n", product.ID, err)
@@ -51,6 +51,7 @@ func processSupplierForProduct(product types.Product, bearerToken string) {
 
 	for _, supplierData := range supplierResponse.Data {
 		// Criar o supplier product
+		<-rateLimiter.C
 		supplierProduct := types.SupplierProduct{
 			ID:          supplierData.ID,
 			Descricao:   supplierData.Descricao,

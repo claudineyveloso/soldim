@@ -24,14 +24,14 @@ func ProcessStocks(products []types.Product, bearerToken string) {
 		go func(product types.Product) {
 			defer wg.Done()
 			<-rateLimiter.C
-			processStockForProduct(product, bearerToken)
+			processStockForProduct(product, bearerToken, rateLimiter)
 		}(product)
 	}
 
 	wg.Wait()
 }
 
-func processStockForProduct(product types.Product, bearerToken string) {
+func processStockForProduct(product types.Product, bearerToken string, rateLimiter *time.Ticker) {
 	stockResponse, err := bling.GetStockProductFromBling(bearerToken, product.ID)
 	if err != nil {
 		fmt.Printf("Error fetching stock for product %d: %v\n", product.ID, err)
@@ -41,6 +41,7 @@ func processStockForProduct(product types.Product, bearerToken string) {
 	}
 
 	for _, stockData := range stockResponse.Data {
+		<-rateLimiter.C
 		// Criar o stock
 		stock := types.Stock{
 			ProductID:         stockData.Produto.ID,
@@ -63,6 +64,7 @@ func processStockForProduct(product types.Product, bearerToken string) {
 
 		// Criar deposit products
 		for _, deposito := range stockData.Depositos {
+			<-rateLimiter.C
 			depositProduct := types.DepositProduct{
 				ProductID:    stockData.Produto.ID,
 				DepositID:    deposito.ID,

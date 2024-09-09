@@ -12,3 +12,7 @@
 [2024-08-31T23:51:51-03:00] Error fetching stock for product 16235856067: erro ao desserializar resposta: json: cannot unmarshal number -1.990000000000002 into Go struct field .data.saldoVirtualTotal of type int
 [2024-09-01T00:06:40-03:00] Error fetching stock for product 16237774157: erro ao desserializar resposta: json: cannot unmarshal number -27.990000000000002 into Go struct field .data.saldoVirtualTotal of type int
 [2024-09-01T01:16:53-03:00] Error fetching stock for product 16247543227: erro ao desserializar resposta: json: cannot unmarshal number -67.99 into Go struct field .data.saldoVirtualTotal of type int
+[2024-09-09T14:53:49-03:00] Error fetching stock for product 16247543227: erro ao desserializar resposta: json: cannot unmarshal number -67.99 into Go struct field .data.saldoVirtualTotal of type int
+[2024-09-09T14:59:33-03:00] Error fetching stock for product 16239416415: erro ao desserializar resposta: json: cannot unmarshal number -456.99 into Go struct field .data.saldoVirtualTotal of type int
+[2024-09-09T15:05:22-03:00] Error fetching stock for product 16237774157: erro ao desserializar resposta: json: cannot unmarshal number -27.990000000000002 into Go struct field .data.saldoVirtualTotal of type int
+[2024-09-09T15:06:40-03:00] Error fetching stock for product 16235856067: erro ao desserializar resposta: json: cannot unmarshal number -2.990000000000002 into Go struct field .data.saldoVirtualTotal of type int
