@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/claudineyveloso/soldim.git/internal/bling"
@@ -32,79 +33,70 @@ func RegisterRoutes(router *mux.Router) {
 }
 
 func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request) {
+	page := 1
+	limit := 100
+
 	token, err := utils.FetchAccessToken()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Erro ao buscar token de acesso: %v", err), http.StatusInternalServerError)
 		return
 	}
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Printf("Recovered from panic: %v\n", r)
-			http.Error(w, fmt.Sprintf("Internal server error: %v", r), http.StatusInternalServerError)
-		}
-	}()
-
-	pageStr := r.URL.Query().Get("page")
-	limitStr := r.URL.Query().Get("limit")
-	page, err := strconv.Atoi(pageStr)
-	if err != nil || page < 1 {
-		page = 1
-	}
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil || limit < 1 {
-		limit = limitePorPagina
-	}
-
 	rateLimiter := time.NewTicker(333 * time.Millisecond)
 	defer rateLimiter.Stop()
 
 	fmt.Printf("Requesting page: %d with limit: %d\n", page, limit)
 
 	for {
+		<-rateLimiter.C
+
 		sales, totalPages, err := bling.GetSalesOrdersFromBling(token, page, limit)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		for i, sale := range sales {
-			fmt.Printf("Verificando o contato com ID %d\n", sale.Contato.ID)
-			contact, err := existContact(sale.Contato.ID)
-			if err != nil {
-				http.Error(w, fmt.Sprintf("Error checking contact existence: %v", err), http.StatusInternalServerError)
-				return
-			}
+		// for i, sale := range sales {
+		// 	fmt.Printf("Verificando o contato com ID %d\n", sale.Contato.ID)
+		// 	contact, err := existContact(sale.Contato.ID)
+		// 	if err != nil {
+		// 		http.Error(w, fmt.Sprintf("Error checking contact existence: %v", err), http.StatusInternalServerError)
+		// 		return
+		// 	}
 
-			if contact == nil || contact.ID == 0 {
-				fmt.Printf("Contato com ID %d não encontrado. Criando novo contato.\n", sale.Contato.ID)
-				newContact := &types.Contact{
-					ID:              sale.Contato.ID,
-					Nome:            sale.Contato.Nome,
-					Codigo:          "",
-					Situacao:        "",
-					Numerodocumento: sale.Contato.NumeroDocumento,
-					Telefone:        "",
-					Celular:         "",
-					CreatedAt:       time.Now(),
-					UpdatedAt:       time.Now(),
-				}
-				createdContact, err := createContact(*newContact)
-				if err != nil {
-					http.Error(w, fmt.Sprintf("Error creating contact: %v", err), http.StatusInternalServerError)
-					return
-				}
-				fmt.Printf("Contato criado com ID %d\n", createdContact.ID)
-				sales[i].Contato.ID = createdContact.ID
-				sales[i].ContactID = createdContact.ID
-			} else {
-				fmt.Printf("Contato encontrado com ID %d\n", contact.ID)
-				sales[i].Contato.ID = contact.ID
-				sales[i].ContactID = contact.ID
-			}
+		// 	if contact == nil || contact.ID == 0 {
+		// 		fmt.Printf("Contato com ID %d não encontrado. Criando novo contato.\n", sale.Contato.ID)
+		// 		newContact := &types.Contact{
+		// 			ID:              sale.Contato.ID,
+		// 			Nome:            sale.Contato.Nome,
+		// 			Codigo:          "",
+		// 			Situacao:        "",
+		// 			Numerodocumento: sale.Contato.NumeroDocumento,
+		// 			Telefone:        "",
+		// 			Celular:         "",
+		// 			CreatedAt:       time.Now(),
+		// 			UpdatedAt:       time.Now(),
+		// 		}
+		// 		createdContact, err := createContact(*newContact)
+		// 		if err != nil {
+		// 			http.Error(w, fmt.Sprintf("Error creating contact: %v", err), http.StatusInternalServerError)
+		// 			return
+		// 		}
+		// 		fmt.Printf("Contato criado com ID %d\n", createdContact.ID)
+		// 		sales[i].Contato.ID = createdContact.ID
+		// 		sales[i].ContactID = createdContact.ID
+		// 	} else {
+		// 		fmt.Printf("Contato encontrado com ID %d\n", contact.ID)
+		// 		sales[i].Contato.ID = contact.ID
+		// 		sales[i].ContactID = contact.ID
+		// 	}
+		// }
+		if len(sales) == 0 {
+			break
 		}
+		processSalesOrdersConcurrently(sales, rateLimiter, token)
 
-		fmt.Printf("Processing page: %d with %d products\n", page, len(sales))
-		processSales(sales, rateLimiter)
+		// fmt.Printf("Processing page: %d with %d products\n", page, len(sales))
+		// processSales(sales, rateLimiter)
 
 		if page >= totalPages {
 			break
@@ -112,18 +104,79 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 
 		page++
 	}
-
-	err = processItemsSalesOrder(token, rateLimiter)
+	responseMessage := map[string]interface{}{
+		"message": "Registros importados e atualizados com sucesso",
+		"status":  http.StatusOK,
+	}
+	jsonResponse, err := json.Marshal(responseMessage)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Erro ao processar itens dos pedidos de venda: %v", err), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Error marshalling response: %v", err), http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(jsonResponse)
 
-	err = updateSalesOrder()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	// err = processItemsSalesOrder(token, rateLimiter)
+	// if err != nil {
+	// 	http.Error(w, fmt.Sprintf("Erro ao processar itens dos pedidos de venda: %v", err), http.StatusInternalServerError)
+	// 	return
+	// }
+
+	// err = updateSalesOrder()
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+}
+
+func processSalesOrdersConcurrently(salesorders []types.SalesOrder, rateLimiter *time.Ticker, token string) {
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, 3) // Limita a 3 goroutines simultâneas
+	for _, sale := range salesorders {
+		wg.Add(1)
+		saleCopy := sale // Criação de uma cópia para evitar problemas com concorrência
+		go func(sale types.SalesOrder) {
+			defer wg.Done()
+			sem <- struct{}{} // Adquire um recurso do semáforo para limitar as goroutines
+			processSalesOrders(sale, rateLimiter, token)
+			<-sem // Libera o recurso do semáforo
+		}(saleCopy) // Passa a cópia da variável `sale` para a goroutine
+	}
+	wg.Wait() // Aguarda todas as goroutines terminarem
+}
+
+func processSalesOrders(sale types.SalesOrder, rateLimiter *time.Ticker, token string) {
+	const maxRetries = 5
+	backoff := time.Second
+	for retryCount := 0; retryCount < maxRetries; retryCount++ {
+		<-rateLimiter.C // Espera o próximo "tick" do rateLimiter antes de processar
+		salesOrder, err := bling.GetSalesOrdersIDInBling(token, sale.ID)
+		if err != nil {
+			if isRateLimitError(err) { // Verifica se o erro é devido ao limite de requisições
+				fmt.Printf("Limite de requisições atingido, esperando antes de tentar novamente...\n")
+				time.Sleep(backoff)
+				backoff *= 2
+				continue
+			}
+			fmt.Printf("Erro ao obter detalhes do pedido de venda com ID %d: %v\n", sale.ID, err)
+			return
+		}
+		utils.ProcessContact(*salesOrder)
+		contactID := salesOrder.Contato.ID
+		utils.ProcessSales(*salesOrder, contactID)
+		utils.ProcessAllItems(*salesOrder)
 		return
 	}
+}
+
+func isRateLimitError(err error) bool {
+	// Implementar verificação de erro de limite se o Bling retornar um código de status específico ou mensagem
+	// Exemplo: return strings.Contains(err.Error(), "rate limit")
+	if strings.Contains(err.Error(), "rate limit") {
+		return true
+	}
+	return false
 }
 
 func existContact(contactID int64) (*types.Contact, error) {
