@@ -55,48 +55,10 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 			return
 		}
 
-		// for i, sale := range sales {
-		// 	fmt.Printf("Verificando o contato com ID %d\n", sale.Contato.ID)
-		// 	contact, err := existContact(sale.Contato.ID)
-		// 	if err != nil {
-		// 		http.Error(w, fmt.Sprintf("Error checking contact existence: %v", err), http.StatusInternalServerError)
-		// 		return
-		// 	}
-
-		// 	if contact == nil || contact.ID == 0 {
-		// 		fmt.Printf("Contato com ID %d não encontrado. Criando novo contato.\n", sale.Contato.ID)
-		// 		newContact := &types.Contact{
-		// 			ID:              sale.Contato.ID,
-		// 			Nome:            sale.Contato.Nome,
-		// 			Codigo:          "",
-		// 			Situacao:        "",
-		// 			Numerodocumento: sale.Contato.NumeroDocumento,
-		// 			Telefone:        "",
-		// 			Celular:         "",
-		// 			CreatedAt:       time.Now(),
-		// 			UpdatedAt:       time.Now(),
-		// 		}
-		// 		createdContact, err := createContact(*newContact)
-		// 		if err != nil {
-		// 			http.Error(w, fmt.Sprintf("Error creating contact: %v", err), http.StatusInternalServerError)
-		// 			return
-		// 		}
-		// 		fmt.Printf("Contato criado com ID %d\n", createdContact.ID)
-		// 		sales[i].Contato.ID = createdContact.ID
-		// 		sales[i].ContactID = createdContact.ID
-		// 	} else {
-		// 		fmt.Printf("Contato encontrado com ID %d\n", contact.ID)
-		// 		sales[i].Contato.ID = contact.ID
-		// 		sales[i].ContactID = contact.ID
-		// 	}
-		// }
 		if len(sales) == 0 {
 			break
 		}
 		processSalesOrdersConcurrently(sales, rateLimiter, token)
-
-		// fmt.Printf("Processing page: %d with %d products\n", page, len(sales))
-		// processSales(sales, rateLimiter)
 
 		if page >= totalPages {
 			break
@@ -116,18 +78,6 @@ func handleImportBlingSalesOrdersToSoldim(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(jsonResponse)
-
-	// err = processItemsSalesOrder(token, rateLimiter)
-	// if err != nil {
-	// 	http.Error(w, fmt.Sprintf("Erro ao processar itens dos pedidos de venda: %v", err), http.StatusInternalServerError)
-	// 	return
-	// }
-
-	// err = updateSalesOrder()
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
 }
 
 func processSalesOrdersConcurrently(salesorders []types.SalesOrder, rateLimiter *time.Ticker, token string) {
