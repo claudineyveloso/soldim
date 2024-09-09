@@ -12,24 +12,28 @@ SELECT deposit_id,
 FROM deposit_products;
 
 -- name: GetDepositProductsByProductID :many
-SELECT deposit_id,
-        product_id,
-        saldo_fisico,
-        saldo_virtual,
-        created_at,
-        updated_at
-FROM deposit_products 
-WHERE deposit_products.product_id = $1;
+SELECT dp.deposit_id, 
+        dp.product_id,
+        dp.saldo_fisico,
+        dp.saldo_virtual,
+        dp.created_at,
+        dp.updated_at,
+        d.descricao AS deposit_name
+FROM deposit_products dp
+INNER JOIN deposits d ON dp.deposit_id = d.id
+WHERE dp.product_id = $1;
 
 -- name: GetDepositProductsByDepositID :many
-SELECT deposit_id,
-        product_id,
-        saldo_fisico,
-        saldo_virtual,
-        created_at,
-        updated_at
-FROM deposit_products 
-WHERE deposit_products.deposit_id = $1;
+SELECT dp.deposit_id, 
+        dp.product_id,
+        dp.saldo_fisico,
+        dp.saldo_virtual,
+        dp.created_at,
+        dp.updated_at,
+        d.descricao AS deposit_name
+FROM deposit_products dp
+INNER JOIN deposits d ON dp.deposit_id = d.id
+WHERE dp.deposit_id = $1;
 
 -- name: UpdateDepositProduct :exec
 UPDATE deposit_products 

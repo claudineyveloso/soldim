@@ -75,7 +75,8 @@ func (s *Store) GetDepositProductByProductID(productID int64) ([]*types.DepositP
 	// Converter todos os produtos
 	var products []*types.DepositProduct
 	for _, dbDepositProduct := range dbDepositProducts {
-		product := convertGetDepositProductRowToDepositProduct(dbDepositProduct)
+		product := convertGetDepositProductRowToDepositProductByProduct(dbDepositProduct)
+
 		products = append(products, product)
 	}
 
@@ -93,19 +94,33 @@ func (s *Store) GetDepositProductByDepositID(depositID int64) ([]*types.DepositP
 	// Converter todos os produtos
 	var products []*types.DepositProduct
 	for _, dbDepositProduct := range dbDepositProducts {
-		product := convertGetDepositProductRowToDepositProduct(dbDepositProduct)
+		product := convertGetDepositProductRowToDepositProductByDeposit(dbDepositProduct)
 		products = append(products, product)
 	}
 
 	return products, nil
 }
 
-func convertGetDepositProductRowToDepositProduct(dbDepositProduct db.DepositProduct) *types.DepositProduct {
+func convertGetDepositProductRowToDepositProductByProduct(dbDepositProduct db.GetDepositProductsByProductIDRow) *types.DepositProduct {
 	DepositProduct := &types.DepositProduct{
 		DepositID:    dbDepositProduct.DepositID,
 		ProductID:    dbDepositProduct.ProductID,
 		SaldoFisico:  dbDepositProduct.SaldoFisico,
 		SaldoVirtual: dbDepositProduct.SaldoVirtual,
+		DepositName:  dbDepositProduct.DepositName,
+		CreatedAt:    dbDepositProduct.CreatedAt,
+		UpdatedAt:    dbDepositProduct.UpdatedAt,
+	}
+	return DepositProduct
+}
+
+func convertGetDepositProductRowToDepositProductByDeposit(dbDepositProduct db.GetDepositProductsByDepositIDRow) *types.DepositProduct {
+	DepositProduct := &types.DepositProduct{
+		DepositID:    dbDepositProduct.DepositID,
+		ProductID:    dbDepositProduct.ProductID,
+		SaldoFisico:  dbDepositProduct.SaldoFisico,
+		SaldoVirtual: dbDepositProduct.SaldoVirtual,
+		DepositName:  dbDepositProduct.DepositName,
 		CreatedAt:    dbDepositProduct.CreatedAt,
 		UpdatedAt:    dbDepositProduct.UpdatedAt,
 	}

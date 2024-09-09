@@ -77,25 +77,37 @@ func (q *Queries) GetDepositProducts(ctx context.Context) ([]DepositProduct, err
 }
 
 const getDepositProductsByDepositID = `-- name: GetDepositProductsByDepositID :many
-SELECT deposit_id,
-        product_id,
-        saldo_fisico,
-        saldo_virtual,
-        created_at,
-        updated_at
-FROM deposit_products 
-WHERE deposit_products.deposit_id = $1
+SELECT dp.deposit_id, 
+        dp.product_id,
+        dp.saldo_fisico,
+        dp.saldo_virtual,
+        dp.created_at,
+        dp.updated_at,
+        d.descricao AS deposit_name
+FROM deposit_products dp
+INNER JOIN deposits d ON dp.deposit_id = d.id
+WHERE dp.deposit_id = $1
 `
 
-func (q *Queries) GetDepositProductsByDepositID(ctx context.Context, depositID int64) ([]DepositProduct, error) {
+type GetDepositProductsByDepositIDRow struct {
+	DepositID    int64     `json:"deposit_id"`
+	ProductID    int64     `json:"product_id"`
+	SaldoFisico  int32     `json:"saldo_fisico"`
+	SaldoVirtual int32     `json:"saldo_virtual"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+	DepositName  string    `json:"deposit_name"`
+}
+
+func (q *Queries) GetDepositProductsByDepositID(ctx context.Context, depositID int64) ([]GetDepositProductsByDepositIDRow, error) {
 	rows, err := q.db.QueryContext(ctx, getDepositProductsByDepositID, depositID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []DepositProduct
+	var items []GetDepositProductsByDepositIDRow
 	for rows.Next() {
-		var i DepositProduct
+		var i GetDepositProductsByDepositIDRow
 		if err := rows.Scan(
 			&i.DepositID,
 			&i.ProductID,
@@ -103,6 +115,7 @@ func (q *Queries) GetDepositProductsByDepositID(ctx context.Context, depositID i
 			&i.SaldoVirtual,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.DepositName,
 		); err != nil {
 			return nil, err
 		}
@@ -118,25 +131,37 @@ func (q *Queries) GetDepositProductsByDepositID(ctx context.Context, depositID i
 }
 
 const getDepositProductsByProductID = `-- name: GetDepositProductsByProductID :many
-SELECT deposit_id,
-        product_id,
-        saldo_fisico,
-        saldo_virtual,
-        created_at,
-        updated_at
-FROM deposit_products 
-WHERE deposit_products.product_id = $1
+SELECT dp.deposit_id, 
+        dp.product_id,
+        dp.saldo_fisico,
+        dp.saldo_virtual,
+        dp.created_at,
+        dp.updated_at,
+        d.descricao AS deposit_name
+FROM deposit_products dp
+INNER JOIN deposits d ON dp.deposit_id = d.id
+WHERE dp.product_id = $1
 `
 
-func (q *Queries) GetDepositProductsByProductID(ctx context.Context, productID int64) ([]DepositProduct, error) {
+type GetDepositProductsByProductIDRow struct {
+	DepositID    int64     `json:"deposit_id"`
+	ProductID    int64     `json:"product_id"`
+	SaldoFisico  int32     `json:"saldo_fisico"`
+	SaldoVirtual int32     `json:"saldo_virtual"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+	DepositName  string    `json:"deposit_name"`
+}
+
+func (q *Queries) GetDepositProductsByProductID(ctx context.Context, productID int64) ([]GetDepositProductsByProductIDRow, error) {
 	rows, err := q.db.QueryContext(ctx, getDepositProductsByProductID, productID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []DepositProduct
+	var items []GetDepositProductsByProductIDRow
 	for rows.Next() {
-		var i DepositProduct
+		var i GetDepositProductsByProductIDRow
 		if err := rows.Scan(
 			&i.DepositID,
 			&i.ProductID,
@@ -144,6 +169,7 @@ func (q *Queries) GetDepositProductsByProductID(ctx context.Context, productID i
 			&i.SaldoVirtual,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.DepositName,
 		); err != nil {
 			return nil, err
 		}
@@ -159,7 +185,8 @@ func (q *Queries) GetDepositProductsByProductID(ctx context.Context, productID i
 }
 
 const updateDepositProduct = `-- name: UpdateDepositProduct :exec
-UPDATE deposit_products SET saldo_fisico = $3, 
+UPDATE deposit_products 
+SET saldo_fisico = $3, 
   saldo_virtual = $4, 
   updated_at = $5
 WHERE deposit_products.deposit_id = $1 AND deposit_products.product_id = $2
