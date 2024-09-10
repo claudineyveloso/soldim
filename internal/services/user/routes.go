@@ -167,28 +167,28 @@ func (h *Handler) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) handleGetUsers(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Authorization Header: %s\n", r.Header.Get("Authorization"))
 	// Extract the token from the Authorization header
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
-		http.Error(w, "Token de autorização não fornecido", http.StatusUnauthorized)
-		return
-	}
+	// authHeader := r.Header.Get("Authorization")
+	// if authHeader == "" {
+	// 	http.Error(w, "Token de autorização não fornecido", http.StatusUnauthorized)
+	// 	return
+	// }
 
-	// Extracts token of the format "Bearer {token}"
-	token := strings.TrimPrefix(authHeader, "Bearer ")
-	token = strings.TrimSpace(token) // Remove possible whitespace
+	// // Extracts token of the format "Bearer {token}"
+	// token := strings.TrimPrefix(authHeader, "Bearer ")
+	// token = strings.TrimSpace(token) // Remove possible whitespace
 
-	if token == "" || token == authHeader {
-		http.Error(w, "Formato de token inválido", http.StatusUnauthorized)
-		return
-	}
+	// if token == "" || token == authHeader {
+	// 	http.Error(w, "Formato de token inválido", http.StatusUnauthorized)
+	// 	return
+	// }
 
-	// Validate the token
-	isValid, err := auth.ValidateToken(token, h.userStore) // Pass the userStore instance
-	if err != nil || !isValid {
-		fmt.Printf("Erro na validação do token: %v\n", err)
-		http.Error(w, "Token de autorização inválido", http.StatusUnauthorized)
-		return
-	}
+	// // Validate the token
+	// isValid, err := auth.ValidateToken(token, h.userStore) // Pass the userStore instance
+	// if err != nil || !isValid {
+	// 	fmt.Printf("Erro na validação do token: %v\n", err)
+	// 	http.Error(w, "Token de autorização inválido", http.StatusUnauthorized)
+	// 	return
+	// }
 
 	// Get the users
 	users, err := h.userStore.GetUsers()

@@ -35,6 +35,32 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 	page := 1
 	limit := 100 // Processa 100 produtos por vez
 
+	// Coleta os parâmetros da query string
+	params := r.URL.Query()
+
+	pagina := params.Get("pagina")
+	if pagina != "" {
+		page, _ = strconv.Atoi(pagina) // Converte para int
+	}
+
+	limite := params.Get("limite")
+	if limite != "" {
+		limit, _ = strconv.Atoi(limite) // Converte para int
+	}
+
+	nome := params.Get("nome")
+	criterio := params.Get("criterio")
+	criterioInt, err := strconv.Atoi(criterio)
+	if err != nil {
+		// Tratar erro caso a conversão falhe
+		fmt.Println("Erro ao converter criterio para int:", err)
+		criterioInt = 0 // Valor padrão caso a conversão falhe
+	}
+	dataInclusaoInicial := params.Get("dataInclusaoInicial")
+	dataInclusaoFinal := params.Get("dataInclusaoFinal")
+	dataAlteracaoInicial := params.Get("dataAlteracaoInicial")
+	dataAlteracaoFinal := params.Get("dataAlteracaoFinal")
+
 	token, err := utils.FetchAccessToken()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error fetching access token: %v", err), http.StatusInternalServerError)
@@ -46,7 +72,8 @@ func handleImportBlingProductsToSoldim(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		// Faz a requisição de uma página de produtos
-		products, totalPages, err := bling.GetProductsFromBling(token, page, limit, "", 0, "", "", "", "")
+		products, totalPages, err := bling.GetProductsFromBling(
+			token, page, limit, nome, criterioInt, dataInclusaoInicial, dataInclusaoFinal, dataAlteracaoInicial, dataAlteracaoFinal)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
