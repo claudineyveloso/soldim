@@ -21,7 +21,7 @@ type Draft struct {
 	Volumes                    int32     `json:"volumes"`
 	Itensporcaixa              int32     `json:"itensporcaixa"`
 	Gtin                       string    `json:"gtin"`
-	Gtinembalagem              string    `json:"gtinembalagem"`
+	Gtinembalagem              string    `json:"gtinEmbalagem"`
 	Tipoproducao               string    `json:"tipoproducao"`
 	Condicao                   int32     `json:"condicao"`
 	Fretegratis                bool      `json:"fretegratis"`
@@ -31,7 +31,7 @@ type Draft struct {
 	Observacoes                string    `json:"observacoes"`
 	Descricaoembalagemdiscreta string    `json:"descricaoembalagemdiscreta"`
 	Source                     string    `json:"source"`
-	Price                      float64   `json:"price"`
+	Price                      float64   `json:"preco"`
 	Promotion                  bool      `json:"promotion"`
 	Link                       string    `json:"link"`
 	SearchID                   uuid.UUID `json:"search_id"`
