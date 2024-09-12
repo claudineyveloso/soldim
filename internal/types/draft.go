@@ -31,7 +31,7 @@ type Draft struct {
 	Observacoes                string    `json:"observacoes"`
 	Descricaoembalagemdiscreta string    `json:"descricaoembalagemdiscreta"`
 	Source                     string    `json:"source"`
-	Price                      float64   `json:"preco"`
+	Price                      float64   `json:"price"`
 	Promotion                  bool      `json:"promotion"`
 	Link                       string    `json:"link"`
 	SearchID                   uuid.UUID `json:"search_id"`
