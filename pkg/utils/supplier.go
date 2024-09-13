@@ -17,8 +17,6 @@ import (
 
 func ProcessSuppliers(products []types.Product, bearerToken string) {
 	var wg sync.WaitGroup
-	rateLimiter := time.NewTicker(333 * time.Millisecond) // Alterar
-	defer rateLimiter.Stop()
 
 	// Criar um rate limiter que permite 3 requisições por segundo
 	limiter := rate.NewLimiter(rate.Every(time.Second/3), 1)
@@ -34,15 +32,14 @@ func ProcessSuppliers(products []types.Product, bearerToken string) {
 				fmt.Printf("Error waiting for rate limiter: %v\n", err)
 				return
 			}
-			<-rateLimiter.C
-			processSupplierForProduct(product, bearerToken, rateLimiter)
+			processSupplierForProduct(product, bearerToken)
 		}(product)
 	}
 
 	wg.Wait()
 }
 
-func processSupplierForProduct(product types.Product, bearerToken string, rateLimiter *time.Ticker) {
+func processSupplierForProduct(product types.Product, bearerToken string) {
 	supplierResponse, err := bling.GetSupplierProductFromBling(bearerToken, product.ID)
 	if err != nil {
 		fmt.Printf("Error fetching supplier for product %d: %v\n", product.ID, err)
@@ -51,7 +48,6 @@ func processSupplierForProduct(product types.Product, bearerToken string, rateLi
 
 	for _, supplierData := range supplierResponse.Data {
 		// Criar o supplier product
-		<-rateLimiter.C
 		supplierProduct := types.SupplierProduct{
 			ID:          supplierData.ID,
 			Descricao:   supplierData.Descricao,

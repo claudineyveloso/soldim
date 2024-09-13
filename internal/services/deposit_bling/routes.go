@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	token   = "1f9a842195eb889041d18446691a9b158d2f07dc"
+	token   = "2925f7e1769d3e2b2a0f5542c8f02f289c918c10"
 	baseURL = utils.GetBaseURL()
 )
 
