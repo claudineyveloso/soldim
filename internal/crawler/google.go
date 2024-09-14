@@ -46,7 +46,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 	for {
 		// Esperar o carregamento da página com timeout específico
-		log.Println("Esperando os resultados da página...")
+		log.Println("Esperando os resultados da página da coleta...")
 		err = chromedp.Run(ctx, chromedp.WaitVisible(`div.sh-dgr__grid-result`, chromedp.ByQuery))
 		if err != nil {
 			log.Println("Erro ao esperar pela visibilidade dos resultados:", err)
