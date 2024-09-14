@@ -1,6 +1,7 @@
 package search
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -52,7 +53,11 @@ func (h *Handler) handleCreateSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	products, err := crawler.CrawlGoogle(search.Description)
+	// Cria um contexto com timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	products, err := crawler.CrawlGoogle(ctx, search.Description)
 	if err != nil {
 		log.Fatalf("Erro ao coletar produtos: %v", err)
 	}
