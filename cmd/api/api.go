@@ -36,7 +36,7 @@ import (
 	"github.com/claudineyveloso/soldim.git/internal/services/user"
 	webhooksales "github.com/claudineyveloso/soldim.git/internal/services/webhook_sales"
 	webhookstock "github.com/claudineyveloso/soldim.git/internal/services/webhook_stock"
-	"github.com/gorilla/handlers"
+	"github.com/go-chi/cors"
 	"github.com/gorilla/mux"
 )
 
@@ -50,15 +50,6 @@ func NewAPIServer(addr string, db *sql.DB) *APIServer {
 		addr: addr,
 		db:   db,
 	}
-}
-
-func loggingMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Do stuff here
-		log.Println(r.RequestURI)
-		// Call the next handler, which can be another middleware in the chain, or the final handler.
-		next.ServeHTTP(w, r)
-	})
 }
 
 func (s *APIServer) Run() error {
@@ -89,7 +80,6 @@ func (s *APIServer) Run() error {
 	draftHandler := draft.NewHandler(draftStore)
 	draftHandler.RegisterRoutes(r)
 
-	// searchresultStore := searchresult.NewStore(s.db)
 	searchresultHandler := searchresult.NewHandler(searchresultStore)
 	searchresultHandler.RegisterRoutes(r)
 
@@ -165,10 +155,22 @@ func (s *APIServer) Run() error {
 		fmt.Println("Server started on http://localhost:8080")
 	}
 
-	return http.ListenAndServe(address,
-		handlers.CORS(
-			handlers.AllowedOrigins([]string{"https://soldim-4dc6480ce821.herokuapp.com"}),
-			handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
-			handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
-		)(r))
+	// Configurar CORS
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"}, // Permite todas as origens, ajuste conforme necessário
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"X-Requested-With", "Content-Type", "Authorization"},
+	}).Handler(r)
+
+	// Iniciar o servidor
+	return http.ListenAndServe(address, corsHandler)
+}
+
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Loga o método e o caminho da requisição
+		log.Printf("Received request: %s %s", r.Method, r.URL.Path)
+		// Passa a requisição para o próximo handler
+		next.ServeHTTP(w, r)
+	})
 }
