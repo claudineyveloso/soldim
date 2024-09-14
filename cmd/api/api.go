@@ -167,7 +167,7 @@ func (s *APIServer) Run() error {
 
 	return http.ListenAndServe(address,
 		handlers.CORS(
-			handlers.AllowedOrigins([]string{"*"}),
+			handlers.AllowedOrigins([]string{"https://soldim-4dc6480ce821.herokuapp.com"}),
 			handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}),
 			handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
 		)(r))
