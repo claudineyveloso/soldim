@@ -154,7 +154,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		err = chromedp.Run(ctx, chromedp.EvaluateAsDevTools(`document.querySelector('a#pnnext') !== null`, &nextPageExists))
 		if err != nil {
 			log.Println("Erro ao verificar próxima página:", err)
-			return nil, fmt.Errorf("Erro ao verificar próxima página: %v", err)
+			return nil, fmt.Errorf("erro ao verificar próxima página: %v", err)
 		}
 
 		if !nextPageExists {
@@ -168,7 +168,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		err = chromedp.Run(ctx, chromedp.WaitVisible(`a#pnnext`, chromedp.ByQuery))
 		if err != nil {
 			log.Println("Erro ao esperar pela visibilidade do botão de próxima página:", err)
-			return nil, fmt.Errorf("Erro ao esperar pela visibilidade do botão de próxima página: %v", err)
+			return nil, fmt.Errorf("erro ao esperar pela visibilidade do botão de próxima página: %v", err)
 		}
 
 		// Navegar para a próxima página
