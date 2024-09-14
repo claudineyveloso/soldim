@@ -35,12 +35,12 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Codificar a query string para ser usada na URL
 	encodedQuery := url.QueryEscape(query)
 	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
-	log.Printf("Iniciando visita: %s", startURL)
+	log.Println("Iniciando visita:", startURL)
 
 	// Navegar até a URL inicial
 	err := chromedp.Run(ctx, chromedp.Navigate(startURL))
 	if err != nil {
-		log.Printf("Falha ao iniciar a visita: %v", err)
+		log.Println("Falha ao iniciar a visita:", err)
 		return nil, fmt.Errorf("falha ao iniciar a visita: %v", err)
 	}
 
@@ -49,7 +49,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		log.Println("Esperando os resultados da página...")
 		err = chromedp.Run(ctx, chromedp.WaitVisible(`div.sh-dgr__grid-result`, chromedp.ByQuery))
 		if err != nil {
-			log.Printf("Erro ao esperar pela visibilidade dos resultados: %v", err)
+			log.Println("Erro ao esperar pela visibilidade dos resultados:", err)
 			break
 		}
 
@@ -58,19 +58,19 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		var htmlContent string
 		err = chromedp.Run(ctx, chromedp.OuterHTML(`html`, &htmlContent, chromedp.ByQuery))
 		if err != nil {
-			log.Printf("Falha ao extrair HTML: %v", err)
+			log.Println("Falha ao extrair HTML:", err)
 			return nil, fmt.Errorf("falha ao extrair HTML: %v", err)
 		}
 
 		// Log do tamanho do HTML extraído para verificar se está completo
-		log.Printf("Tamanho do HTML extraído: %d bytes", len(htmlContent))
+		log.Println("Tamanho do HTML extraído:", len(htmlContent), "bytes")
 
 		log.Println("HTML extraído com sucesso. Processando o HTML...")
 
 		// Parsear o HTML com goquery
 		doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
 		if err != nil {
-			log.Printf("Falha ao parsear HTML: %v", err)
+			log.Println("Falha ao parsear HTML:", err)
 			return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
 		}
 
@@ -79,14 +79,14 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		doc.Find("div.sh-dgr__grid-result").Each(func(index int, item *goquery.Selection) {
 			description := item.Find(".tAxDx").Text()
 			priceText := item.Find(".a8Pemb").Text()
-			log.Printf("Raw price text: %s", priceText)
+			log.Println("Raw price text:", priceText)
 
 			price, err := formatarPreco(priceText)
 			if err != nil {
-				log.Printf("Erro ao formatar o preço: %v", err)
+				log.Println("Erro ao formatar o preço:", err)
 				price = 0.0
 			}
-			log.Printf("Formatted price: %f", price)
+			log.Println("Formatted price:", price)
 
 			rawURL, _ := item.Find("a").Attr("href")
 			imageURL, _ := item.Find(".ArOc1c img").Attr("src")
@@ -121,7 +121,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 				Promotion:   promotion,
 			}
 			produtos = append(produtos, produto)
-			log.Printf("Produto encontrado: %+v\n", produto)
+			log.Println("Produto encontrado:", produto)
 		})
 
 		// Verificar se há uma próxima página com timeout específico
@@ -131,7 +131,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		// Verificando se o botão de próxima página existe
 		err = chromedp.Run(ctx, chromedp.EvaluateAsDevTools(`document.querySelector('a#pnnext') !== null`, &nextPageExists))
 		if err != nil {
-			log.Printf("Erro ao verificar próxima página: %v", err)
+			log.Println("Erro ao verificar próxima página:", err)
 			return nil, fmt.Errorf("Erro ao verificar próxima página: %v", err)
 		}
 
@@ -145,14 +145,14 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		// Verificando se o elemento está visível
 		err = chromedp.Run(ctx, chromedp.WaitVisible(`a#pnnext`, chromedp.ByQuery))
 		if err != nil {
-			log.Printf("Erro ao esperar pela visibilidade do botão de próxima página: %v", err)
+			log.Println("Erro ao esperar pela visibilidade do botão de próxima página:", err)
 			return nil, fmt.Errorf("Erro ao esperar pela visibilidade do botão de próxima página: %v", err)
 		}
 
 		// Navegar para a próxima página
 		err = chromedp.Run(ctx, chromedp.Click(`a#pnnext`, chromedp.ByQuery, chromedp.NodeVisible))
 		if err != nil {
-			log.Printf("Falha ao navegar para a próxima página: %v", err)
+			log.Println("Falha ao navegar para a próxima página:", err)
 			return nil, fmt.Errorf("falha ao navegar para a próxima página: %v", err)
 		}
 
@@ -162,9 +162,9 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	}
 
 	// Log dos produtos coletados
-	log.Printf("Total de produtos coletados: %d", len(produtos))
+	log.Println("Total de produtos coletados:", len(produtos))
 	for _, produto := range produtos {
-		log.Printf("Produto: %+v", produto)
+		log.Println("Produto:", produto)
 	}
 
 	return produtos, nil
