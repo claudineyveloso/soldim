@@ -62,6 +62,9 @@ func CrawlGoogle(query string) ([]Produto, error) {
 			return nil, fmt.Errorf("falha ao extrair HTML: %v", err)
 		}
 
+		// Log do tamanho do HTML extraído para verificar se está completo
+		log.Printf("Tamanho do HTML extraído: %d bytes", len(htmlContent))
+
 		log.Println("HTML extraído com sucesso. Processando o HTML...")
 
 		// Parsear o HTML com goquery
