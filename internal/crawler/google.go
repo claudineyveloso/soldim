@@ -76,6 +76,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 			break
 		}
+		log.Println("Visibilidade confirmada. Continuando...")
 
 		// Extrair o HTML da página
 		log.Println("Extraindo HTML da página...")
