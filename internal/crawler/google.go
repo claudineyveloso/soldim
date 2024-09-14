@@ -50,6 +50,17 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		err = chromedp.Run(ctx, chromedp.WaitVisible(`div.sh-dgr__grid-result`, chromedp.ByQuery))
 		if err != nil {
 			log.Println("Erro ao esperar pela visibilidade dos resultados:", err)
+
+			// Adicionando log para verificar o estado da página
+			log.Println("Verificando o HTML da página após falha...")
+			var htmlContent string
+			err = chromedp.Run(ctx, chromedp.OuterHTML(`html`, &htmlContent, chromedp.ByQuery))
+			if err != nil {
+				log.Println("Erro ao extrair HTML:", err)
+			} else {
+				log.Println("HTML da página:", htmlContent) // Adicionando log para diagnóstico
+			}
+
 			break
 		}
 
