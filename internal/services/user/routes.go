@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/claudineyveloso/soldim.git/internal/configs"
 	"github.com/claudineyveloso/soldim.git/internal/services/auth"
@@ -122,28 +121,28 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 // }
 
 func (h *Handler) handleCreateUser(w http.ResponseWriter, r *http.Request) {
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
-		http.Error(w, "Token de autorização não fornecido", http.StatusUnauthorized)
-		return
-	}
+	// authHeader := r.Header.Get("Authorization")
+	// if authHeader == "" {
+	// 	http.Error(w, "Token de autorização não fornecido", http.StatusUnauthorized)
+	// 	return
+	// }
 
-	// Extracts token of the format "Bearer {token}"
-	token := strings.TrimPrefix(authHeader, "Bearer ")
-	token = strings.TrimSpace(token) // Remove possible whitespace
+	// // Extracts token of the format "Bearer {token}"
+	// token := strings.TrimPrefix(authHeader, "Bearer ")
+	// token = strings.TrimSpace(token) // Remove possible whitespace
 
-	if token == "" || token == authHeader {
-		http.Error(w, "Formato de token inválido", http.StatusUnauthorized)
-		return
-	}
+	// if token == "" || token == authHeader {
+	// 	http.Error(w, "Formato de token inválido", http.StatusUnauthorized)
+	// 	return
+	// }
 
-	// Validate the token
-	isValid, err := auth.ValidateToken(token, h.userStore) // Pass the userStore instance
-	if err != nil || !isValid {
-		fmt.Printf("Erro na validação do token: %v\n", err)
-		http.Error(w, "Token de autorização inválido", http.StatusUnauthorized)
-		return
-	}
+	// // Validate the token
+	// isValid, err := auth.ValidateToken(token, h.userStore) // Pass the userStore instance
+	// if err != nil || !isValid {
+	// 	fmt.Printf("Erro na validação do token: %v\n", err)
+	// 	http.Error(w, "Token de autorização inválido", http.StatusUnauthorized)
+	// 	return
+	// }
 
 	var user types.UserPayload
 	if err := utils.ParseJSON(r, &user); err != nil {
@@ -155,7 +154,7 @@ func (h *Handler) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("payload inválido: %v", errors))
 		return
 	}
-	err = h.userStore.CreateUser(user)
+	err := h.userStore.CreateUser(user)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
@@ -203,27 +202,27 @@ func (h *Handler) handleGetUsers(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) handleGetUser(w http.ResponseWriter, r *http.Request) {
 	// Extract the token from the Authorization header
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
-		http.Error(w, "Token de autorização não fornecido", http.StatusUnauthorized)
-		return
-	}
+	// authHeader := r.Header.Get("Authorization")
+	// if authHeader == "" {
+	// 	http.Error(w, "Token de autorização não fornecido", http.StatusUnauthorized)
+	// 	return
+	// }
 
-	// Extracts token of the format "Bearer {token}"
-	token := strings.TrimPrefix(authHeader, "Bearer ")
-	token = strings.TrimSpace(token) // Remove possíveis espaços em branco
+	// // Extracts token of the format "Bearer {token}"
+	// token := strings.TrimPrefix(authHeader, "Bearer ")
+	// token = strings.TrimSpace(token) // Remove possíveis espaços em branco
 
-	if token == "" {
-		http.Error(w, "Formato de token inválido", http.StatusUnauthorized)
-		return
-	}
+	// if token == "" {
+	// 	http.Error(w, "Formato de token inválido", http.StatusUnauthorized)
+	// 	return
+	// }
 
-	// Validate the token
-	isValid, err := auth.ValidateToken(token, h.userStore) // Passa o userStore para ValidateToken
-	if err != nil || !isValid {
-		http.Error(w, "Token de autorização inválido", http.StatusUnauthorized)
-		return
-	}
+	// // Validate the token
+	// isValid, err := auth.ValidateToken(token, h.userStore) // Passa o userStore para ValidateToken
+	// if err != nil || !isValid {
+	// 	http.Error(w, "Token de autorização inválido", http.StatusUnauthorized)
+	// 	return
+	// }
 
 	// Get then userID da URL
 	vars := mux.Vars(r)

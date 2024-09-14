@@ -112,9 +112,15 @@ func processSalesOrders(sale types.SalesOrder, rateLimiter *time.Ticker, token s
 			fmt.Printf("Erro ao obter detalhes do pedido de venda com ID %d: %v\n", sale.ID, err)
 			return
 		}
+		<-rateLimiter.C
 		utils.ProcessContact(*salesOrder)
+
 		contactID := salesOrder.Contato.ID
+
+		<-rateLimiter.C
 		utils.ProcessSales(*salesOrder, contactID)
+
+		<-rateLimiter.C
 		utils.ProcessAllItems(*salesOrder)
 		return
 	}
