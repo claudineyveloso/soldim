@@ -40,7 +40,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Navegar até a URL inicial
 	err := chromedp.Run(ctx, chromedp.Navigate(startURL))
 	if err != nil {
-		return nil, fmt.Errorf("falha ao iniciar a visita: %v", err)
+		return nil, fmt.Errorf("falha ao iniciar a coleta: %v", err)
 	}
 
 	for {
