@@ -24,7 +24,17 @@ type Produto struct {
 }
 
 func CrawlGoogle(query string) ([]Produto, error) {
+	// Configurar opções para o Chromium
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("no-sandbox", true),
+		chromedp.Flag("disable-gpu", true), // Adicione outras flags necessárias aqui
+	)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+
+	// Criar um novo contexto do Chromium com as opções
+	ctx, cancel = chromedp.NewExecAllocator(ctx, opts...)
 	defer cancel()
 
 	ctx, cancel = chromedp.NewContext(ctx)
