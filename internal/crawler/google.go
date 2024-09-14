@@ -40,6 +40,150 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Navegar até a URL inicial
 	err := chromedp.Run(ctx, chromedp.Navigate(startURL))
 	if err != nil {
+		log.Printf("Falha ao iniciar a visita: %v", err)
+		return nil, fmt.Errorf("falha ao iniciar a visita: %v", err)
+	}
+
+	for {
+		// Esperar o carregamento da página com timeout específico
+		log.Println("Esperando os resultados da página...")
+		err = chromedp.Run(ctx, chromedp.WaitVisible(`div.sh-dgr__grid-result`, chromedp.ByQuery))
+		if err != nil {
+			log.Printf("Erro ao esperar pela visibilidade dos resultados: %v", err)
+			break
+		}
+
+		// Extrair o HTML da página
+		log.Println("Extraindo HTML da página...")
+		var htmlContent string
+		err = chromedp.Run(ctx, chromedp.OuterHTML(`html`, &htmlContent, chromedp.ByQuery))
+		if err != nil {
+			log.Printf("Falha ao extrair HTML: %v", err)
+			return nil, fmt.Errorf("falha ao extrair HTML: %v", err)
+		}
+
+		log.Println("HTML extraído com sucesso. Processando o HTML...")
+
+		// Parsear o HTML com goquery
+		doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+		if err != nil {
+			log.Printf("Falha ao parsear HTML: %v", err)
+			return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
+		}
+
+		// Extrair detalhes dos produtos
+		log.Println("Extraindo produtos da página...")
+		doc.Find("div.sh-dgr__grid-result").Each(func(index int, item *goquery.Selection) {
+			description := item.Find(".tAxDx").Text()
+			priceText := item.Find(".a8Pemb").Text()
+			log.Printf("Raw price text: %s", priceText)
+
+			price, err := formatarPreco(priceText)
+			if err != nil {
+				log.Printf("Erro ao formatar o preço: %v", err)
+				price = 0.0
+			}
+			log.Printf("Formatted price: %f", price)
+
+			rawURL, _ := item.Find("a").Attr("href")
+			imageURL, _ := item.Find(".ArOc1c img").Attr("src")
+			promotionText := strings.TrimSpace(item.Find(".fAcMNb span.Ib8pOd").Text())
+
+			source := ""
+			item.Find(".aULzUe").Contents().Each(func(i int, s *goquery.Selection) {
+				if goquery.NodeName(s) != "style" {
+					source = strings.TrimSpace(s.Text())
+				}
+			})
+
+			// Processar a URL conforme a lógica solicitada
+			var link string
+			if strings.HasPrefix(rawURL, "/shopping/product") {
+				link = "https://www.google.com.br" + rawURL
+			} else if strings.HasPrefix(rawURL, "/url?url=") {
+				link = strings.TrimPrefix(rawURL, "/url?url=")
+			} else {
+				link = rawURL
+			}
+
+			// Verificar se o texto da promoção é "PROMOÇÃO"
+			promotion := promotionText == "PROMOÇÃO"
+
+			produto := Produto{
+				Description: strings.TrimSpace(description),
+				Price:       price,
+				Source:      source,
+				Link:        link,
+				ImageURL:    imageURL,
+				Promotion:   promotion,
+			}
+			produtos = append(produtos, produto)
+			log.Printf("Produto encontrado: %+v\n", produto)
+		})
+
+		// Verificar se há uma próxima página com timeout específico
+		log.Println("Verificando se há uma próxima página...")
+		var nextPageExists bool
+
+		// Verificando se o botão de próxima página existe
+		err = chromedp.Run(ctx, chromedp.EvaluateAsDevTools(`document.querySelector('a#pnnext') !== null`, &nextPageExists))
+		if err != nil {
+			log.Printf("Erro ao verificar próxima página: %v", err)
+			return nil, fmt.Errorf("Erro ao verificar próxima página: %v", err)
+		}
+
+		if !nextPageExists {
+			log.Println("Não há mais páginas para navegar.")
+			break
+		}
+
+		log.Println("Próxima página encontrada, tentando navegar...")
+
+		// Verificando se o elemento está visível
+		err = chromedp.Run(ctx, chromedp.WaitVisible(`a#pnnext`, chromedp.ByQuery))
+		if err != nil {
+			log.Printf("Erro ao esperar pela visibilidade do botão de próxima página: %v", err)
+			return nil, fmt.Errorf("Erro ao esperar pela visibilidade do botão de próxima página: %v", err)
+		}
+
+		// Navegar para a próxima página
+		err = chromedp.Run(ctx, chromedp.Click(`a#pnnext`, chromedp.ByQuery, chromedp.NodeVisible))
+		if err != nil {
+			log.Printf("Falha ao navegar para a próxima página: %v", err)
+			return nil, fmt.Errorf("falha ao navegar para a próxima página: %v", err)
+		}
+
+		// Aguardar um tempo para evitar problemas com rate limiting
+		log.Println("Aguardando para evitar rate limiting...")
+		time.Sleep(3 * time.Second)
+	}
+
+	// Log dos produtos coletados
+	log.Printf("Total de produtos coletados: %d", len(produtos))
+	for _, produto := range produtos {
+		log.Printf("Produto: %+v", produto)
+	}
+
+	return produtos, nil
+}
+
+func CrawlGooglesss(query string) ([]Produto, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+
+	ctx, cancel = chromedp.NewContext(ctx)
+	defer cancel()
+
+	var produtos []Produto
+
+	// Codificar a query string para ser usada na URL
+	encodedQuery := url.QueryEscape(query)
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
+	log.Printf("Iniciando visita: %s", startURL)
+
+	// Navegar até a URL inicial
+	err := chromedp.Run(ctx, chromedp.Navigate(startURL))
+	if err != nil {
 		return nil, fmt.Errorf("falha ao iniciar a coleta: %v", err)
 	}
 
