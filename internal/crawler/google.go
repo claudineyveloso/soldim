@@ -30,6 +30,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		chromedp.Flag("no-sandbox", true),
 		chromedp.Flag("disable-gpu", true), // Adicione outras flags necessárias aqui
 		chromedp.Flag("headless", true),
+		chromedp.Flag("remote-debugging-port", "9222"),
 	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
