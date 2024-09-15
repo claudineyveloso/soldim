@@ -613,6 +613,59 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Configurar opções para o Chromium
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("headless", true),
+		chromedp.Flag("no-sandbox", true),
+		chromedp.Flag("disable-dev-shm-usage", true),
+		chromedp.Flag("disable-gpu", true),
+	)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+
+	// Criar um novo contexto do Chromium com as opções
+	ctx, cancel = chromedp.NewExecAllocator(ctx, opts...)
+	defer cancel()
+
+	ctx, cancel = chromedp.NewContext(ctx)
+	defer cancel()
+
+	// Codificar a query string para ser usada na URL
+	encodedQuery := url.QueryEscape(query)
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
+	log.Println("Iniciando visita:", startURL)
+
+	// Navegar até a URL inicial
+	err := chromedp.Run(ctx, chromedp.Navigate(startURL))
+	if err != nil {
+		log.Println("Falha ao iniciar a visita:", err)
+		return nil, fmt.Errorf("falha ao iniciar a visita: %v", err)
+	}
+
+	// Extrair o HTML da página
+	var htmlContent string
+	err = chromedp.Run(ctx, chromedp.OuterHTML(`html`, &htmlContent, chromedp.ByQuery))
+	if err != nil {
+		log.Println("Falha ao extrair HTML:", err)
+		return nil, fmt.Errorf("falha ao extrair HTML: %v", err)
+	}
+
+	// Log do tamanho do HTML extraído
+	log.Println("Tamanho do HTML extraído:", len(htmlContent))
+
+	// Processar o HTML para extrair os produtos
+	produtos, err := processarHTML(htmlContent)
+	if err != nil {
+		log.Println("Falha ao processar HTML:", err)
+		return nil, fmt.Errorf("falha ao processar HTML: %v", err)
+	}
+
+	// Retornar os produtos extraídos
+	return produtos, nil
+}
+
+func CrawlGoogle1111(query string) ([]Produto, error) {
+	// Configurar opções para o Chromium
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("headless", true),
 		chromedp.Flag("no-sandbox", true),            // Necessário para Heroku
 		chromedp.Flag("disable-dev-shm-usage", true), // Pode ajudar a evitar problemas de memória
 		chromedp.Flag("disable-gpu", true),           // O Heroku não precisa de GPU
@@ -936,4 +989,45 @@ func formatarPreco(valor string) (float64, error) {
 		log.Printf("Error parsing float: %v", err)
 	}
 	return preco, err
+}
+
+func processarHTML(htmlContent string) ([]Produto, error) {
+	// Criar um documento goquery a partir do HTML extraído
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+	if err != nil {
+		log.Println("Falha ao criar documento goquery:", err)
+		return nil, fmt.Errorf("falha ao criar documento goquery: %v", err)
+	}
+
+	var produtos []Produto
+
+	// Selecionar os contêineres de produtos (isso depende da estrutura HTML da página)
+	doc.Find(".sh-dgr__grid-result").Each(func(i int, s *goquery.Selection) {
+		// Extrair informações relevantes (ajustar seletores conforme a página)
+		precoStr := s.Find(".a8Pemb").Text()
+		descricao := s.Find(".shntl").Text()
+		link, _ := s.Find("a").Attr("href")
+		imagem, _ := s.Find("img").Attr("src")
+		source := s.Find(".aULzUe").Text() // Exemplo de extração da loja/fonte
+
+		// Conversão de preço para float64
+		preco, err := strconv.ParseFloat(strings.ReplaceAll(precoStr, ",", ""), 64)
+		if err != nil {
+			log.Println("Erro ao converter preço:", err)
+			preco = 0.0
+		}
+
+		// Criar e adicionar o produto à lista
+		produto := Produto{
+			Price:       preco,
+			Description: descricao,
+			Source:      source,
+			Link:        "https://www.google.com" + link, // Adicionar domínio completo
+			ImageURL:    imagem,
+		}
+
+		produtos = append(produtos, produto)
+	})
+
+	return produtos, nil
 }
