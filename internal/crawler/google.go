@@ -651,8 +651,9 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Log do tamanho do HTML extraído
 	log.Println("Tamanho do HTML extraído:", len(htmlContent))
 
-	// Não coletar produtos ainda, apenas retornar o sucesso da extração
-	log.Println("HTML da página extraído com sucesso. Avançando...")
+	// Log do HTML extraído para análise
+	log.Println("HTML da página extraído:")
+	log.Println(htmlContent)
 
 	// Retornar uma lista vazia de produtos
 	return []Produto{}, nil
