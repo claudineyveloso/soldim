@@ -640,6 +640,14 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		return nil, fmt.Errorf("falha ao iniciar a visita: %v", err)
 	}
 
+	// Aguardar a página carregar completamente
+	log.Println("Aguardando a página carregar completamente...")
+	err = chromedp.Run(ctx, chromedp.WaitVisible(`div.sh-dgr__grid-result`, chromedp.ByQuery))
+	if err != nil {
+		log.Println("Erro ao esperar pela visibilidade dos resultados:", err)
+		return nil, fmt.Errorf("erro ao esperar pela visibilidade dos resultados: %v", err)
+	}
+
 	// Extrair o HTML da página
 	var htmlContent string
 	err = chromedp.Run(ctx, chromedp.OuterHTML(`html`, &htmlContent, chromedp.ByQuery))
@@ -657,6 +665,10 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		log.Println("Falha ao parsear HTML:", err)
 		return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
 	}
+
+	// Log do HTML extraído para depuração
+	log.Println("HTML extraído:")
+	log.Println(htmlContent)
 
 	// Extrair detalhes dos produtos
 	var produtos []Produto
