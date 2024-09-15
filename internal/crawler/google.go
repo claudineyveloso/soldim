@@ -50,12 +50,22 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
 	log.Println("Iniciando visita:", startURL)
 
-	// Navegar até a URL inicial
-	err := chromedp.Run(ctx, chromedp.Navigate(startURL))
+	err := chromedp.Run(ctx,
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			return chromedp.Navigate(startURL).Do(ctx)
+		}),
+	)
 	if err != nil {
 		log.Println("Falha ao iniciar a visita:", err)
 		return nil, fmt.Errorf("falha ao iniciar a visita: %v", err)
 	}
+
+	// Navegar até a URL inicial
+	// err := chromedp.Run(ctx, chromedp.Navigate(startURL))
+	// if err != nil {
+	// 	log.Println("Falha ao iniciar a visita:", err)
+	// 	return nil, fmt.Errorf("falha ao iniciar a visita: %v", err)
+	// }
 
 	for {
 		// Esperar o carregamento da página com timeout específico
