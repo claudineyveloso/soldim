@@ -640,10 +640,22 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		return nil, fmt.Errorf("falha ao iniciar a visita: %v", err)
 	}
 
-	// Verificar o sucesso da navegação, mas não coletar produtos
-	log.Println("Visita à página do Google Shopping realizada com sucesso.")
+	// Log para diagnóstico
+	log.Println("Visita à página do Google Shopping realizada com sucesso. Verificando conteúdo...")
 
-	// Retornar uma lista vazia de produtos
+	// Extrair o HTML da página para verificar o conteúdo carregado
+	var htmlContent string
+	err = chromedp.Run(ctx, chromedp.OuterHTML(`html`, &htmlContent, chromedp.ByQuery))
+	if err != nil {
+		log.Println("Erro ao extrair HTML:", err)
+		return nil, fmt.Errorf("erro ao extrair HTML: %v", err)
+	}
+
+	// Log do tamanho do HTML extraído para verificar se está completo
+	log.Println("Tamanho do HTML extraído:", len(htmlContent), "bytes")
+	log.Println("HTML da página:", htmlContent[:500]) // Exibe apenas os primeiros 500 caracteres para evitar logs muito grandes
+
+	// Não coletar produtos, apenas retornar uma lista vazia
 	return []Produto{}, nil
 }
 
