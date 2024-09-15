@@ -1001,7 +1001,7 @@ func processarHTML(htmlContent string) ([]Produto, error) {
 
 	var produtos []Produto
 
-	// Selecionar os contêineres de produtos (isso depende da estrutura HTML da página)
+	// Selecionar os contêineres de produtos (ajustar conforme a página)
 	doc.Find(".sh-dgr__grid-result").Each(func(i int, s *goquery.Selection) {
 		// Extrair informações relevantes (ajustar seletores conforme a página)
 		precoStr := s.Find(".a8Pemb").Text()
@@ -1010,8 +1010,8 @@ func processarHTML(htmlContent string) ([]Produto, error) {
 		imagem, _ := s.Find("img").Attr("src")
 		source := s.Find(".aULzUe").Text() // Exemplo de extração da loja/fonte
 
-		// Conversão de preço para float64
-		preco, err := strconv.ParseFloat(strings.ReplaceAll(precoStr, ",", ""), 64)
+		// Limpar e converter o preço
+		preco, err := limparPreco(precoStr)
 		if err != nil {
 			log.Println("Erro ao converter preço:", err)
 			preco = 0.0
@@ -1030,4 +1030,15 @@ func processarHTML(htmlContent string) ([]Produto, error) {
 	})
 
 	return produtos, nil
+}
+
+func limparPreco(precoStr string) (float64, error) {
+	// Remover "R$", espaços não separáveis (\u00a0), e vírgulas
+	precoStr = strings.ReplaceAll(precoStr, "R$", "")
+	precoStr = strings.ReplaceAll(precoStr, "\u00a0", "")
+	precoStr = strings.ReplaceAll(precoStr, ".", "")  // Remove o ponto dos milhares
+	precoStr = strings.ReplaceAll(precoStr, ",", ".") // Substitui a vírgula decimal por ponto
+
+	// Agora podemos tentar converter o preço para float64
+	return strconv.ParseFloat(precoStr, 64)
 }
