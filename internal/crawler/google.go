@@ -613,9 +613,9 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Configurar opções para o Chromium
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("headless", true),
-		chromedp.Flag("no-sandbox", true),
-		chromedp.Flag("disable-dev-shm-usage", true),
-		chromedp.Flag("disable-gpu", true),
+		chromedp.Flag("no-sandbox", true),            // Necessário para Heroku
+		chromedp.Flag("disable-dev-shm-usage", true), // Pode ajudar a evitar problemas de memória
+		chromedp.Flag("disable-gpu", true),           // O Heroku não precisa de GPU
 	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
@@ -651,14 +651,43 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Log do tamanho do HTML extraído
 	log.Println("Tamanho do HTML extraído:", len(htmlContent))
 
-	// Processar o HTML para extrair os produtos
-	produtos, err := processarHTML(htmlContent)
+	// Analisar o HTML e extrair os dados dos produtos
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
 	if err != nil {
-		log.Println("Falha ao processar HTML:", err)
-		return nil, fmt.Errorf("falha ao processar HTML: %v", err)
+		log.Println("Falha ao analisar o HTML:", err)
+		return nil, fmt.Errorf("falha ao analisar o HTML: %v", err)
 	}
 
-	// Retornar os produtos extraídos
+	var produtos []Produto
+
+	doc.Find(".pla-unit").Each(func(i int, s *goquery.Selection) {
+		// Extrair dados do produto
+		priceText := s.Find(".e10twf").Text()
+		price, err := strconv.ParseFloat(strings.ReplaceAll(priceText, "$", ""), 64)
+		if err != nil {
+			price = 0.0 // Valor padrão se não conseguir converter
+		}
+
+		description := s.Find(".plantl.pla-unit-title-link").Text()
+		source := s.Find(".zPEcBd").Text()
+		link, _ := s.Find("a").Attr("href")
+		imageURL, _ := s.Find("img").Attr("src")
+
+		promoted := false // Lógica para determinar se o produto está em promoção pode ser adicionada aqui
+
+		produto := Produto{
+			Price:       price,
+			Promotion:   promoted,
+			Description: description,
+			Source:      source,
+			Link:        link,
+			ImageURL:    imageURL,
+		}
+
+		produtos = append(produtos, produto)
+	})
+
+	// Retornar a lista de produtos extraídos
 	return produtos, nil
 }
 
