@@ -5,26 +5,13 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/claudineyveloso/soldim.git/cmd/api"
 	"github.com/claudineyveloso/soldim.git/cmd/db"
 	"github.com/claudineyveloso/soldim.git/internal/configs"
-	"github.com/claudineyveloso/soldim.git/internal/crawler"
 )
 
 func main() {
-	for {
-		// Execute o scraping aqui
-		_, err := crawler.CrawlGoogle("Game Stick")
-		if err != nil {
-			log.Println("Erro durante o scraping:", err)
-		}
-		time.Sleep(1 * time.Hour) // Intervalo entre execuções
-	}
-}
-
-func mainOld() {
 	// Carrega as configurações do ambiente
 	cfg := configs.Envs
 
