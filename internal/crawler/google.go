@@ -651,11 +651,70 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Log do tamanho do HTML extraído
 	log.Println("Tamanho do HTML extraído:", len(htmlContent))
 
-	// Não coletar produtos ainda, apenas retornar o sucesso da extração
-	log.Println("HTML da página extraído com sucesso. Avançando...")
+	// Parsear o HTML com goquery
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+	if err != nil {
+		log.Println("Falha ao parsear HTML:", err)
+		return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
+	}
 
-	// Retornar uma lista vazia de produtos
-	return []Produto{}, nil
+	// Extrair detalhes dos produtos
+	var produtos []Produto
+	doc.Find("div.sh-dgr__grid-result").Each(func(index int, item *goquery.Selection) {
+		description := item.Find(".tAxDx").Text()
+		priceText := item.Find(".a8Pemb").Text()
+		log.Println("Raw price text:", priceText)
+
+		price, err := formatarPreco(priceText)
+		if err != nil {
+			log.Println("Erro ao formatar o preço:", err)
+			price = 0.0
+		}
+		log.Println("Formatted price:", price)
+
+		rawURL, _ := item.Find("a").Attr("href")
+		imageURL, _ := item.Find(".ArOc1c img").Attr("src")
+		promotionText := strings.TrimSpace(item.Find(".fAcMNb span.Ib8pOd").Text())
+
+		source := ""
+		item.Find(".aULzUe").Contents().Each(func(i int, s *goquery.Selection) {
+			if goquery.NodeName(s) != "style" {
+				source = strings.TrimSpace(s.Text())
+			}
+		})
+
+		// Processar a URL conforme a lógica solicitada
+		var link string
+		if strings.HasPrefix(rawURL, "/shopping/product") {
+			link = "https://www.google.com.br" + rawURL
+		} else if strings.HasPrefix(rawURL, "/url?url=") {
+			link = strings.TrimPrefix(rawURL, "/url?url=")
+		} else {
+			link = rawURL
+		}
+
+		// Verificar se o texto da promoção é "PROMOÇÃO"
+		promotion := promotionText == "PROMOÇÃO"
+
+		produto := Produto{
+			Description: strings.TrimSpace(description),
+			Price:       price,
+			Source:      source,
+			Link:        link,
+			ImageURL:    imageURL,
+			Promotion:   promotion,
+		}
+		produtos = append(produtos, produto)
+		log.Println("Produto encontrado:", produto)
+	})
+
+	// Log dos produtos coletados
+	log.Println("Total de produtos coletados:", len(produtos))
+	for _, produto := range produtos {
+		log.Println("Produto:", produto)
+	}
+
+	return produtos, nil
 }
 
 func CrawlGoogleXXX(query string) ([]Produto, error) {
