@@ -63,7 +63,16 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		return nil, fmt.Errorf("falha ao esperar pelo carregamento da página: %v", err)
 	}
 
-	// Adicionar log para verificar se a aba está visível
+	// Adicionar log para verificar o HTML da página inicial
+	var initialPageHTML string
+	err = chromedp.Run(ctx, chromedp.OuterHTML(`html`, &initialPageHTML, chromedp.ByQuery))
+	if err != nil {
+		log.Println("Falha ao extrair HTML da página inicial:", err)
+		return nil, fmt.Errorf("falha ao extrair HTML da página inicial: %v", err)
+	}
+	log.Println("HTML da página inicial:", initialPageHTML)
+
+	// Adicionar log para verificar se a aba Shopping está visível
 	var shoppingTabHTML string
 	err = chromedp.Run(ctx, chromedp.OuterHTML(`a.LatpMc.nPDzT.T3FoJb`, &shoppingTabHTML, chromedp.ByQuery))
 	if err != nil {
