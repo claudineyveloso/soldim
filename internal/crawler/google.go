@@ -228,7 +228,13 @@ func CrawlGoogle000(query string) ([]Produto, error) {
 		log.Printf("Nome: %s\nLink: %s\nImagem: %s\nPreço: %.2f\nFornecedor: %s\n\n",
 			produto.Description, produto.Link, produto.ImageURL, produto.Price, produto.Source)
 	}
-
+	filePath := "html_output.txt"
+	err = os.WriteFile(filePath, []byte(htmlContent), 0644)
+	if err != nil {
+		log.Println("Falha ao gravar HTML em arquivo:", err)
+	} else {
+		log.Println("HTML salvo com sucesso em", filePath)
+	}
 	// Retornar a lista de produtos coletados
 	return produtos, nil
 }
