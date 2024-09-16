@@ -34,7 +34,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		chromedp.Flag("disable-gpu", true),           // O Heroku não precisa de GPU
 	)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
 	defer cancel()
 
 	// Criar um novo contexto do Chromium com as opções
