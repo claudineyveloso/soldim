@@ -63,9 +63,9 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		return nil, fmt.Errorf("falha ao esperar pelo carregamento da página: %v", err)
 	}
 
-	// Clicar na aba "Shopping"
+	// Clicar na aba "Shopping" usando o seletor correto
 	err = chromedp.Run(ctx,
-		chromedp.Click(`a[href*="tbm=shop"]`, chromedp.ByQuery),
+		chromedp.Click(`a.XIzzdf`, chromedp.ByQuery),
 	)
 	if err != nil {
 		log.Println("Falha ao clicar na aba Shopping:", err)
