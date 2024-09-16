@@ -63,6 +63,15 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		return nil, fmt.Errorf("falha ao esperar pelo carregamento da página: %v", err)
 	}
 
+	// Adicionar log para verificar se a aba está visível
+	var shoppingTabHTML string
+	err = chromedp.Run(ctx, chromedp.OuterHTML(`a.LatpMc.nPDzT.T3FoJb`, &shoppingTabHTML, chromedp.ByQuery))
+	if err != nil {
+		log.Println("Falha ao extrair HTML da aba Shopping:", err)
+		return nil, fmt.Errorf("falha ao extrair HTML da aba Shopping: %v", err)
+	}
+	log.Println("HTML da aba Shopping:", shoppingTabHTML)
+
 	// Clicar na aba "Shopping" usando o seletor atualizado
 	err = chromedp.Run(ctx,
 		chromedp.Click(`a.LatpMc.nPDzT.T3FoJb`, chromedp.ByQuery),
@@ -73,7 +82,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	}
 
 	// Esperar um pouco após clicar para garantir que a navegação ocorra
-	time.Sleep(5 * time.Second)
+	time.Sleep(10 * time.Second) // Aumentar o tempo de espera para 10 segundos
 
 	// Extrair o HTML da página de produtos
 	var htmlContent string
