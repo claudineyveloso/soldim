@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/chromedp"
 )
 
@@ -120,10 +122,20 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	log.Println("Iniciando visita:", startURL)
 
 	// Navegar para a página de resultados de shopping
+	// err := chromedp.Run(ctx,
+	// 	chromedp.Emulate(emulation.SetUserAgentOverride("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")),
+	// 	chromedp.Navigate(startURL),
+	// 	chromedp.WaitVisible(`div.sh-dgr__grid-result`), // Esperar a página carregar
+	// 	chromedp.Sleep(5*time.Second),
+	// 	chromedp.OuterHTML("body", &htmlContent), // Coletar HTML da página
+	// )
+	//
+
 	err := chromedp.Run(ctx,
+		emulation.SetUserAgentOverride("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"),
 		chromedp.Navigate(startURL),
-		chromedp.WaitVisible(`div.sh-dgr__grid-result`), // Esperar a página carregar
-		chromedp.OuterHTML("body", &htmlContent),        // Coletar HTML da página
+		chromedp.WaitVisible(`div.sh-dgr__grid-result`),
+		chromedp.OuterHTML("body", &htmlContent),
 	)
 	if err != nil {
 		log.Println("Falha ao carregar a página de resultados:", err)
@@ -131,13 +143,18 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	}
 
 	// Log para verificar o HTML coletado
-	log.Println("HTML coletado:", htmlContent[:500]) // Exibe os primeiros 500 caracteres para verificar se está correto
+	log.Println("HTML coletado:", htmlContent[:2000]) // Exibe os primeiros 500 caracteres para verificar se está correto
 
 	// Parsear o HTML usando goquery
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
 	if err != nil {
 		log.Println("Falha ao parsear HTML:", err)
 		return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
+	}
+
+	err = os.WriteFile("/tmp/html_output.txt", []byte(htmlContent), 0644)
+	if err != nil {
+		log.Println("Falha ao gravar HTML em arquivo:", err)
 	}
 
 	// Inicializar slice de produtos (vazio neste caso)

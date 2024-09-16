@@ -4,6 +4,7 @@ go 1.22.4
 
 require (
 	github.com/PuerkitoBio/goquery v1.9.2
+	github.com/chromedp/cdproto v0.0.0-20240810084448-b931b754e476
 	github.com/chromedp/chromedp v0.10.0
 	github.com/go-chi/cors v1.2.1
 	github.com/go-playground/validator v9.31.0+incompatible
@@ -21,7 +22,6 @@ require (
 
 require (
 	github.com/andybalholm/cascadia v1.3.2 // indirect
-	github.com/chromedp/cdproto v0.0.0-20240810084448-b931b754e476 // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/cockroachdb/apd v1.1.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
