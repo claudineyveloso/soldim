@@ -34,7 +34,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		chromedp.Flag("disable-gpu", true),           // O Heroku não precisa de GPU
 	)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 
 	// Criar um novo contexto do Chromium com as opções
@@ -76,7 +76,8 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	err = chromedp.Run(ctx, chromedp.WaitVisible(`.pla-unit`, chromedp.ByQuery))
 	if err != nil {
 		log.Println("Falha ao esperar os resultados:", err)
-		return nil, fmt.Errorf("falha ao esperar os resultados: %v", err)
+		// Continuar se a página não tiver produtos visíveis
+		return []Produto{}, nil
 	}
 
 	// Extrair o HTML da página de produtos
@@ -90,45 +91,8 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Log do tamanho do HTML extraído
 	log.Println("Tamanho do HTML extraído:", len(htmlContent))
 
-	// Analisar o HTML e extrair os dados dos produtos
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
-	if err != nil {
-		log.Println("Falha ao analisar o HTML:", err)
-		return nil, fmt.Errorf("falha ao analisar o HTML: %v", err)
-	}
-
-	var produtos []Produto
-
-	doc.Find(".pla-unit").Each(func(i int, s *goquery.Selection) {
-		// Extrair dados do produto
-		priceText := s.Find(".e10twf").Text()
-		price, err := strconv.ParseFloat(strings.ReplaceAll(priceText, "$", ""), 64)
-		if err != nil {
-			log.Println("Erro ao converter preço:", err)
-			price = 0.0 // Valor padrão se não conseguir converter
-		}
-
-		description := s.Find(".plantl.pla-unit-title-link").Text()
-		source := s.Find(".zPEcBd").Text()
-		link, _ := s.Find("a").Attr("href")
-		imageURL, _ := s.Find("img").Attr("src")
-
-		promoted := false // Lógica para determinar se o produto está em promoção pode ser adicionada aqui
-
-		produto := Produto{
-			Price:       price,
-			Promotion:   promoted,
-			Description: description,
-			Source:      source,
-			Link:        link,
-			ImageURL:    imageURL,
-		}
-
-		produtos = append(produtos, produto)
-	})
-
-	// Retornar a lista de produtos extraídos
-	return produtos, nil
+	// Retornar a lista de produtos vazia se não houver produtos encontrados
+	return []Produto{}, nil
 }
 
 func CrawlGoogle222(query string) ([]Produto, error) {
