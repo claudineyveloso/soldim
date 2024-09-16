@@ -63,35 +63,19 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		return nil, fmt.Errorf("falha ao esperar pelo carregamento da página: %v", err)
 	}
 
-	// Adicionar log para verificar o HTML da página inicial
-	var initialPageHTML string
-	err = chromedp.Run(ctx, chromedp.OuterHTML(`html`, &initialPageHTML, chromedp.ByQuery))
-	if err != nil {
-		log.Println("Falha ao extrair HTML da página inicial:", err)
-		return nil, fmt.Errorf("falha ao extrair HTML da página inicial: %v", err)
-	}
-	log.Println("HTML da página inicial:", initialPageHTML)
-
-	// Adicionar log para verificar se a aba Shopping está visível
-	var shoppingTabHTML string
-	err = chromedp.Run(ctx, chromedp.OuterHTML(`a.LatpMc.nPDzT.T3FoJb`, &shoppingTabHTML, chromedp.ByQuery))
-	if err != nil {
-		log.Println("Falha ao extrair HTML da aba Shopping:", err)
-		return nil, fmt.Errorf("falha ao extrair HTML da aba Shopping: %v", err)
-	}
-	log.Println("HTML da aba Shopping:", shoppingTabHTML)
-
-	// Clicar na aba "Shopping" usando o seletor atualizado
+	// Clicar na aba "Shopping"
 	err = chromedp.Run(ctx,
 		chromedp.Click(`a.LatpMc.nPDzT.T3FoJb`, chromedp.ByQuery),
 	)
 	if err != nil {
 		log.Println("Falha ao clicar na aba Shopping:", err)
 		return nil, fmt.Errorf("falha ao clicar na aba Shopping: %v", err)
+	} else {
+		log.Println("Clicou na aba Shopping")
 	}
 
 	// Esperar um pouco após clicar para garantir que a navegação ocorra
-	time.Sleep(10 * time.Second) // Aumentar o tempo de espera para 10 segundos
+	time.Sleep(10 * time.Second)
 
 	// Extrair o HTML da página de produtos
 	var htmlContent string
@@ -113,14 +97,29 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 	// Verificar se a página está na seção "Shopping"
 	isShoppingPage := doc.Find(".pla-unit").Length() > 0
-
 	if !isShoppingPage {
 		log.Println("Não conseguimos acessar a página de Shopping.")
 		return nil, nil
 	}
 
-	// Retornar uma lista vazia de produtos, pois ainda não estamos extraindo produtos
-	return []Produto{}, nil
+	// Extrair os produtos da página e registrar os nomes
+	var produtos []Produto
+	doc.Find(".pla-unit").Each(func(i int, s *goquery.Selection) {
+		// Extrair o nome do produto
+		productName := s.Find(".pla-unit-title").Text()
+		if productName != "" {
+			log.Printf("Produto encontrado: %s", productName)
+			produtos = append(produtos, Produto{Description: productName})
+		}
+	})
+
+	// Se não houver produtos, logar uma mensagem
+	if len(produtos) == 0 {
+		log.Println("Nenhum produto encontrado na página de Shopping.")
+	}
+
+	// Retornar os produtos encontrados
+	return produtos, nil
 }
 
 func CrawlGoogle222(query string) ([]Produto, error) {
