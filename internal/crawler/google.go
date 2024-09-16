@@ -22,7 +22,7 @@ type Produto struct {
 	ImageURL    string `json:"image_url"`   // 8 bytes (ponteiro)
 }
 
-func CrawlGoogle(query string) ([]Produto, error) {
+func CrawlGoogleUUU(query string) ([]Produto, error) {
 	// Configurar contexto do chromedp com timeout de 10 minutos
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
@@ -93,7 +93,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	return produtos, nil
 }
 
-func CrawlGoogleUUU(query string) ([]Produto, error) {
+func CrawlGoogle(query string) ([]Produto, error) {
 	// Configurar contexto do chromedp com timeout de 10 minutos
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
