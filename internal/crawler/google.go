@@ -56,6 +56,112 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		return nil, fmt.Errorf("falha ao iniciar a visita: %v", err)
 	}
 
+	// Esperar até que a página carregue
+	err = chromedp.Run(ctx, chromedp.WaitVisible(`body`, chromedp.ByQuery))
+	if err != nil {
+		log.Println("Falha ao esperar pelo carregamento da página:", err)
+		return nil, fmt.Errorf("falha ao esperar pelo carregamento da página: %v", err)
+	}
+
+	// Clicar na aba "Shopping"
+	err = chromedp.Run(ctx,
+		chromedp.Click(`a[href*="tbm=shop"]`, chromedp.ByQuery),
+	)
+	if err != nil {
+		log.Println("Falha ao clicar na aba Shopping:", err)
+		return nil, fmt.Errorf("falha ao clicar na aba Shopping: %v", err)
+	}
+
+	// Esperar até que os produtos sejam carregados
+	err = chromedp.Run(ctx, chromedp.WaitVisible(`.pla-unit`, chromedp.ByQuery))
+	if err != nil {
+		log.Println("Falha ao esperar os resultados:", err)
+		return nil, fmt.Errorf("falha ao esperar os resultados: %v", err)
+	}
+
+	// Extrair o HTML da página de produtos
+	var htmlContent string
+	err = chromedp.Run(ctx, chromedp.OuterHTML(`html`, &htmlContent, chromedp.ByQuery))
+	if err != nil {
+		log.Println("Falha ao extrair HTML:", err)
+		return nil, fmt.Errorf("falha ao extrair HTML: %v", err)
+	}
+
+	// Log do tamanho do HTML extraído
+	log.Println("Tamanho do HTML extraído:", len(htmlContent))
+
+	// Analisar o HTML e extrair os dados dos produtos
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+	if err != nil {
+		log.Println("Falha ao analisar o HTML:", err)
+		return nil, fmt.Errorf("falha ao analisar o HTML: %v", err)
+	}
+
+	var produtos []Produto
+
+	doc.Find(".pla-unit").Each(func(i int, s *goquery.Selection) {
+		// Extrair dados do produto
+		priceText := s.Find(".e10twf").Text()
+		price, err := strconv.ParseFloat(strings.ReplaceAll(priceText, "$", ""), 64)
+		if err != nil {
+			log.Println("Erro ao converter preço:", err)
+			price = 0.0 // Valor padrão se não conseguir converter
+		}
+
+		description := s.Find(".plantl.pla-unit-title-link").Text()
+		source := s.Find(".zPEcBd").Text()
+		link, _ := s.Find("a").Attr("href")
+		imageURL, _ := s.Find("img").Attr("src")
+
+		promoted := false // Lógica para determinar se o produto está em promoção pode ser adicionada aqui
+
+		produto := Produto{
+			Price:       price,
+			Promotion:   promoted,
+			Description: description,
+			Source:      source,
+			Link:        link,
+			ImageURL:    imageURL,
+		}
+
+		produtos = append(produtos, produto)
+	})
+
+	// Retornar a lista de produtos extraídos
+	return produtos, nil
+}
+
+func CrawlGoogle222(query string) ([]Produto, error) {
+	// Configurar opções para o Chromium
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("headless", true),
+		chromedp.Flag("no-sandbox", true),            // Necessário para Heroku
+		chromedp.Flag("disable-dev-shm-usage", true), // Pode ajudar a evitar problemas de memória
+		chromedp.Flag("disable-gpu", true),           // O Heroku não precisa de GPU
+	)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+
+	// Criar um novo contexto do Chromium com as opções
+	ctx, cancel = chromedp.NewExecAllocator(ctx, opts...)
+	defer cancel()
+
+	ctx, cancel = chromedp.NewContext(ctx)
+	defer cancel()
+
+	// Codificar a query string para ser usada na URL
+	encodedQuery := url.QueryEscape(query)
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s", encodedQuery)
+	log.Println("Iniciando visita:", startURL)
+
+	// Navegar até a URL inicial
+	err := chromedp.Run(ctx, chromedp.Navigate(startURL))
+	if err != nil {
+		log.Println("Falha ao iniciar a visita:", err)
+		return nil, fmt.Errorf("falha ao iniciar a visita: %v", err)
+	}
+
 	// Clicar na aba "Shopping"
 	err = chromedp.Run(ctx,
 		chromedp.Click(`a[href*="tbm=shop"]`, chromedp.ByQuery),
