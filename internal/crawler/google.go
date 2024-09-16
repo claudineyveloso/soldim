@@ -25,7 +25,7 @@ type Produto struct {
 	ImageURL    string `json:"image_url"`   // 8 bytes (ponteiro)
 }
 
-func CrawlGoogle(query string) ([]Produto, error) {
+func CrawlGoogleYYY(query string) ([]Produto, error) {
 	// Configurar opções para o Chromium
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("headless", true),
@@ -70,9 +70,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		log.Println("Falha ao extrair HTML da página inicial:", err)
 		return nil, fmt.Errorf("falha ao extrair HTML da página inicial: %v", err)
 	}
-	log.Println("***************************************************************************")
 	log.Println("HTML da página inicial:", initialPageHTML)
-	log.Println("***************************************************************************")
 
 	// Adicionar log para verificar se a aba Shopping está visível
 	var shoppingTabHTML string
@@ -81,9 +79,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		log.Println("Falha ao extrair HTML da aba Shopping:", err)
 		return nil, fmt.Errorf("falha ao extrair HTML da aba Shopping: %v", err)
 	}
-	log.Println("***************************************************************************")
 	log.Println("HTML da aba Shopping:", shoppingTabHTML)
-	log.Println("***************************************************************************")
 
 	// Clicar na aba "Shopping" usando o seletor atualizado
 	err = chromedp.Run(ctx,
@@ -229,7 +225,7 @@ func CrawlGoogle222(query string) ([]Produto, error) {
 	return produtos, nil
 }
 
-func CrawlGoogleFuncionandoHeroku(query string) ([]Produto, error) {
+func CrawlGoogle(query string) ([]Produto, error) {
 	// Configurar opções para o Chromium
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("headless", true),
