@@ -225,7 +225,7 @@ func CrawlGoogle222(query string) ([]Produto, error) {
 	return produtos, nil
 }
 
-func CrawlGoogle(query string) ([]Produto, error) {
+func CrawlGoogleWWW(query string) ([]Produto, error) {
 	// Configurar opções para o Chromium
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("headless", true),
@@ -316,7 +316,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	return produtos, nil
 }
 
-func CrawlGoogleDDD(query string) ([]Produto, error) {
+func CrawlGoogle(query string) ([]Produto, error) {
 	// Configurar opções para o Chromium
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("no-sandbox", true),
