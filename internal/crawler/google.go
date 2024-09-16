@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
 
@@ -60,6 +59,69 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		return nil, fmt.Errorf("falha ao carregar a página de resultados: %v", err)
 	}
 
+	// Log para verificar o HTML coletado
+	log.Println("HTML coletado:", htmlContent[:500]) // Exibe os primeiros 500 caracteres para verificar se está correto
+
+	// Parsear o HTML usando goquery
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+	if err != nil {
+		log.Println("Falha ao parsear HTML:", err)
+		return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
+	}
+
+	// Inicializar slice de produtos (vazio neste caso)
+	var produtos []Produto
+
+	// Coletar dados de cada produto (somente log por enquanto)
+	doc.Find("div.sh-dgr__grid-result").Each(func(i int, s *goquery.Selection) {
+		log.Println("Produto encontrado.")
+		// Lógica de extração de produtos será adicionada depois
+	})
+
+	// Log indicando que não estamos retornando produtos ainda
+	log.Println("Retornando lista de produtos vazia.")
+
+	// Retornar lista vazia (sem erro)
+	return produtos, nil
+}
+
+func CrawlGoogleXXX(query string) ([]Produto, error) {
+	// Configurar contexto do chromedp com timeout de 10 minutos
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+
+	// Criar um novo contexto do Chromium com as opções necessárias para Heroku
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("headless", true),
+		chromedp.Flag("no-sandbox", true),            // Necessário para Heroku
+		chromedp.Flag("disable-dev-shm-usage", true), // Pode ajudar a evitar problemas de memória
+		chromedp.Flag("disable-gpu", true),           // O Heroku não precisa de GPU
+	)
+	ctx, cancel = chromedp.NewExecAllocator(ctx, opts...)
+	defer cancel()
+
+	// Novo contexto para o navegador
+	ctx, cancel = chromedp.NewContext(ctx)
+	defer cancel()
+
+	// Variável para armazenar o HTML da página
+	var htmlContent string
+
+	// Codificar a query e construir a URL inicial
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", url.QueryEscape(query))
+	log.Println("Iniciando visita:", startURL)
+
+	// Navegar para a página de resultados de shopping
+	err := chromedp.Run(ctx,
+		chromedp.Navigate(startURL),
+		chromedp.WaitVisible(`div.sh-dgr__grid-result`), // Esperar a página carregar
+		chromedp.OuterHTML("body", &htmlContent),        // Coletar HTML da página
+	)
+	if err != nil {
+		log.Println("Falha ao carregar a página de resultados:", err)
+		return nil, fmt.Errorf("falha ao carregar a página de resultados: %v", err)
+	}
+
 	// Parsear o HTML usando goquery
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
 	if err != nil {
@@ -72,34 +134,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 	// Coletar dados de cada produto
 	doc.Find("div.sh-dgr__grid-result").Each(func(i int, s *goquery.Selection) {
-		nome := s.Find("h3.tAxDx").Text()
-		link, _ := s.Find("a.xCpuod").Attr("href")
-		imagemURL, _ := s.Find("img").Attr("src")
-		precoTexto := s.Find("span.a8Pemb").Text()
-		fornecedor := s.Find("div.aULzUe").Text()
-
-		// Limpar o texto do preço
-		precoTexto = strings.ReplaceAll(precoTexto, "R$", "") // Remover o símbolo de moeda
-		precoTexto = strings.ReplaceAll(precoTexto, ".", "")  // Remover separadores de milhar
-		precoTexto = strings.ReplaceAll(precoTexto, ",", ".") // Substituir vírgula decimal por ponto
-
-		// Converter o preço para float64
-		preco, err := strconv.ParseFloat(strings.TrimSpace(precoTexto), 64)
-		if err != nil {
-			log.Printf("Falha ao converter o preço %s: %v", precoTexto, err)
-			preco = 0.0 // Definir preço como 0.0 em caso de erro
-		}
-
-		// Montar estrutura Produto com os dados coletados
-		produto := Produto{
-			Description: nome,
-			Link:        "https://www.google.com" + link,
-			ImageURL:    imagemURL,
-			Price:       preco, // Preço agora é um float64
-			Source:      fornecedor,
-		}
-
-		produtos = append(produtos, produto)
+		log.Println("produtos encontrados.")
 	})
 
 	// Verificar se produtos foram coletados corretamente
