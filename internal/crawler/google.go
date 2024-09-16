@@ -65,7 +65,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 	// Clicar na aba "Shopping"
 	err = chromedp.Run(ctx,
-		chromedp.Click(`a.XIzzdf div.YmvwI`, chromedp.ByQuery),
+		chromedp.Click(`a.XIzzdf`, chromedp.ByQuery),
 	)
 	if err != nil {
 		log.Println("Falha ao clicar na aba Shopping:", err)
