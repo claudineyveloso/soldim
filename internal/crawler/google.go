@@ -61,12 +61,37 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		return nil, fmt.Errorf("falha ao extrair HTML: %v", err)
 	}
 
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+	if err != nil {
+		log.Println("Falha ao parsear HTML:", err)
+		return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
+	}
+
+	// Inicializar slice de produtos
+	var produtos []Produto
+
+	// Coletar dados de cada produto
+	doc.Find("div.sh-dgr__grid-result").Each(func(i int, s *goquery.Selection) {
+		// Extrair a descrição do produto
+		descricao := s.Find("div.EI11Pd h3.tAxDx").Text()
+		log.Printf("Produto %d: %s\n", i+1, descricao) // Log da descrição do produto
+
+		// Adicionar produto ao slice (por enquanto vazio)
+		produtos = append(produtos, Produto{})
+	})
+
+	// Verificar se produtos foram coletados corretamente
+	if len(produtos) == 0 {
+		log.Println("Nenhum produto encontrado.")
+		return nil, fmt.Errorf("nenhum produto encontrado")
+	}
+
 	// Log do tamanho do HTML extraído
-	log.Println("Tamanho do HTML extraído:", len(htmlContent))
+	// log.Println("Tamanho do HTML extraído:", len(htmlContent))
 
 	// Log do HTML extraído para análise
-	log.Println("HTML da página extraído:")
-	log.Println(htmlContent)
+	// log.Println("HTML da página extraído:")
+	// log.Println(htmlContent)
 
 	// Retornar uma lista vazia de produtos
 	return []Produto{}, nil
