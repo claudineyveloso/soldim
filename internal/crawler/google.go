@@ -28,7 +28,7 @@ type Produto struct {
 func CrawlGoogle(query string) ([]Produto, error) {
 	// Configurar opções para o Chromium
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.Flag("headless", true),
+		chromedp.Flag("headless", false),
 		chromedp.Flag("no-sandbox", true),            // Necessário para Heroku
 		chromedp.Flag("disable-dev-shm-usage", true), // Pode ajudar a evitar problemas de memória
 		chromedp.Flag("disable-gpu", true),           // O Heroku não precisa de GPU
@@ -50,7 +50,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	log.Println("Iniciando visita:", startURL)
 
 	// Navegar até a URL inicial
-	err := chromedp.Run(ctx, chromedp.Navigate(startURL))
+	err := chromedp.Run(ctx, chromedp.Navigate(startURL), chromedp.WaitVisible(`div.sh-dgr__grid-result`, chromedp.ByQuery))
 	if err != nil {
 		log.Println("Falha ao iniciar a visita:", err)
 		return nil, fmt.Errorf("falha ao iniciar a visita: %v", err)
@@ -63,7 +63,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		log.Println("Falha ao extrair HTML:", err)
 		return nil, fmt.Errorf("falha ao extrair HTML: %v", err)
 	}
-
+	log.Println("Conteúdo HTML coletado:", htmlContent)
 	// Parsear o HTML usando goquery
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
 	if err != nil {
