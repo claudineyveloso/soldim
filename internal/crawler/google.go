@@ -63,22 +63,17 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		return nil, fmt.Errorf("falha ao esperar pelo carregamento da página: %v", err)
 	}
 
-	// Clicar na aba "Shopping" usando o seletor correto
+	// Clicar na aba "Shopping" usando o seletor atualizado
 	err = chromedp.Run(ctx,
-		chromedp.Click(`a.XIzzdf`, chromedp.ByQuery),
+		chromedp.Click(`a.LatpMc.nPDzT.T3FoJb`, chromedp.ByQuery),
 	)
 	if err != nil {
 		log.Println("Falha ao clicar na aba Shopping:", err)
 		return nil, fmt.Errorf("falha ao clicar na aba Shopping: %v", err)
 	}
 
-	// Esperar até que os produtos sejam carregados
-	err = chromedp.Run(ctx, chromedp.WaitVisible(`.pla-unit`, chromedp.ByQuery))
-	if err != nil {
-		log.Println("Falha ao esperar os resultados:", err)
-		// Continuar se a página não tiver produtos visíveis
-		return []Produto{}, nil
-	}
+	// Esperar um pouco após clicar para garantir que a navegação ocorra
+	time.Sleep(5 * time.Second)
 
 	// Extrair o HTML da página de produtos
 	var htmlContent string
@@ -91,7 +86,22 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Log do tamanho do HTML extraído
 	log.Println("Tamanho do HTML extraído:", len(htmlContent))
 
-	// Retornar a lista de produtos vazia se não houver produtos encontrados
+	// Analisar o HTML para verificar se a aba foi clicada corretamente
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+	if err != nil {
+		log.Println("Falha ao analisar o HTML:", err)
+		return nil, fmt.Errorf("falha ao analisar o HTML: %v", err)
+	}
+
+	// Verificar se a página está na seção "Shopping"
+	isShoppingPage := doc.Find(".pla-unit").Length() > 0
+
+	if !isShoppingPage {
+		log.Println("Não conseguimos acessar a página de Shopping.")
+		return nil, nil
+	}
+
+	// Retornar uma lista vazia de produtos, pois ainda não estamos extraindo produtos
 	return []Produto{}, nil
 }
 
