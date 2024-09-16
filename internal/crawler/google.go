@@ -144,9 +144,9 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Coletar dados de cada produto
 	doc.Find("div.sh-dgr__grid-result").Each(func(i int, s *goquery.Selection) {
 		// Extrair a descrição do produto
-		descricao := s.Find("div.EI11Pd h3.tAxDx").Text()
-		log.Printf("Produto %d: %s\n", i+1, descricao) // Log da descrição do produto
-
+		// descricao := s.Find("div.EI11Pd h3.tAxDx").Text()
+		// log.Printf("Produto %d: %s\n", i+1, descricao) // Log da descrição do produto
+		log.Println(s)
 		// Adicionar produto ao slice (por enquanto vazio)
 		produtos = append(produtos, Produto{})
 	})
