@@ -65,7 +65,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 	// Clicar na aba "Shopping"
 	err = chromedp.Run(ctx,
-		chromedp.Click(`a.LatpMc.nPDzT.T3FoJb`, chromedp.ByQuery),
+		chromedp.Click(`a.XIzzdf div.YmvwI`, chromedp.ByQuery),
 	)
 	if err != nil {
 		log.Println("Falha ao clicar na aba Shopping:", err)
@@ -74,8 +74,12 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		log.Println("Clicou na aba Shopping")
 	}
 
-	// Esperar um pouco após clicar para garantir que a navegação ocorra
-	time.Sleep(10 * time.Second)
+	// Esperar até que o primeiro produto da aba Shopping apareça
+	err = chromedp.Run(ctx, chromedp.WaitVisible(`.pla-unit`, chromedp.ByQuery))
+	if err != nil {
+		log.Println("Os produtos não apareceram a tempo após clicar na aba Shopping:", err)
+		return nil, fmt.Errorf("os produtos não apareceram a tempo: %v", err)
+	}
 
 	// Extrair o HTML da página de produtos
 	var htmlContent string
