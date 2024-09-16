@@ -70,7 +70,9 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		log.Println("Falha ao extrair HTML da página inicial:", err)
 		return nil, fmt.Errorf("falha ao extrair HTML da página inicial: %v", err)
 	}
+	log.Println("***************************************************************************")
 	log.Println("HTML da página inicial:", initialPageHTML)
+	log.Println("***************************************************************************")
 
 	// Adicionar log para verificar se a aba Shopping está visível
 	var shoppingTabHTML string
