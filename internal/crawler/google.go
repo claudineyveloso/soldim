@@ -28,7 +28,7 @@ type Produto struct {
 func CrawlGoogle(query string) ([]Produto, error) {
 	// Configurar opções para o Chromium
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.Flag("headless", false),
+		chromedp.Flag("headless", true),
 		chromedp.Flag("no-sandbox", true),            // Necessário para Heroku
 		chromedp.Flag("disable-dev-shm-usage", true), // Pode ajudar a evitar problemas de memória
 		chromedp.Flag("disable-gpu", true),           // O Heroku não precisa de GPU
