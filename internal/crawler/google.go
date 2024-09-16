@@ -28,6 +28,7 @@ type Produto struct {
 func CrawlGoogle(query string) ([]Produto, error) {
 	// Configurar opções para o Chromium
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		// chromedp.ExecPath("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"),
 		chromedp.Flag("headless", true),
 		chromedp.Flag("no-sandbox", true),            // Necessário para Heroku
 		chromedp.Flag("disable-dev-shm-usage", true), // Pode ajudar a evitar problemas de memória
@@ -175,31 +176,40 @@ func CrawlGoogleFuncionandoHeroku(query string) ([]Produto, error) {
 	}
 
 	var produtos []Produto
+	doc.Find(".KZmu8e").Each(func(i int, s *goquery.Selection) {
+		// Extrair o link do produto
+		link, _ := s.Find("a.shntl").Attr("href")
 
-	doc.Find(".pla-unit").Each(func(i int, s *goquery.Selection) {
-		// Extrair dados do produto
-		priceText := s.Find(".e10twf").Text()
-		price, err := strconv.ParseFloat(strings.ReplaceAll(priceText, "$", ""), 64)
-		if err != nil {
-			price = 0.0 // Valor padrão se não conseguir converter
-		}
-
-		description := s.Find(".plantl.pla-unit-title-link").Text()
-		source := s.Find(".zPEcBd").Text()
-		link, _ := s.Find("a").Attr("href")
+		// Extrair a imagem do produto
 		imageURL, _ := s.Find("img").Attr("src")
 
-		promoted := false // Lógica para determinar se o produto está em promoção pode ser adicionada aqui
+		// Extrair o título/descrição do produto
+		description := s.Find("h3.sh-np__product-title").Text()
 
+		// Extrair o preço do produto
+		priceText := s.Find("b.translate-content").Text()
+		priceText = strings.ReplaceAll(priceText, "R$", "") // Remover o símbolo de R$
+		priceText = strings.ReplaceAll(priceText, ",", ".") // Converter vírgula para ponto decimal
+		price, err := strconv.ParseFloat(strings.TrimSpace(priceText), 64)
+		if err != nil {
+			log.Println("Erro ao converter preço:", err)
+			price = 0.0 // Definir um valor padrão caso a conversão falhe
+		}
+
+		// Extrair o nome da loja (fonte)
+		source := s.Find("span.E5ocAb").Text()
+
+		// Criar o objeto Produto
 		produto := Produto{
 			Price:       price,
-			Promotion:   promoted,
+			Promotion:   false, // Pode ser ajustado se houver uma lógica de promoção
 			Description: description,
 			Source:      source,
 			Link:        link,
 			ImageURL:    imageURL,
 		}
 
+		// Adicionar o produto à lista
 		produtos = append(produtos, produto)
 	})
 
