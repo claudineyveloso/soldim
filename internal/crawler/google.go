@@ -112,60 +112,48 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	ctx, cancel = chromedp.NewContext(ctx)
 	defer cancel()
 
-	// Codificar a query string para ser usada na URL
-	encodedQuery := url.QueryEscape(query)
-	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
+	// Variável para armazenar o HTML da página
+	var htmlContent string
+
+	// Codificar a query e construir a URL inicial
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", url.QueryEscape(query))
 	log.Println("Iniciando visita:", startURL)
 
-	// Navegar até a URL inicial
-	err := chromedp.Run(ctx, chromedp.Navigate(startURL))
+	// Navegar para a página de resultados de shopping
+	err := chromedp.Run(ctx,
+		chromedp.Navigate(startURL),
+		chromedp.WaitVisible(`div.sh-dgr__grid-result`), // Esperar a página carregar
+		chromedp.OuterHTML("body", &htmlContent),        // Coletar HTML da página
+	)
 	if err != nil {
-		log.Println("Falha ao iniciar a visita:", err)
-		return nil, fmt.Errorf("falha ao iniciar a visita: %v", err)
+		log.Println("Falha ao carregar a página de resultados:", err)
+		return nil, fmt.Errorf("falha ao carregar a página de resultados: %v", err)
 	}
 
-	// Extrair o HTML da página
-	var htmlContent string
-	err = chromedp.Run(ctx, chromedp.OuterHTML(`html`, &htmlContent, chromedp.ByQuery))
-	if err != nil {
-		log.Println("Falha ao extrair HTML:", err)
-		return nil, fmt.Errorf("falha ao extrair HTML: %v", err)
-	}
+	// Log para verificar o HTML coletado
+	log.Println("HTML coletado:", htmlContent[:500]) // Exibe os primeiros 500 caracteres para verificar se está correto
 
+	// Parsear o HTML usando goquery
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
 	if err != nil {
 		log.Println("Falha ao parsear HTML:", err)
 		return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
 	}
 
-	// Inicializar slice de produtos
+	// Inicializar slice de produtos (vazio neste caso)
 	var produtos []Produto
 
-	// Coletar dados de cada produto
+	// Coletar dados de cada produto (somente log por enquanto)
 	doc.Find("div.sh-dgr__grid-result").Each(func(i int, s *goquery.Selection) {
-		// Extrair a descrição do produto
-		// descricao := s.Find("div.EI11Pd h3.tAxDx").Text()
-		// log.Printf("Produto %d: %s\n", i+1, descricao) // Log da descrição do produto
-		log.Println(s)
-		// Adicionar produto ao slice (por enquanto vazio)
-		produtos = append(produtos, Produto{})
+		log.Println("Produto encontrado.")
+		// Lógica de extração de produtos será adicionada depois
 	})
 
-	// Verificar se produtos foram coletados corretamente
-	if len(produtos) == 0 {
-		log.Println("Nenhum produto encontrado.")
-		return nil, fmt.Errorf("nenhum produto encontrado")
-	}
+	// Log indicando que não estamos retornando produtos ainda
+	log.Println("Retornando lista de produtos vazia.")
 
-	// Log do tamanho do HTML extraído
-	// log.Println("Tamanho do HTML extraído:", len(htmlContent))
-
-	// Log do HTML extraído para análise
-	// log.Println("HTML da página extraído:")
-	// log.Println(htmlContent)
-
-	// Retornar uma lista vazia de produtos
-	return []Produto{}, nil
+	// Retornar lista vazia (sem erro)
+	return produtos, nil
 }
 
 func CrawlGoogleXXX(query string) ([]Produto, error) {
