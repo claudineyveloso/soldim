@@ -102,15 +102,19 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// 	log.Printf("Elemento %d: %s\n", i, htmlContent)
 	// })
 	//
-	doc.Find(".tAxDx").Each(func(i int, s *goquery.Selection) {
-		htmlContent, err := s.Html()
-		if err != nil {
-			log.Printf("Erro ao obter HTML do elemento %d: %v\n", i, err)
-			return
-		}
-		log.Printf("Elemento %d com classe tAxDx: %s\n", i, htmlContent)
-	})
-
+	selecao := doc.Find(".tAxDx")
+	if selecao.Length() == 0 {
+		log.Println("Nenhum elemento com a classe .tAxDx foi encontrado.")
+	} else {
+		selecao.Each(func(i int, s *goquery.Selection) {
+			htmlContent, err := s.Html()
+			if err != nil {
+				log.Printf("Erro ao obter HTML do elemento %d: %v\n", i, err)
+				return
+			}
+			log.Printf("Elemento %d com classe tAxDx: %s\n", i, htmlContent)
+		})
+	}
 	// Esperar todas as goroutines terminarem
 	wg.Wait()
 
