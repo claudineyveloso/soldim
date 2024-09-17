@@ -29,6 +29,49 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		chromedp.Flag("disable-gpu", true),           // O Heroku não precisa de GPU
 	)
 
+	// Definir contexto com timeout de 15 minutos
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
+	defer cancel()
+
+	// Criar um novo contexto do Chromium com as opções
+	ctx, cancel = chromedp.NewExecAllocator(ctx, opts...)
+	defer cancel()
+
+	ctx, cancel = chromedp.NewContext(ctx)
+	defer cancel()
+
+	// Codificar a query string
+	encodedQuery := url.QueryEscape(query)
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
+	log.Println("Iniciando visita:", startURL)
+
+	// Extrair o HTML da página
+	var htmlContent string
+	err := chromedp.Run(ctx,
+		chromedp.Navigate(startURL),
+		chromedp.OuterHTML(`html`, &htmlContent, chromedp.ByQuery),
+	)
+	if err != nil {
+		log.Println("Falha ao extrair HTML:", err)
+		return nil, fmt.Errorf("falha ao extrair HTML: %v", err)
+	}
+
+	// Logar o conteúdo HTML
+	log.Println("Conteúdo HTML coletado:", htmlContent)
+
+	// Retornar nil, já que não estamos processando os produtos por enquanto
+	return nil, nil
+}
+
+func CrawlGoogleBBB(query string) ([]Produto, error) {
+	// Configurar opções para o Chromium
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("headless", true),
+		chromedp.Flag("no-sandbox", true),            // Necessário para Heroku
+		chromedp.Flag("disable-dev-shm-usage", true), // Pode ajudar a evitar problemas de memória
+		chromedp.Flag("disable-gpu", true),           // O Heroku não precisa de GPU
+	)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
 	defer cancel()
 
