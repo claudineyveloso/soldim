@@ -82,7 +82,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 			defer wg.Done()
 
 			// Coletar dados do produto, ajustando para os diferentes seletores
-			nome := s.Find("h3.pymv4e, h3.tAxDx").Text()
+			nome := s.Find(".gkQHve, .tAxDx").Text()
 			link, _ := s.Find("a.xCpuod").Attr("href")
 			imagemURL, _ := s.Find("img.VeBrne, img").Attr("src")
 			precoStr := s.Find("span.lmQWe, span.a8Pemb").Text()
