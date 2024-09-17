@@ -25,7 +25,7 @@ type Produto struct {
 	ImageURL    string `json:"image_url"`   // 8 bytes (ponteiro)
 }
 
-func CrawlGoogle(query string) ([]Produto, error) {
+func CrawlGoogleCCC(query string) ([]Produto, error) {
 	// Configurar opções para o Chromium
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("headless", true),
@@ -178,7 +178,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	return produtos, nil
 }
 
-func CrawlGoogleXXX(query string) ([]Produto, error) {
+func CrawlGoogle(query string) ([]Produto, error) {
 	// Configurar opções para o Chromium
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("headless", true),
@@ -233,7 +233,7 @@ func CrawlGoogleXXX(query string) ([]Produto, error) {
 	// Coletar dados de até 10 produtos
 	var produtos []Produto
 	doc.Find("div.sh-dgr__grid-result").EachWithBreak(func(i int, s *goquery.Selection) bool {
-		if i >= 10 {
+		if i >= 5 {
 			return false // Interrompe a iteração após 10 produtos
 		}
 
