@@ -35,7 +35,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	)
 
 	// Timeout ajustado para 30 segundos
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
 	// Criar contexto do Chromium com as opções
@@ -53,7 +53,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Navegar até a URL inicial com timeout
 	err := chromedp.Run(ctx,
 		chromedp.Navigate(startURL),
-		chromedp.Sleep(5*time.Second), // Pode ser ajustado se necessário
+		chromedp.Sleep(8*time.Second), // Pode ser ajustado se necessário
 		chromedp.WaitVisible(`div.sh-dgr__grid-result`, chromedp.ByQuery),
 	)
 	if err != nil {
@@ -122,6 +122,14 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	})
 
 	log.Println("Produtos coletados:", len(produtos))
+
+	filePath := "html_output.csv"
+	err = os.WriteFile(filePath, []byte(htmlContent), 0644)
+	if err != nil {
+		log.Println("Falha ao gravar HTML em arquivo:", err)
+	} else {
+		log.Println("HTML salvo com sucesso em", filePath)
+	}
 
 	// Retornar a lista de produtos coletados
 	return produtos, nil
