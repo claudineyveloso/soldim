@@ -83,13 +83,23 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	var wg sync.WaitGroup
 
 	// Encontrar todas as divs de resultados
-	doc.Find("div.sh-dgr__grid-result").Each(func(i int, s *goquery.Selection) {
-		wg.Add(1)
-		go func(s *goquery.Selection) {
-			defer wg.Done()
-			log.Println("Claudiney Veloso")
-		}(s)
-		log.Println("Total de Claudiney Veloso Coletado", s.Length())
+	// doc.Find("div.sh-dgr__grid-result").Each(func(i int, s *goquery.Selection) {
+	// 	wg.Add(1)
+	// 	go func(s *goquery.Selection) {
+	// 		defer wg.Done()
+	// 		log.Println("Claudiney Veloso")
+	// 		// Coletar dados do produto (a ser preenchido)
+	// 	}(s)
+	// 	log.Println("Total de Claudiney Veloso Coletado", doc.Find("div.sh-dgr__grid-result").Length())
+	// })
+	//
+	doc.Find("div").Each(func(i int, s *goquery.Selection) {
+		htmlContent, err := s.Html()
+		if err != nil {
+			log.Printf("Erro ao obter HTML do elemento %d: %v\n", i, err)
+			return
+		}
+		log.Printf("Elemento %d: %s\n", i, htmlContent)
 	})
 
 	// Esperar todas as goroutines terminarem
