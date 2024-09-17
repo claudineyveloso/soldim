@@ -139,12 +139,14 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	} else { // Ambiente local
 		filePath = "produtos.csv"
 	}
+	log.Printf("Tentando criar o arquivo CSV em %s", filePath)
 	file, err := os.Create(filePath)
 	if err != nil {
 		log.Println("Falha ao criar o arquivo CSV:", err)
 		return nil, fmt.Errorf("falha ao criar o arquivo CSV: %v", err)
 	}
 	defer file.Close()
+	log.Printf("Arquivo CSV criado com sucesso em %s", filePath)
 
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
