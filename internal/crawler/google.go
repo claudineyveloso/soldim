@@ -29,6 +29,80 @@ type Produto struct {
 func CrawlGoogle(query string) ([]Produto, error) {
 	// Configurar opções para o Chromium
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		// chromedp.UserAgent(`Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3`),
+		chromedp.Flag("headless", true),
+		chromedp.Flag("no-sandbox", true),            // Necessário para Heroku
+		chromedp.Flag("disable-dev-shm-usage", true), // Pode ajudar a evitar problemas de memória
+		chromedp.Flag("disable-gpu", true),           // O Heroku não precisa de GPU
+	)
+
+	// Criar um novo contexto do Chromium com as opções
+	ctx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	defer cancel()
+
+	// Definir o timeout
+	ctx, cancel = context.WithTimeout(ctx, 3*time.Minute) // Ajuste o tempo conforme necessário
+	defer cancel()
+
+	// Criar o contexto para navegação
+	ctx, cancel = chromedp.NewContext(ctx)
+	defer cancel()
+
+	// Codificar a query string para ser usada na URL
+	encodedQuery := url.QueryEscape(query)
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
+	log.Println("Iniciando visita:", startURL)
+
+	// Navegar até a URL inicial
+	var htmlContent string
+	err := chromedp.Run(ctx,
+		chromedp.Navigate(startURL),
+		chromedp.WaitVisible(`body`, chromedp.ByQuery), // Aguarde o carregamento do corpo da página
+		chromedp.Sleep(5*time.Second),                  // Ajuste o tempo de espera, se necessário
+		chromedp.OuterHTML(`html`, &htmlContent, chromedp.ByQuery),
+	)
+	if err != nil {
+		log.Println("Falha ao iniciar a visita:", err)
+		return nil, fmt.Errorf("falha ao iniciar a visita: %v", err)
+	}
+
+	// Parsear o HTML usando goquery
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+	if err != nil {
+		log.Println("Falha ao parsear HTML:", err)
+		return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
+	}
+
+	selecao := doc.Find(".tAxDx")
+	if selecao.Length() == 0 {
+		log.Println("Nenhum elemento com a classe tAxDx foi encontrado.")
+	} else {
+		selecao.Each(func(i int, s *goquery.Selection) {
+			texto := s.Text() // Extrair o texto do elemento h3
+			log.Printf("Elemento %d com classe tAxDx: %s\n", i, texto)
+		})
+	}
+
+	var produtos []Produto
+	doc.Find(".tAxDx").Each(func(i int, s *goquery.Selection) {
+		htmlContent, err := s.Html()
+		if err != nil {
+			log.Printf("Erro ao obter HTML do elemento %d: %v\n", i, err)
+			return
+		}
+		log.Printf("Elemento %d com classe tAxDx: %s\n", i, htmlContent)
+	})
+
+	log.Println("Produtos coletados:", len(produtos))
+	// log.Println("Conteudo coletados:", htmlContent)
+
+	return produtos, nil
+}
+
+func CrawlGoogleAVABV(query string) ([]Produto, error) {
+	// Configurar opções para o Chromium
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.UserAgent(`Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3`),
 		chromedp.Flag("headless", true),
 		chromedp.Flag("no-sandbox", true),            // Necessário para Heroku
 		chromedp.Flag("disable-dev-shm-usage", true), // Pode ajudar a evitar problemas de memória
@@ -54,8 +128,9 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	var htmlContent string
 	err := chromedp.Run(ctx,
 		chromedp.Navigate(startURL),
-		chromedp.Sleep(10*time.Second), // Aumentar o tempo de espera
+		chromedp.Sleep(5*time.Second), // Aumentar o tempo de espera
 		chromedp.OuterHTML(`html`, &htmlContent, chromedp.ByQuery),
+		chromedp.WaitVisible(".tAxDx", chromedp.ByQuery),
 	)
 	if err != nil {
 		log.Println("Falha ao iniciar a visita:", err)
