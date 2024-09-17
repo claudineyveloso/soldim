@@ -66,11 +66,23 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 	// Log do tamanho do HTML extraído
 	log.Println("Tamanho do HTML extraído:", len(htmlContent))
-
-	// Log do HTML extraído para análise
-	log.Println("HTML da página extraído:")
 	log.Println(htmlContent)
 
+	err = chromedp.Run(ctx, chromedp.OuterHTML(`html`, &htmlContent, chromedp.ByQuery))
+	if err != nil {
+		log.Println("Falha ao extrair HTML:", err)
+		return nil, fmt.Errorf("falha ao extrair HTML: %v", err)
+	}
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+	if err != nil {
+		log.Println("Falha ao parsear HTML:", err)
+		return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
+	}
+	log.Println(doc.Find("div.sh-dgr__grid-result").Length())
+
+	log.Println("Conteúdo HTML coletado")
+	log.Println("Tamanho do HTML extraído:", len(htmlContent))
 	// Retornar uma lista vazia de produtos
 	return []Produto{}, nil
 }
