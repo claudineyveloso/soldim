@@ -93,13 +93,22 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// 	log.Println("Total de Claudiney Veloso Coletado", doc.Find("div.sh-dgr__grid-result").Length())
 	// })
 	//
-	doc.Find("div").Each(func(i int, s *goquery.Selection) {
+	// doc.Find("div").Each(func(i int, s *goquery.Selection) {
+	// 	htmlContent, err := s.Html()
+	// 	if err != nil {
+	// 		log.Printf("Erro ao obter HTML do elemento %d: %v\n", i, err)
+	// 		return
+	// 	}
+	// 	log.Printf("Elemento %d: %s\n", i, htmlContent)
+	// })
+	//
+	doc.Find("div.tAxDx").Each(func(i int, s *goquery.Selection) {
 		htmlContent, err := s.Html()
 		if err != nil {
 			log.Printf("Erro ao obter HTML do elemento %d: %v\n", i, err)
 			return
 		}
-		log.Printf("Elemento %d: %s\n", i, htmlContent)
+		log.Printf("Elemento %d com classe tAxDx: %s\n", i, htmlContent)
 	})
 
 	// Esperar todas as goroutines terminarem
