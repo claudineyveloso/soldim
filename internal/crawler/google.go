@@ -63,8 +63,8 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	}
 
 	// Log do tamanho do HTML extraído
-	log.Println("Tamanho do HTML extraído:", len(htmlContent))
-	log.Println("HTML extraído:\n", htmlContent) // Logar o HTML para verificar
+	// log.Println("Tamanho do HTML extraído:", len(htmlContent))
+	// log.Println("HTML extraído:\n", htmlContent) // Logar o HTML para verificar
 
 	// Parsear o HTML usando goquery
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
@@ -79,7 +79,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	}
 
 	var produtos []Produto
-	var mu sync.Mutex
+	// var mu sync.Mutex
 	var wg sync.WaitGroup
 
 	// Encontrar todas as divs de resultados
@@ -87,38 +87,9 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		wg.Add(1)
 		go func(s *goquery.Selection) {
 			defer wg.Done()
-
-			// Coletar dados do produto
-			nome := s.Find("h3.tAxDx").Text()
-			link, _ := s.Find("a.xCpuod").Attr("href")
-			imagemURL, _ := s.Find("img").Attr("src")
-			precoStr := s.Find("span.a8Pemb").Text()
-
-			// Formatar o preço
-			precoStr = strings.TrimSpace(precoStr)
-			precoStr = strings.ReplaceAll(precoStr, "R$", "")
-			precoStr = strings.ReplaceAll(precoStr, ".", "")
-			precoStr = strings.ReplaceAll(precoStr, ",", ".")
-			precoStr = strings.ReplaceAll(precoStr, "\u00a0", "")
-
-			// Converter preço de string para float64
-			preco, err := strconv.ParseFloat(precoStr, 64)
-			if err != nil {
-				log.Printf("Erro ao converter preço '%s' para float64: %v", precoStr, err)
-				preco = 0
-			}
-
-			produto := Produto{
-				Description: nome,
-				Link:        "https://www.google.com" + link,
-				ImageURL:    imagemURL,
-				Price:       preco,
-			}
-
-			mu.Lock()
-			produtos = append(produtos, produto)
-			mu.Unlock()
+			log.Println("Claudiney Veloso")
 		}(s)
+		log.Println("Total de Claudiney Veloso Coletado", s.Length())
 	})
 
 	// Esperar todas as goroutines terminarem
