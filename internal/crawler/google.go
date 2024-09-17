@@ -73,10 +73,12 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 	// Coletar dados de até 10 produtos
 	var produtos []Produto
+	log.Println("Coletando produtos...")
 	doc.Find("div.sh-dgr__grid-result").EachWithBreak(func(i int, s *goquery.Selection) bool {
 		if i >= 10 {
 			return false // Interrompe a iteração após 10 produtos
 		}
+		log.Printf("Produto %d encontrado", i+1)
 
 		nome := s.Find("h3.tAxDx").Text()
 		link, _ := s.Find("a.xCpuod").Attr("href")
@@ -123,6 +125,8 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 		return true
 	})
+
+	log.Println("Produtos coletados:", len(produtos))
 
 	// Exibir os produtos coletados
 	for _, produto := range produtos {
