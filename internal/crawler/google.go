@@ -5,11 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"strconv"
-	"strings"
 	"time"
 
-	"github.com/PuerkitoBio/goquery"
 	"github.com/chromedp/chromedp"
 )
 
@@ -70,68 +67,70 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	log.Println("Coletando o html", htmlContent)
 
 	// Parsear o HTML usando goquery
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
-	if err != nil {
-		log.Println("Falha ao parsear HTML:", err)
-		return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
-	}
+	// doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+	// if err != nil {
+	// 	log.Println("Falha ao parsear HTML:", err)
+	// 	return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
+	// }
 
-	selecao := doc.Find(".tAxDx")
-	if selecao.Length() == 0 {
-		log.Println("Nenhum elemento com a classe .tAxDx foi encontrado.")
-	} else {
-		selecao.Each(func(i int, s *goquery.Selection) {
-			htmlContent, err := s.Html()
-			if err != nil {
-				log.Printf("Erro ao obter HTML do elemento %d: %v\n", i, err)
-				return
-			}
-			log.Printf("Elemento %d com classe tAxDx: %s\n", i, htmlContent)
-		})
-	}
+	// selecao := doc.Find(".tAxDx")
+	// if selecao.Length() == 0 {
+	// 	log.Println("Nenhum elemento com a classe .tAxDx foi encontrado.")
+	// } else {
+	// 	selecao.Each(func(i int, s *goquery.Selection) {
+	// 		htmlContent, err := s.Html()
+	// 		if err != nil {
+	// 			log.Printf("Erro ao obter HTML do elemento %d: %v\n", i, err)
+	// 			return
+	// 		}
+	// 		log.Printf("Elemento %d com classe tAxDx: %s\n", i, htmlContent)
+	// 	})
+	// }
+	//
+	// // Coletar dados de até 10 produtos
+	// var produtos []Produto
+	// doc.Find("div.sh-dgr__grid-result").EachWithBreak(func(i int, s *goquery.Selection) bool {
+	// 	nome := s.Find("h3.tAxDx").Text()
+	// 	link, _ := s.Find("a.xCpuod").Attr("href")
+	// 	imagemURL, _ := s.Find("img").Attr("src")
+	// 	precoStr := s.Find("span.a8Pemb").Text()
+	// 	fornecedor := "Desconhecido"
+	//
+	// 	// Verificar se o preço foi encontrado
+	// 	if precoStr == "" {
+	// 		precoStr = "0" // Valor padrão caso o preço não seja encontrado
+	// 	}
+	//
+	// 	// Formatar o preço
+	// 	precoStr = strings.TrimSpace(precoStr)
+	// 	precoStr = strings.ReplaceAll(precoStr, "R$", "")
+	// 	precoStr = strings.ReplaceAll(precoStr, ".", "")
+	// 	precoStr = strings.ReplaceAll(precoStr, ",", ".")
+	// 	precoStr = strings.ReplaceAll(precoStr, "\u00a0", "")
+	//
+	// 	// Converter preço de string para float64
+	// 	preco, err := strconv.ParseFloat(precoStr, 64)
+	// 	if err != nil {
+	// 		log.Printf("Erro ao converter preço '%s' para float64: %v", precoStr, err)
+	// 		preco = 0 // Valor padrão caso a conversão falhe
+	// 	}
+	//
+	// 	produto := Produto{
+	// 		Description: nome,
+	// 		Link:        "https://www.google.com" + link,
+	// 		ImageURL:    imagemURL,
+	// 		Price:       preco,
+	// 		Source:      fornecedor,
+	// 	}
+	//
+	// 	produtos = append(produtos, produto)
+	//	return true
+	//})
+	//
 
-	// Coletar dados de até 10 produtos
-	var produtos []Produto
-	doc.Find("div.sh-dgr__grid-result").EachWithBreak(func(i int, s *goquery.Selection) bool {
-		nome := s.Find("h3.tAxDx").Text()
-		link, _ := s.Find("a.xCpuod").Attr("href")
-		imagemURL, _ := s.Find("img").Attr("src")
-		precoStr := s.Find("span.a8Pemb").Text()
-		fornecedor := "Desconhecido"
-
-		// Verificar se o preço foi encontrado
-		if precoStr == "" {
-			precoStr = "0" // Valor padrão caso o preço não seja encontrado
-		}
-
-		// Formatar o preço
-		precoStr = strings.TrimSpace(precoStr)
-		precoStr = strings.ReplaceAll(precoStr, "R$", "")
-		precoStr = strings.ReplaceAll(precoStr, ".", "")
-		precoStr = strings.ReplaceAll(precoStr, ",", ".")
-		precoStr = strings.ReplaceAll(precoStr, "\u00a0", "")
-
-		// Converter preço de string para float64
-		preco, err := strconv.ParseFloat(precoStr, 64)
-		if err != nil {
-			log.Printf("Erro ao converter preço '%s' para float64: %v", precoStr, err)
-			preco = 0 // Valor padrão caso a conversão falhe
-		}
-
-		produto := Produto{
-			Description: nome,
-			Link:        "https://www.google.com" + link,
-			ImageURL:    imagemURL,
-			Price:       preco,
-			Source:      fornecedor,
-		}
-
-		produtos = append(produtos, produto)
-		return true
-	})
-
-	log.Println("Produtos coletados:", len(produtos))
+	// log.Println("Produtos coletados:", len(produtos))
 
 	// Retornar a lista de produtos coletados
-	return produtos, nil
+	// return produtos, nil
+	return nil, nil
 }
