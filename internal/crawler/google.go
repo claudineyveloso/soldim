@@ -83,6 +83,16 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		})
 	}
 
+	selecaoProd := doc.Find(".gkQHve")
+	if selecaoProd.Length() == 0 {
+		log.Println("Nenhum elemento com a classe gkQHve foi encontrado.")
+	} else {
+		selecaoProd.Each(func(i int, s *goquery.Selection) {
+			texto := s.Text() // Extrair o texto do elemento h3
+			log.Printf("Elemento %d com classe gkQHve: %s\n", i, texto)
+		})
+	}
+
 	var produtos []Produto
 	doc.Find(".tAxDx").Each(func(i int, s *goquery.Selection) {
 		htmlContent, err := s.Html()
@@ -94,7 +104,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	})
 
 	log.Println("Produtos coletados:", len(produtos))
-	log.Println("Conteudo coletados:", htmlContent)
+	// log.Println("Conteudo coletados:", htmlContent)
 
 	return produtos, nil
 }
