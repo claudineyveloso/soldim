@@ -74,7 +74,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	}
 
 	// Verificar se a div esperada está presente
-	if doc.Find("div.sh-dgr__grid-result").Length() == 0 {
+	if doc.Find(".sh-dgr__grid-result").Length() == 0 {
 		log.Println("Não foram encontradas div.sh-dgr__grid-result")
 	}
 
@@ -102,7 +102,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// 	log.Printf("Elemento %d: %s\n", i, htmlContent)
 	// })
 	//
-	doc.Find("div.tAxDx").Each(func(i int, s *goquery.Selection) {
+	doc.Find(".tAxDx").Each(func(i int, s *goquery.Selection) {
 		htmlContent, err := s.Html()
 		if err != nil {
 			log.Printf("Erro ao obter HTML do elemento %d: %v\n", i, err)
