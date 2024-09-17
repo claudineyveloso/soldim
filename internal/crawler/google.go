@@ -29,7 +29,7 @@ type Produto struct {
 func CrawlGoogle(query string) ([]Produto, error) {
 	// Configurar opções para o Chromium
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		// chromedp.UserAgent(`Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3`),
+		chromedp.UserAgent(`Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3`),
 		chromedp.Flag("headless", true),
 		chromedp.Flag("no-sandbox", true),            // Necessário para Heroku
 		chromedp.Flag("disable-dev-shm-usage", true), // Pode ajudar a evitar problemas de memória
