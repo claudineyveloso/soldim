@@ -67,6 +67,8 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	}
 	log.Println("Conteúdo HTML coletado")
 
+	log.Println("Coletando o html", htmlContent)
+
 	// Parsear o HTML usando goquery
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
 	if err != nil {
@@ -87,8 +89,6 @@ func CrawlGoogle(query string) ([]Produto, error) {
 			log.Printf("Elemento %d com classe tAxDx: %s\n", i, htmlContent)
 		})
 	}
-
-	log.Println("Coletando o html", htmlContent)
 
 	// Coletar dados de até 10 produtos
 	var produtos []Produto
