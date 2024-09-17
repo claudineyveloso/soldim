@@ -94,7 +94,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	})
 
 	log.Println("Produtos coletados:", len(produtos))
-	// log.Println("Conteudo coletados:", htmlContent)
+	log.Println("Conteudo coletados:", htmlContent)
 
 	return produtos, nil
 }
