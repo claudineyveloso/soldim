@@ -42,6 +42,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Codificar a query string
 	encodedQuery := url.QueryEscape(query)
 	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
+	log.Println("Iniciando:", startURL)
 	log.Println("Iniciando visita:", startURL)
 
 	// Navegar até a URL inicial com timeout
