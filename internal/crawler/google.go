@@ -133,7 +133,12 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	log.Println("Produtos coletados:", len(produtos))
 
 	// Criar e salvar o arquivo CSV
-	filePath := "produtos.csv"
+	var filePath string
+	if os.Getenv("ENV") == "production" { // Heroku
+		filePath = "/tmp/produtos.csv"
+	} else { // Ambiente local
+		filePath = "produtos.csv"
+	}
 	file, err := os.Create(filePath)
 	if err != nil {
 		log.Println("Falha ao criar o arquivo CSV:", err)
