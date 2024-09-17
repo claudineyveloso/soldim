@@ -29,7 +29,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		chromedp.Flag("disable-gpu", true),           // O Heroku não precisa de GPU
 	)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
 	defer cancel()
 
 	// Criar um novo contexto do Chromium com as opções
@@ -42,23 +42,11 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Codificar a query string
 	encodedQuery := url.QueryEscape(query)
 	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
-	log.Println("Iniciando:", startURL)
 	log.Println("Iniciando visita:", startURL)
-
-	// Navegar até a URL inicial com timeout
-	err := chromedp.Run(ctx,
-		chromedp.Navigate(startURL),
-		chromedp.Sleep(5*time.Second), // Pode ser ajustado se necessário
-		chromedp.WaitVisible(`div.sh-dgr__grid-result`, chromedp.ByQuery),
-	)
-	if err != nil {
-		log.Println("Falha ao iniciar a visita:", err)
-		return nil, fmt.Errorf("falha ao iniciar a visita: %v", err)
-	}
 
 	// Extrair o HTML da página
 	var htmlContent string
-	err = chromedp.Run(ctx, chromedp.OuterHTML(`html`, &htmlContent, chromedp.ByQuery))
+	err := chromedp.Run(ctx, chromedp.OuterHTML(`html`, &htmlContent, chromedp.ByQuery))
 	if err != nil {
 		log.Println("Falha ao extrair HTML:", err)
 		return nil, fmt.Errorf("falha ao extrair HTML: %v", err)
