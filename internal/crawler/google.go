@@ -75,18 +75,30 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		description = s.Find("span.pymv4e, h3.tAxDx").Text()
 
 		// Extrair o preço do produto
-		priceStr = s.Find("span.lmQWe, span.a8Pemb").Text()
+		priceStr = s.Find("span.e10twf, span.a8Pemb").Text()
+		log.Println("###################################################################.")
+		log.Println("Preço extraído:", priceStr)
 
 		// Extrair a fonte do produto
-		// source = s.Find("span.zPEcBd, .aULzUe.IuHnof").Text()
-		source = ""
+		source = s.Find("span.zPEcBd, .zPEcBd .LnPkof").Text()
+		// source = ""
 		// Extrair a URL da imagem
-		if imgSrc, exists := s.Find("img").Attr("src"); exists {
+		img := s.Find("img")
+		if imgSrc, exists := img.Attr("src"); exists && imgSrc != "" {
 			image = imgSrc
-		} else if imgDataSrc, exists := s.Find("img").Attr("data-src"); exists {
-			image = imgDataSrc
+		} else if imgNext := img.Next(); imgNext.Is("img") {
+			// Pegar a segunda tag img com data-src
+			if imgDataSrc, exists := imgNext.Attr("data-src"); exists && imgDataSrc != "" {
+				image = imgDataSrc
+			}
 		}
 
+		// if imgSrc, exists := s.Find("img").Attr("src"); exists {
+		// 	image = imgSrc
+		// } else if imgDataSrc, exists := s.Find("img").Attr("data-src"); exists {
+		// 	image = imgDataSrc
+		// }
+		//
 		// Extrair o link do produto
 		if productLink, exists := s.Find("a").Attr("href"); exists {
 			link = "https://www.google.com" + productLink
@@ -109,8 +121,8 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		log.Println("###################################################################.")
 		log.Println("Preço extraído:", price)
 		log.Println("PreçoStr extraído:", priceStr)
-		log.Println("Preço extraído:", image)
-		log.Println("Preço extraído:", source)
+		log.Println("Imagem extraído:", image)
+		log.Println("Fonte extraído:", source)
 		log.Println("###################################################################.")
 		// Criar um produto com os dados extraídos
 		produto := Produto{
