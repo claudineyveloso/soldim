@@ -32,6 +32,56 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		chromedp.Flag("disable-gpu", true),           // O Heroku não precisa de GPU
 	)
 
+	// Definir contexto com timeout de 5 minutos para evitar longas execuções
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+
+	// Criar um novo contexto do Chromium com as opções
+	ctx, cancel = chromedp.NewExecAllocator(ctx, opts...)
+	defer cancel()
+
+	ctx, cancel = chromedp.NewContext(ctx)
+	defer cancel()
+
+	// Codificar a query string
+	encodedQuery := url.QueryEscape(query)
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
+	log.Println("Iniciando visita:", startURL)
+
+	// Variável para armazenar parte do HTML da página
+	var htmlContent string
+
+	// Executar a navegação e extrair parte do HTML da página
+	err := chromedp.Run(ctx,
+		// Navegar para a URL
+		chromedp.Navigate(startURL),
+		// Esperar até que o elemento principal dos resultados seja visível
+		chromedp.WaitVisible(`[role="main"]`, chromedp.ByQuery),
+		// Extrair apenas o conteúdo dentro da div principal dos resultados
+		chromedp.OuterHTML(`[role="main"]`, &htmlContent, chromedp.ByQuery),
+	)
+	if err != nil {
+		log.Println("Falha ao extrair HTML:", err)
+		return nil, fmt.Errorf("falha ao extrair HTML: %v", err)
+	}
+
+	// Log do HTML extraído
+	log.Println("Conteúdo HTML coletado:")
+	log.Println(htmlContent)
+
+	// Processar o HTML ou retornar
+	return nil, nil
+}
+
+func CrawlGoogleBABA(query string) ([]Produto, error) {
+	// Configurar opções para o Chromium
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("headless", true),
+		chromedp.Flag("no-sandbox", true),            // Necessário para Heroku
+		chromedp.Flag("disable-dev-shm-usage", true), // Pode ajudar a evitar problemas de memória
+		chromedp.Flag("disable-gpu", true),           // O Heroku não precisa de GPU
+	)
+
 	// Definir contexto com timeout de 15 minutos
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
 	defer cancel()
