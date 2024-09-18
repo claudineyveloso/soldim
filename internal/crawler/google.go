@@ -49,28 +49,28 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	log.Println("Iniciando visita:", startURL)
 
 	// Variável para armazenar o nome da classe da div com role="navigation"
-	var className string
+	// var className string
 
 	// Executar a navegação e extrair o nome da classe da div com role="navigation"
-	err := chromedp.Run(ctx,
-		// Navegar para a URL
-		chromedp.Navigate(startURL),
-		// Esperar até que o elemento com role="navigation" seja visível
-		chromedp.WaitVisible(`[role="navigation"]`, chromedp.ByQuery),
-		// Extrair o atributo "class" do elemento
-		chromedp.AttributeValue(`[role="navigation"]`, "class", &className, nil),
-	)
-	if err != nil {
-		log.Println("Falha ao extrair classe da div com role='navigation':", err)
-		return nil, fmt.Errorf("falha ao extrair classe: %v", err)
-	}
-
-	// Exibir o nome da classe extraído
-	log.Println("Nome da classe da div com role='navigation':", className)
+	// err := chromedp.Run(ctx,
+	// 	// Navegar para a URL
+	// 	chromedp.Navigate(startURL),
+	// 	// Esperar até que o elemento com role="navigation" seja visível
+	// 	chromedp.WaitVisible(`[role="navigation"]`, chromedp.ByQuery),
+	// 	// Extrair o atributo "class" do elemento
+	// 	chromedp.AttributeValue(`[role="navigation"]`, "class", &className, nil),
+	// )
+	// if err != nil {
+	// 	log.Println("Falha ao extrair classe da div com role='navigation':", err)
+	// 	return nil, fmt.Errorf("falha ao extrair classe: %v", err)
+	// }
+	//
+	// // Exibir o nome da classe extraído
+	// log.Println("Nome da classe da div com role='navigation':", className)
 
 	// Extrair o HTML da página
 	var htmlContent string
-	err = chromedp.Run(ctx,
+	err := chromedp.Run(ctx,
 		// Reutilizando o contexto para extrair o HTML da página
 		chromedp.OuterHTML(`html`, &htmlContent, chromedp.ByQuery),
 	)
