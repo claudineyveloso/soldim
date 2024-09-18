@@ -64,158 +64,80 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		log.Println("Falha ao parsear HTML:", err)
 		return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
 	}
-	// Slice para armazenar os produtos
-	var produtos []Produto
 
-	// if doc.Find(".sh-dgr__grid-result, .pla-unit-title").Length() > 0 {
-	doc.Find(".sh-dgr__grid-result, .pla-unit-title").Each(func(i int, s *goquery.Selection) {
-		var description, priceStr, source, image, link string
+	var description, price, source, image string
 
-		// Extrair a descrição do produto
-		description = s.Find("span.pymv4e, h3.tAxDx").Text()
-
-		// Extrair o preço do produto
-		priceStr = s.Find("span.e10twf, span.a8Pemb").Text()
-		log.Println("###################################################################.")
-		log.Println("Preço extraído:", priceStr)
-
-		// Extrair a fonte do produto
-		source = s.Find("span.zPEcBd, .zPEcBd .LnPkof").Text()
-		// source = ""
-		// Extrair a URL da imagem
-		img := s.Find("img")
-		if imgSrc, exists := img.Attr("src"); exists && imgSrc != "" {
-			image = imgSrc
-		} else if imgNext := img.Next(); imgNext.Is("img") {
-			// Pegar a segunda tag img com data-src
-			if imgDataSrc, exists := imgNext.Attr("data-src"); exists && imgDataSrc != "" {
-				image = imgDataSrc
-			}
-		}
-
-		// if imgSrc, exists := s.Find("img").Attr("src"); exists {
-		// 	image = imgSrc
-		// } else if imgDataSrc, exists := s.Find("img").Attr("data-src"); exists {
-		// 	image = imgDataSrc
-		// }
-		//
-		// Extrair o link do produto
-		if productLink, exists := s.Find("a").Attr("href"); exists {
-			link = "https://www.google.com" + productLink
-		}
-
-		priceStr = strings.TrimSpace(priceStr)
-		priceStr = strings.ReplaceAll(priceStr, "R$", "")
-		priceStr = strings.ReplaceAll(priceStr, "$", "")
-		priceStr = strings.ReplaceAll(priceStr, ".", "")
-		priceStr = strings.ReplaceAll(priceStr, ",", ".")
-		priceStr = strings.ReplaceAll(priceStr, "\u00a0", "")
-
-		// Converter preço de string para float64
-		price, err := strconv.ParseFloat(priceStr, 64)
-		if err != nil {
-			log.Printf("Erro ao converter preço '%s' para float64: %v", priceStr, err)
-			price = 0 // Valor padrão caso a conversão falhe
-		}
-
-		log.Println("###################################################################.")
-		log.Println("Preço extraído:", price)
-		log.Println("PreçoStr extraído:", priceStr)
-		log.Println("Imagem extraído:", image)
-		log.Println("Fonte extraído:", source)
-		log.Println("###################################################################.")
-		// Criar um produto com os dados extraídos
-		produto := Produto{
-			Description: description,
-			Link:        link,
-			ImageURL:    image,
-			Price:       price,
-			Source:      source,
-		}
-
-		// Adicionar o produto à lista de produtos
-		produtos = append(produtos, produto)
+	doc.Find("span.pymv4e, h3.tAxDx").Each(func(i int, s *goquery.Selection) {
+		description += s.Text() + " "
 	})
 
-	// Logar os dados extraídos para debug
-	for _, produto := range produtos {
-		log.Printf("Produto extraído: %+v\n", produto)
+	doc.Find("span.lmQWe, span.a8Pemb").Each(func(i int, s *goquery.Selection) {
+		price += s.Text() + " "
+	})
+
+	// Extraindo fontes (local e Heroku)
+	doc.Find("span.zPEcBd, .aULzUe.IuHnof").Each(func(i int, s *goquery.Selection) {
+		source += s.Text() + " "
+	})
+
+	doc.Find(".D6nsM, .ArOc1c").Each(func(i int, s *goquery.Selection) {
+		if imgSrc, exists := s.Find("img").Attr("src"); exists {
+			image += imgSrc + " "
+		} else if imgDataSrc, exists := s.Find("img").Attr("data-src"); exists {
+			image += imgDataSrc + " "
+		}
+	})
+
+	doc.Find("img").Each(func(i int, s *goquery.Selection) {
+		// Primeiro tenta pegar o data-src
+		if dataSrc, exists := s.Attr("data-src"); exists {
+			fmt.Println("Valor do data-src:", dataSrc)
+		} else if src, exists := s.Attr("src"); exists {
+			// Se data-src não existir, tenta pegar o src
+			fmt.Println("Valor do src:", src)
+		} else {
+			fmt.Println("Nenhum dos atributos 'data-src' ou 'src' foi encontrado!")
+		}
+	})
+
+	// Logar o nome extraído
+	log.Println("Descrição extraída:", description)
+	log.Println("Preço extraído:", price)
+	log.Println("Fonte extraída:", source)
+	log.Println("Imagens extraídas:", image)
+
+	if doc.Find(".sh-dgr__grid-result, .pla-unit-title").Length() > 0 {
+		log.Println("A classe .sh-dgr__grid-result ou pla-unit-title foi encontrada.")
+	} else {
+		log.Println("A classe .sh-dgr__grid-result ou pla-unit-title não foi encontrada.")
 	}
 
-	log.Println("Conteúdo HTML coletado:", htmlContent)
+	log.Println("###################################################################.")
+	log.Println("Claudiney Veloso.")
+	log.Println("###################################################################.")
+	doc.Find("div").Each(func(i int, s *goquery.Selection) {
+		if classAttr, exists := s.Attr("class"); exists {
+			log.Printf("Elemento %d tem a(s) classe(s): %s", i, classAttr)
+		}
+	})
 
-	// Retornar a lista de produtos
-	return produtos, nil
+	// var produtos []Produto
+
+	// produto := Produto{
+	// 	Description: description,
+	// 	Link:        "https://www.google.com" + link,
+	// 	ImageURL:    image,
+	// 	Price:       price,
+	// 	Source:      source,
+	// }
+	// //
+
+	// Logar o conteúdo HTML
+	// log.Println("Conteúdo HTML coletado:", htmlContent)
+
+	// Processar o HTML ou retornar
+	return nil, nil
 }
-
-// var description, price, source, image string
-
-// doc.Find("span.pymv4e, h3.tAxDx").Each(func(i int, s *goquery.Selection) {
-// 	description += s.Text() + " "
-// })
-//
-// doc.Find("span.lmQWe, span.a8Pemb").Each(func(i int, s *goquery.Selection) {
-// 	price += s.Text() + " "
-// })
-//
-// // Extraindo fontes (local e Heroku)
-// doc.Find("span.zPEcBd, .aULzUe.IuHnof").Each(func(i int, s *goquery.Selection) {
-// 	source += s.Text() + " "
-// })
-//
-// doc.Find(".D6nsM, .ArOc1c").Each(func(i int, s *goquery.Selection) {
-// 	if imgSrc, exists := s.Find("img").Attr("src"); exists {
-// 		image += imgSrc + " "
-// 	} else if imgDataSrc, exists := s.Find("img").Attr("data-src"); exists {
-// 		image += imgDataSrc + " "
-// 	}
-// })
-//
-// doc.Find("img").Each(func(i int, s *goquery.Selection) {
-// 	// Primeiro tenta pegar o data-src
-// 	if dataSrc, exists := s.Attr("data-src"); exists {
-// 		fmt.Println("Valor do data-src:", dataSrc)
-// 	} else if src, exists := s.Attr("src"); exists {
-// 		// Se data-src não existir, tenta pegar o src
-// 		fmt.Println("Valor do src:", src)
-// 	} else {
-// 		fmt.Println("Nenhum dos atributos 'data-src' ou 'src' foi encontrado!")
-// 	}
-// })
-//
-// // Logar o nome extraído
-// // log.Println("Descrição extraída:", description)
-// // log.Println("Preço extraído:", price)
-// // log.Println("Fonte extraída:", source)
-// // log.Println("Imagens extraídas:", image)
-//
-// if doc.Find(".sh-dgr__grid-result, .pla-unit-title").Length() > 0 {
-// 	log.Println("A classe .sh-dgr__grid-result ou pla-unit-title foi encontrada.")
-// } else {
-// 	log.Println("A classe .sh-dgr__grid-result ou pla-unit-title não foi encontrada.")
-// }
-//
-// log.Println("###################################################################.")
-// log.Println("Claudiney Veloso.")
-// log.Println("###################################################################.")
-//
-// // var produtos []Produto
-//
-// // produto := Produto{
-// // 	Description: description,
-// // 	Link:        "https://www.google.com" + link,
-// // 	ImageURL:    image,
-// // 	Price:       price,
-// // 	Source:      source,
-// // }
-// // //
-//
-// // Logar o conteúdo HTML
-// // log.Println("Conteúdo HTML coletado:", htmlContent)
-//
-// // Processar o HTML ou retornar
-// return nil, nil
-//}
 
 func CrawlGoogleBABA(query string) ([]Produto, error) {
 	// Configurar opções para o Chromium
