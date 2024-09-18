@@ -67,7 +67,8 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Slice para armazenar os produtos
 	var produtos []Produto
 
-	doc.Find(".sh-dgr__grid-result").Each(func(i int, s *goquery.Selection) {
+	// if doc.Find(".sh-dgr__grid-result, .pla-unit-title").Length() > 0 {
+	doc.Find(".sh-dgr__grid-result, .pla-unit-title").Each(func(i int, s *goquery.Selection) {
 		var description, priceStr, source, image, link string
 
 		// Extrair a descrição do produto
