@@ -80,22 +80,22 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	}
 
 	// Parsear o HTML com goquery
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
-	if err != nil {
-		log.Println("Falha ao parsear HTML:", err)
-		return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
-	}
+	// doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+	// if err != nil {
+	// 	log.Println("Falha ao parsear HTML:", err)
+	// 	return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
+	// }
 
 	// Variáveis para armazenar dados
 	// var description, price, source, href, image string
 	// var description, price, source, image string
-	var description string
-
-	// Extraindo descrições dos produtos
-	doc.Find("span.pymv4e, h3.tAxDx").Each(func(i int, s *goquery.Selection) {
-		description += s.Text() + " "
-	})
-
+	// var description string
+	//
+	// // Extraindo descrições dos produtos
+	// doc.Find("span.pymv4e, h3.tAxDx").Each(func(i int, s *goquery.Selection) {
+	// 	description += s.Text() + " "
+	// })
+	//
 	// Extraindo preços
 	// doc.Find("span.lmQWe, span.a8Pemb").Each(func(i int, s *goquery.Selection) {
 	// 	price += s.Text() + " "
@@ -135,7 +135,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// })
 
 	// Logar os dados extraídos
-	log.Println("Descrição extraída:", description)
+	// log.Println("Descrição extraída:", description)
 	// log.Println("Preço extraído:", price)
 	// log.Println("Fonte extraída:", source)
 	// log.Println("Imagens extraídas:", image)
