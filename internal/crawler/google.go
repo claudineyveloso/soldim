@@ -70,9 +70,10 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	doc.Find("span.pymv4e, h3.tAxDx").Each(func(i int, s *goquery.Selection) {
 		description += s.Text() + " "
 	})
-
+	var priceCount int
 	doc.Find("span.lmQWe, span.a8Pemb").Each(func(i int, s *goquery.Selection) {
 		price += s.Text() + " "
+		priceCount++
 	})
 
 	// Extraindo fontes (local e Heroku)
@@ -114,12 +115,8 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 	log.Println("###################################################################.")
 	log.Println("Claudiney Veloso.")
+	log.Println("Quantidade de preços extraídos:", priceCount)
 	log.Println("###################################################################.")
-	doc.Find("div").Each(func(i int, s *goquery.Selection) {
-		if classAttr, exists := s.Attr("class"); exists {
-			log.Printf("Elemento %d tem a(s) classe(s): %s", i, classAttr)
-		}
-	})
 
 	// var produtos []Produto
 
