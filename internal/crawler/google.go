@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -107,29 +106,15 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	log.Println("Fonte extraída:", source)
 	log.Println("Imagens extraídas:", image)
 
-	if doc.Find(".sh-dgr__grid-result").Length() > 0 {
-		log.Println("A classe .sh-dgr__grid-result foi encontrada.")
+	if doc.Find(".sh-dgr__grid-result, .pla-unit-title").Length() > 0 {
+		log.Println("A classe .sh-dgr__grid-result ou pla-unit-title foi encontrada.")
 	} else {
-		log.Println("A classe .sh-dgr__grid-result não foi encontrada.")
+		log.Println("A classe .sh-dgr__grid-result ou pla-unit-title não foi encontrada.")
 	}
 
 	log.Println("###################################################################.")
 	log.Println("Claudiney Veloso.")
 	log.Println("###################################################################.")
-	file, err := os.Create("index.html")
-	if err != nil {
-		log.Println("Erro ao criar arquivo:", err)
-		return nil, fmt.Errorf("falha ao criar arquivo: %v", err)
-	}
-	defer file.Close()
-
-	_, err = file.WriteString(htmlContent)
-	if err != nil {
-		log.Println("Erro ao escrever HTML no arquivo:", err)
-		return nil, fmt.Errorf("falha ao escrever no arquivo: %v", err)
-	}
-
-	log.Println("HTML salvo em /tmp/heroku_page.html")
 
 	// var produtos []Produto
 
