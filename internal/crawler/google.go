@@ -101,10 +101,10 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	})
 
 	// Logar o nome extraído
-	log.Println("Descrição extraída:", description)
-	log.Println("Preço extraído:", price)
-	log.Println("Fonte extraída:", source)
-	log.Println("Imagens extraídas:", image)
+	// log.Println("Descrição extraída:", description)
+	// log.Println("Preço extraído:", price)
+	// log.Println("Fonte extraída:", source)
+	// log.Println("Imagens extraídas:", image)
 
 	if doc.Find(".sh-dgr__grid-result, .pla-unit-title").Length() > 0 {
 		log.Println("A classe .sh-dgr__grid-result ou pla-unit-title foi encontrada.")
