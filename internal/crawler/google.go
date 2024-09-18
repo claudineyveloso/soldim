@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"strings"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/chromedp/chromedp"
 )
 
@@ -57,7 +59,21 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	}
 
 	// Logar o conteúdo HTML
-	log.Println("Conteúdo HTML coletado:", htmlContent)
+	// log.Println("Conteúdo HTML coletado:", htmlContent)
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+	if err != nil {
+		log.Println("Falha ao parsear HTML:", err)
+		return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
+	}
+
+	// Localizar e atribuir texto das tags à variável nome
+	var nome string
+	doc.Find("span.pymv4e, h3.tAxDx").Each(func(i int, s *goquery.Selection) {
+		nome += s.Text() + " "
+	})
+
+	// Logar o nome extraído
+	log.Println("Nome extraído:", nome)
 
 	// Retornar nil, já que não estamos processando os produtos por enquanto
 	return nil, nil
