@@ -142,6 +142,10 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// log.Println("Link extraído:", href)
 	// log.Println("Imagem extraída:", image)
 
+	log.Println("Conteúdo HTML coletado")
+
+	log.Println("Coletando o html", htmlContent)
+
 	// Retornar nil, já que não estamos processando os produtos por enquanto
 	return nil, nil
 }
