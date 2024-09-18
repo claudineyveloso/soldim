@@ -116,7 +116,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	log.Println("###################################################################.")
 	log.Println("Claudiney Veloso.")
 	log.Println("###################################################################.")
-	file, err := os.Create("/tmp/index.html")
+	file, err := os.Create("index.html")
 	if err != nil {
 		log.Println("Erro ao criar arquivo:", err)
 		return nil, fmt.Errorf("falha ao criar arquivo: %v", err)
