@@ -65,6 +65,16 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
 	}
 
+	if doc.Find(".sh-dgr__grid-result").Length() > 0 {
+		log.Println("A classe .sh-dgr__grid-result foi encontrada.")
+	} else {
+		log.Println("A classe .sh-dgr__grid-result não foi encontrada.")
+	}
+
+	log.Println("###################################################################.")
+	log.Println("Claudiney Veloso.")
+	log.Println("###################################################################.")
+
 	var description, price, source, image string
 
 	doc.Find("span.pymv4e, h3.tAxDx").Each(func(i int, s *goquery.Selection) {
@@ -105,6 +115,17 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	log.Println("Preço extraído:", price)
 	log.Println("Fonte extraída:", source)
 	log.Println("Imagens extraídas:", image)
+
+	// var produtos []Produto
+
+	// produto := Produto{
+	// 	Description: description,
+	// 	Link:        "https://www.google.com" + link,
+	// 	ImageURL:    image,
+	// 	Price:       price,
+	// 	Source:      source,
+	// }
+	// //
 
 	// Logar o conteúdo HTML
 	// log.Println("Conteúdo HTML coletado:", htmlContent)
