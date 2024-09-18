@@ -88,7 +88,8 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 	// Variáveis para armazenar dados
 	// var description, price, source, href, image string
-	var description, price, source, image string
+	// var description, price, source, image string
+	var description string
 
 	// Extraindo descrições dos produtos
 	doc.Find("span.pymv4e, h3.tAxDx").Each(func(i int, s *goquery.Selection) {
@@ -96,23 +97,23 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	})
 
 	// Extraindo preços
-	doc.Find("span.lmQWe, span.a8Pemb").Each(func(i int, s *goquery.Selection) {
-		price += s.Text() + " "
-	})
-
-	// Extraindo fontes (vendedor)
-	doc.Find("span.zPEcBd.LnPkof, .aULzUe.IuHnof").Each(func(i int, s *goquery.Selection) {
-		source += s.Text() + " "
-	})
-
-	// Extraindo URLs de imagens
-	doc.Find(".D6nsM, .ArOc1c").Each(func(i int, s *goquery.Selection) {
-		if imgSrc, exists := s.Find("img").Attr("src"); exists {
-			image += imgSrc + " "
-		} else if imgDataSrc, exists := s.Find("img").Attr("data-src"); exists {
-			image += imgDataSrc + " "
-		}
-	})
+	// doc.Find("span.lmQWe, span.a8Pemb").Each(func(i int, s *goquery.Selection) {
+	// 	price += s.Text() + " "
+	// })
+	//
+	// // Extraindo fontes (vendedor)
+	// doc.Find("span.zPEcBd.LnPkof, .aULzUe.IuHnof").Each(func(i int, s *goquery.Selection) {
+	// 	source += s.Text() + " "
+	// })
+	//
+	// // Extraindo URLs de imagens
+	// doc.Find(".D6nsM, .ArOc1c").Each(func(i int, s *goquery.Selection) {
+	// 	if imgSrc, exists := s.Find("img").Attr("src"); exists {
+	// 		image += imgSrc + " "
+	// 	} else if imgDataSrc, exists := s.Find("img").Attr("data-src"); exists {
+	// 		image += imgDataSrc + " "
+	// 	}
+	// })
 
 	// doc.Find(".plantl .pla-unit-title-link, .shntl .sh-np__click-target").Each(func(i int, s *goquery.Selection) {
 	// 	// Variável para armazenar o link (href)
@@ -135,9 +136,9 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 	// Logar os dados extraídos
 	log.Println("Descrição extraída:", description)
-	log.Println("Preço extraído:", price)
-	log.Println("Fonte extraída:", source)
-	log.Println("Imagens extraídas:", image)
+	// log.Println("Preço extraído:", price)
+	// log.Println("Fonte extraída:", source)
+	// log.Println("Imagens extraídas:", image)
 	// log.Println("Link extraído:", href)
 	// log.Println("Imagem extraída:", image)
 
