@@ -65,13 +65,34 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
 	}
 
-	var nome string
+	var description, price, source, image string
+
 	doc.Find("span.pymv4e, h3.tAxDx").Each(func(i int, s *goquery.Selection) {
-		nome += s.Text() + " "
+		description += s.Text() + " "
+	})
+
+	doc.Find("span.lmQWe, span.a8Pemb").Each(func(i int, s *goquery.Selection) {
+		price += s.Text() + " "
+	})
+
+	// Extraindo fontes (local e Heroku)
+	doc.Find("span.zPEcBd, .aULzUe.IuHnof").Each(func(i int, s *goquery.Selection) {
+		source += s.Text() + " "
+	})
+
+	doc.Find(".D6nsM, .ArOc1c").Each(func(i int, s *goquery.Selection) {
+		if imgSrc, exists := s.Find("img").Attr("src"); exists {
+			image += imgSrc + " "
+		} else if imgDataSrc, exists := s.Find("img").Attr("data-src"); exists {
+			image += imgDataSrc + " "
+		}
 	})
 
 	// Logar o nome extraído
-	log.Println("Nome extraído:", nome)
+	log.Println("Descrição extraída:", description)
+	log.Println("Preço extraído:", price)
+	log.Println("Fonte extraída:", source)
+	log.Println("Imagens extraídas:", image)
 
 	// Logar o conteúdo HTML
 	// log.Println("Conteúdo HTML coletado:", htmlContent)
