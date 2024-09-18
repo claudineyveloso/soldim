@@ -142,6 +142,8 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		log.Printf("Produto extraído: %+v\n", produto)
 	}
 
+	log.Println("Conteúdo HTML coletado:", htmlContent)
+
 	// Retornar a lista de produtos
 	return produtos, nil
 }
