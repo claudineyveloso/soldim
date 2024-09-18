@@ -88,6 +88,18 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		}
 	})
 
+	doc.Find("img").Each(func(i int, s *goquery.Selection) {
+		// Primeiro tenta pegar o data-src
+		if dataSrc, exists := s.Attr("data-src"); exists {
+			fmt.Println("Valor do data-src:", dataSrc)
+		} else if src, exists := s.Attr("src"); exists {
+			// Se data-src não existir, tenta pegar o src
+			fmt.Println("Valor do src:", src)
+		} else {
+			fmt.Println("Nenhum dos atributos 'data-src' ou 'src' foi encontrado!")
+		}
+	})
+
 	// Logar o nome extraído
 	log.Println("Descrição extraída:", description)
 	log.Println("Preço extraído:", price)
