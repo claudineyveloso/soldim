@@ -108,6 +108,9 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 		log.Println("###################################################################.")
 		log.Println("Preço extraído:", price)
+		log.Println("PreçoStr extraído:", priceStr)
+		log.Println("Preço extraído:", image)
+		log.Println("Preço extraído:", source)
 		log.Println("###################################################################.")
 		// Criar um produto com os dados extraídos
 		produto := Produto{
