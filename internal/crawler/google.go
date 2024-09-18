@@ -59,8 +59,22 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		return nil, fmt.Errorf("falha ao extrair HTML: %v", err)
 	}
 
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+	if err != nil {
+		log.Println("Falha ao parsear HTML:", err)
+		return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
+	}
+
+	var nome string
+	doc.Find("span.pymv4e, h3.tAxDx").Each(func(i int, s *goquery.Selection) {
+		nome += s.Text() + " "
+	})
+
+	// Logar o nome extraído
+	log.Println("Nome extraído:", nome)
+
 	// Logar o conteúdo HTML
-	log.Println("Conteúdo HTML coletado:", htmlContent)
+	// log.Println("Conteúdo HTML coletado:", htmlContent)
 
 	// Processar o HTML ou retornar
 	return nil, nil
