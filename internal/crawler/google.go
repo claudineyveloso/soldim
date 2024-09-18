@@ -50,24 +50,17 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 	// Variável para armazenar parte do HTML da página
 	var htmlContent string
-
-	// Executar a navegação e extrair parte do HTML da página
 	err := chromedp.Run(ctx,
-		// Navegar para a URL
 		chromedp.Navigate(startURL),
-		// Esperar até que o elemento principal dos resultados seja visível
-		chromedp.WaitVisible(`[role="main"]`, chromedp.ByQuery),
-		// Extrair apenas o conteúdo dentro da div principal dos resultados
-		chromedp.OuterHTML(`[role="main"]`, &htmlContent, chromedp.ByQuery),
+		chromedp.OuterHTML(`html`, &htmlContent, chromedp.ByQuery),
 	)
 	if err != nil {
 		log.Println("Falha ao extrair HTML:", err)
 		return nil, fmt.Errorf("falha ao extrair HTML: %v", err)
 	}
 
-	// Log do HTML extraído
-	log.Println("Conteúdo HTML coletado:")
-	log.Println(htmlContent)
+	// Logar o conteúdo HTML
+	log.Println("Conteúdo HTML coletado:", htmlContent)
 
 	// Processar o HTML ou retornar
 	return nil, nil
