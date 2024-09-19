@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -24,8 +25,16 @@ type Produto struct {
 }
 
 func CrawlGoogle(query string) ([]Produto, error) {
+	var execPath string
+	if os.Getenv("HEROKU") == "true" {
+		execPath = "/app/.chrome-for-testing/chrome-linux64/chrome"
+	} else {
+		execPath = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+	}
+
 	// Configurar opções para o Chromium
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.ExecPath(execPath),
 		chromedp.Flag("headless", true),
 		chromedp.Flag("no-sandbox", true),            // Necessário para Heroku
 		chromedp.Flag("disable-dev-shm-usage", true), // Pode ajudar a evitar problemas de memória
@@ -75,6 +84,8 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	} else {
 		log.Println("A classe .sh-dgr__grid-result não foi encontrada.")
 	}
+
+	log.Println("HTML recebido:", htmlContent[:40000])
 
 	// var produtos []Produto
 	//
