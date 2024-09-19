@@ -106,9 +106,6 @@ func (h *Handler) handleCreateSearch(w http.ResponseWriter, r *http.Request) {
 		"status":  http.StatusOK,
 	}
 
-	// Log do response antes da serialização
-	log.Printf("Response data: %+v", response)
-
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Printf("Erro ao serializar JSON: %v", err)
