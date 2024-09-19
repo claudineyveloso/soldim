@@ -11,6 +11,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/chromedp/cdproto/emulation"
+	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
 )
 
@@ -63,6 +64,9 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Variável para armazenar parte do HTML da página
 	var htmlContent string
 	err := chromedp.Run(ctx,
+		network.SetExtraHTTPHeaders(network.Headers{
+			"Accept-Language": "en-US,en;q=0.9",
+		}),
 		emulation.SetUserAgentOverride(userAgent),
 		chromedp.Navigate(startURL),
 		chromedp.WaitVisible(`body`, chromedp.ByQuery),
