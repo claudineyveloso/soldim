@@ -70,20 +70,22 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Usar seletores diferentes para local e Heroku
 	descriptions := doc.Find("span.pymv4e, h3.tAxDx")
 	prices := doc.Find("span.lmQWe, span.a8Pemb")
+	prices1 := doc.Find("span.DoCHT")
 	sources := doc.Find("span.zPEcBd, .aULzUe.IuHnof")
 	images := doc.Find(".D6nsM, .ArOc1c img")
 
 	// Adicionar logs para verificar o número de elementos encontrados
 	log.Printf("Número de descrições encontradas: %d", descriptions.Length())
 	log.Printf("Número de preços encontrados: %d", prices.Length())
+	log.Printf("Número de preços encontrados: %d", prices1.Length())
 	log.Printf("Número de fontes encontradas: %d", sources.Length())
 	log.Printf("Número de imagens encontradas: %d", images.Length())
 
 	// Adicionar logs para verificar conteúdo de preços
-	for i := 0; i < prices.Length(); i++ {
-		price := prices.Eq(i).Text()
-		log.Printf("Preço encontrado: %s", price)
-	}
+	// for i := 0; i < prices.Length(); i++ {
+	// 	price := prices.Eq(i).Text()
+	// 	log.Printf("Preço encontrado: %s", price)
+	// }
 
 	// Verificar se a quantidade de produtos está de acordo com a quantidade de elementos descritos
 	productCount := descriptions.Length()
