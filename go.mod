@@ -22,6 +22,7 @@ require (
 
 require (
 	github.com/andybalholm/cascadia v1.3.2 // indirect
+	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/cockroachdb/apd v1.1.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
@@ -41,6 +42,7 @@ require (
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.3 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
+	github.com/tebeka/selenium v0.9.9 // indirect
 	github.com/xuri/efp v0.0.0-20231025114914-d1ff6096ae53 // indirect
 	github.com/xuri/nfp v0.0.0-20230919160717-d98342af3f05 // indirect
 	golang.org/x/net v0.24.0 // indirect

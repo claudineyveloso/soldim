@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/chromedp"
 )
 
@@ -48,10 +49,15 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
 	log.Println("Iniciando visita:", startURL)
 
+	// Definir User-Agent para imitar o comportamento do Chrome em Linux
+	userAgent := "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.58 Safari/537.36"
+
 	// Variável para armazenar parte do HTML da página
 	var htmlContent string
 	err := chromedp.Run(ctx,
+		emulation.SetUserAgentOverride(userAgent),
 		chromedp.Navigate(startURL),
+		chromedp.WaitVisible(`body`, chromedp.ByQuery),
 		chromedp.OuterHTML(`html`, &htmlContent, chromedp.ByQuery),
 	)
 	if err != nil {
@@ -135,9 +141,15 @@ func CrawlGoogle(query string) ([]Produto, error) {
 			produto.ImageURL = imgDataSrc
 		}
 
+		if doc.Find(".sh-dgr__grid-result").Length() > 0 {
+			log.Println("A classe .sh-dgr__grid-result foi encontrada.")
+		} else {
+			log.Println("A classe .sh-dgr__grid-result não foi encontrada.")
+		}
+
 		// produtos = append(produtos, produto)
 	}
-	log.Println("Conteúdo HTML coletado:", htmlContent)
+	// log.Println("Conteúdo HTML coletado:", htmlContent)
 
 	// Retornar a lista de produtos
 	return produtos, nil
