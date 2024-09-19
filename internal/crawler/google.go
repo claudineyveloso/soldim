@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
 
@@ -71,86 +70,93 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
 	}
 
-	var produtos []Produto
+	if doc.Find(".sh-dgr__grid-result").Length() > 0 {
+		log.Println("A classe .sh-dgr__grid-result foi encontrada.")
+	} else {
+		log.Println("A classe .sh-dgr__grid-result não foi encontrada.")
+	}
 
-	// Usar seletores diferentes para local e Heroku
-	descriptions := doc.Find("span.pymv4e, h3.tAxDx")
-	prices := doc.Find("span.lmQWe, span.a8Pemb")
-	prices1 := doc.Find("span.DoCHT")
-	sources := doc.Find("span.zPEcBd, .aULzUe.IuHnof")
-	images := doc.Find(".D6nsM, .ArOc1c img")
-
-	// Adicionar logs para verificar o número de elementos encontrados
-	log.Printf("Número de descrições encontradas: %d", descriptions.Length())
-	log.Printf("Número de preços encontrados: %d", prices.Length())
-	log.Printf("Número de preços encontrados: %d", prices1.Length())
-	log.Printf("Número de fontes encontradas: %d", sources.Length())
-	log.Printf("Número de imagens encontradas: %d", images.Length())
-
-	// Adicionar logs para verificar conteúdo de preços
-	// for i := 0; i < prices.Length(); i++ {
-	// 	price := prices.Eq(i).Text()
-	// 	log.Printf("Preço encontrado: %s", price)
+	// var produtos []Produto
+	//
+	// // Usar seletores diferentes para local e Heroku
+	// descriptions := doc.Find("span.pymv4e, h3.tAxDx")
+	// prices := doc.Find("span.lmQWe, span.a8Pemb")
+	// prices1 := doc.Find("span.DoCHT")
+	// sources := doc.Find("span.zPEcBd, .aULzUe.IuHnof")
+	// images := doc.Find(".D6nsM, .ArOc1c img")
+	//
+	// // Adicionar logs para verificar o número de elementos encontrados
+	// log.Printf("Número de descrições encontradas: %d", descriptions.Length())
+	// log.Printf("Número de preços encontrados: %d", prices.Length())
+	// log.Printf("Número de preços encontrados: %d", prices1.Length())
+	// log.Printf("Número de fontes encontradas: %d", sources.Length())
+	// log.Printf("Número de imagens encontradas: %d", images.Length())
+	//
+	// // Adicionar logs para verificar conteúdo de preços
+	// // for i := 0; i < prices.Length(); i++ {
+	// // 	price := prices.Eq(i).Text()
+	// // 	log.Printf("Preço encontrado: %s", price)
+	// // }
+	//
+	// // Verificar se a quantidade de produtos está de acordo com a quantidade de elementos descritos
+	// productCount := descriptions.Length()
+	// if productCount != prices.Length() || productCount != sources.Length() || productCount != images.Length() {
+	// 	log.Println("Os números de descrições, preços, fontes e imagens não coincidem!")
+	// 	return nil, fmt.Errorf("número inconsistente de produtos extraídos")
 	// }
-
-	// Verificar se a quantidade de produtos está de acordo com a quantidade de elementos descritos
-	productCount := descriptions.Length()
-	if productCount != prices.Length() || productCount != sources.Length() || productCount != images.Length() {
-		log.Println("Os números de descrições, preços, fontes e imagens não coincidem!")
-		return nil, fmt.Errorf("número inconsistente de produtos extraídos")
-	}
-
-	// Iterar sobre os produtos encontrados e associar as informações
-	for i := 0; i < productCount; i++ {
-		produto := Produto{}
-
-		// Coletar descrição
-		produto.Description = descriptions.Eq(i).Text()
-
-		// Coletar e converter preço
-		priceStr := prices.Eq(i).Text()
-		priceStr = strings.ReplaceAll(priceStr, "R$", "")     // Remover o símbolo "R$"
-		priceStr = strings.ReplaceAll(priceStr, "\u00a0", "") // Remover o espaço não separável
-		priceStr = strings.ReplaceAll(priceStr, ",", ".")     // Substituir vírgulas por pontos
-		priceStr = strings.TrimSpace(priceStr)                // Remover espaços em branco extras
-
-		priceFloat, err := strconv.ParseFloat(priceStr, 64)
-		if err != nil {
-			log.Println("Erro ao converter o preço:", err)
-			priceFloat = 0.0 // Definir um valor padrão em caso de erro
-		}
-		produto.Price = priceFloat
-
-		// Coletar fonte (Source) e extrair texto após a última chave }
-		sourceText := sources.Eq(i).Text()
-
-		// Adicionar a lógica de extração
-		lastBraceIndex := strings.LastIndex(sourceText, "}")
-		if lastBraceIndex != -1 {
-			textAfterCSS := sourceText[lastBraceIndex+1:]
-			textAfterCSS = strings.TrimSpace(textAfterCSS) // Remover espaços em branco
-			produto.Source = textAfterCSS
-		} else {
-			produto.Source = sourceText
-		}
-
-		// Coletar imagem
-		if imgSrc, exists := images.Eq(i).Attr("src"); exists {
-			produto.ImageURL = imgSrc
-		} else if imgDataSrc, exists := images.Eq(i).Attr("data-src"); exists {
-			produto.ImageURL = imgDataSrc
-		}
-
-		if doc.Find(".sh-dgr__grid-result").Length() > 0 {
-			log.Println("A classe .sh-dgr__grid-result foi encontrada.")
-		} else {
-			log.Println("A classe .sh-dgr__grid-result não foi encontrada.")
-		}
-
-		// produtos = append(produtos, produto)
-	}
+	//
+	// // Iterar sobre os produtos encontrados e associar as informações
+	// for i := 0; i < productCount; i++ {
+	// 	produto := Produto{}
+	//
+	// 	// Coletar descrição
+	// 	produto.Description = descriptions.Eq(i).Text()
+	//
+	// 	// Coletar e converter preço
+	// 	priceStr := prices.Eq(i).Text()
+	// 	priceStr = strings.ReplaceAll(priceStr, "R$", "")     // Remover o símbolo "R$"
+	// 	priceStr = strings.ReplaceAll(priceStr, "\u00a0", "") // Remover o espaço não separável
+	// 	priceStr = strings.ReplaceAll(priceStr, ",", ".")     // Substituir vírgulas por pontos
+	// 	priceStr = strings.TrimSpace(priceStr)                // Remover espaços em branco extras
+	//
+	// 	priceFloat, err := strconv.ParseFloat(priceStr, 64)
+	// 	if err != nil {
+	// 		log.Println("Erro ao converter o preço:", err)
+	// 		priceFloat = 0.0 // Definir um valor padrão em caso de erro
+	// 	}
+	// 	produto.Price = priceFloat
+	//
+	// 	// Coletar fonte (Source) e extrair texto após a última chave }
+	// 	sourceText := sources.Eq(i).Text()
+	//
+	// 	// Adicionar a lógica de extração
+	// 	lastBraceIndex := strings.LastIndex(sourceText, "}")
+	// 	if lastBraceIndex != -1 {
+	// 		textAfterCSS := sourceText[lastBraceIndex+1:]
+	// 		textAfterCSS = strings.TrimSpace(textAfterCSS) // Remover espaços em branco
+	// 		produto.Source = textAfterCSS
+	// 	} else {
+	// 		produto.Source = sourceText
+	// 	}
+	//
+	// 	// Coletar imagem
+	// 	if imgSrc, exists := images.Eq(i).Attr("src"); exists {
+	// 		produto.ImageURL = imgSrc
+	// 	} else if imgDataSrc, exists := images.Eq(i).Attr("data-src"); exists {
+	// 		produto.ImageURL = imgDataSrc
+	// 	}
+	//
+	// 	if doc.Find(".sh-dgr__grid-result").Length() > 0 {
+	// 		log.Println("A classe .sh-dgr__grid-result foi encontrada.")
+	// 	} else {
+	// 		log.Println("A classe .sh-dgr__grid-result não foi encontrada.")
+	// 	}
+	//
+	// 	// produtos = append(produtos, produto)
+	// }
 	// log.Println("Conteúdo HTML coletado:", htmlContent)
 
 	// Retornar a lista de produtos
-	return produtos, nil
+	return nil, nil
+	// return produtos, nil
 }
