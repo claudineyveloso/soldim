@@ -121,7 +121,8 @@ func CrawlGoogle(query string) ([]Produto, error) {
 			produto.ImageURL = imgDataSrc
 		}
 
-		produtos = append(produtos, produto)
+		// produtos = append(produtos, produto)
+		log.Println("teste")
 	}
 
 	// Retornar a lista de produtos
