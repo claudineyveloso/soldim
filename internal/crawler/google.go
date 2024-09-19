@@ -79,6 +79,12 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	log.Printf("Número de fontes encontradas: %d", sources.Length())
 	log.Printf("Número de imagens encontradas: %d", images.Length())
 
+	// Adicionar logs para verificar conteúdo de preços
+	for i := 0; i < prices.Length(); i++ {
+		price := prices.Eq(i).Text()
+		log.Printf("Preço encontrado: %s", price)
+	}
+
 	// Verificar se a quantidade de produtos está de acordo com a quantidade de elementos descritos
 	productCount := descriptions.Length()
 	if productCount != prices.Length() || productCount != sources.Length() || productCount != images.Length() {
@@ -128,7 +134,6 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		}
 
 		// produtos = append(produtos, produto)
-		log.Println("teste")
 	}
 
 	// Retornar a lista de produtos
