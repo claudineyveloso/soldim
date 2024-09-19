@@ -73,6 +73,12 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	sources := doc.Find("span.zPEcBd, .aULzUe.IuHnof")
 	images := doc.Find(".D6nsM, .ArOc1c img")
 
+	// Adicionar logs para verificar o número de elementos encontrados
+	log.Printf("Número de descrições encontradas: %d", descriptions.Length())
+	log.Printf("Número de preços encontrados: %d", prices.Length())
+	log.Printf("Número de fontes encontradas: %d", sources.Length())
+	log.Printf("Número de imagens encontradas: %d", images.Length())
+
 	// Verificar se a quantidade de produtos está de acordo com a quantidade de elementos descritos
 	productCount := descriptions.Length()
 	if productCount != prices.Length() || productCount != sources.Length() || productCount != images.Length() {
