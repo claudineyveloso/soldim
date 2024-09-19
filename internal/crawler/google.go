@@ -135,6 +135,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 		// produtos = append(produtos, produto)
 	}
+	log.Println("Conteúdo HTML coletado:", htmlContent)
 
 	// Retornar a lista de produtos
 	return produtos, nil
