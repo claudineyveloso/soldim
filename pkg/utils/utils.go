@@ -37,7 +37,8 @@ func GetBaseURL() string {
 	env := os.Getenv("ENVIRONMENT")
 
 	if env == "prod" {
-		return "https://soldim-api-344942c665db.herokuapp.com"
+		// return "https://soldim-api-344942c665db.herokuapp.com"
+		return "http://3.80.249.138:8888"
 	}
 	return "http://localhost:8080"
 }
