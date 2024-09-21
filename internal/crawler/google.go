@@ -39,7 +39,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		return nil, fmt.Errorf("falha ao iniciar a visita: %v", err)
 	}
 
-	log.Printf("Passou pelo primeira condicao if: %s", startURL)
+	log.Printf("Passou pela primeira condicao if: %s", startURL)
 	for {
 		// Esperar o carregamento da página
 		err = chromedp.Run(ctx, chromedp.WaitVisible(`div.sh-dgr__grid-result`))
@@ -48,6 +48,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 			break
 		}
 
+		log.Printf("Passou pel segunda condicao if: %s", startURL)
 		// Extrair o HTML da página
 		var htmlContent string
 		err = chromedp.Run(ctx, chromedp.OuterHTML(`html`, &htmlContent))
