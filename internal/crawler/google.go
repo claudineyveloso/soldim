@@ -38,6 +38,8 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	if err != nil {
 		return nil, fmt.Errorf("falha ao iniciar a visita: %v", err)
 	}
+
+	log.Printf("Passou pelo primeira condicao if: %s", startURL)
 	for {
 		// Esperar o carregamento da página
 		err = chromedp.Run(ctx, chromedp.WaitVisible(`div.sh-dgr__grid-result`))
