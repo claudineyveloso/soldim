@@ -59,6 +59,12 @@ func CrawlGoogle(query string) ([]Produto, error) {
 			return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
 		}
 
+		if doc.Find(".sh-dgr__grid-result").Length() > 0 {
+			log.Printf("A classe sh-dgr__grid-result foi encontrada: %s", startURL)
+		} else {
+			log.Printf("A classe sh-dgr__grid-result não foi encontrada: %s", startURL)
+		}
+
 		// Extrair detalhes dos produtos
 		doc.Find("div.sh-dgr__grid-result").Each(func(index int, item *goquery.Selection) {
 			description := item.Find(".tAxDx").Text()
