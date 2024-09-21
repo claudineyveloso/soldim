@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/chromedp"
 )
 
@@ -42,6 +43,21 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	log.Printf("Passou pela primeira condicao if: %s", startURL)
 	for {
 		// Esperar o carregamento da página
+		//
+		var nodes []*cdp.Node
+		err = chromedp.Run(ctx, chromedp.Nodes(`div.sh-dgr__grid-result`, &nodes, chromedp.AtLeast(0)))
+		if err != nil {
+			log.Printf("Erro ao verificar a existência do elemento: %v", err)
+			break
+		}
+
+		if len(nodes) > 0 {
+			log.Printf("O elemento 'div.sh-dgr__grid-result' foi encontrado no DOM.")
+		} else {
+			log.Printf("O elemento 'div.sh-dgr__grid-result' NÃO foi encontrado no DOM.")
+			break
+		}
+
 		err = chromedp.Run(ctx, chromedp.WaitVisible(`div.sh-dgr__grid-result`))
 		if err != nil {
 			log.Printf("Erro ao esperar pela visibilidade dos resultados: %v", err)
