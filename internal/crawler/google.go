@@ -52,21 +52,28 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Aguardar um tempo para evitar problemas com rate limiting
 	time.Sleep(4 * time.Second)
 
+	// Extrair o HTML da página
 	var htmlContent string
+	err = chromedp.Run(ctx, chromedp.OuterHTML(`html`, &htmlContent)) // Extrai todo o HTML da página
+	if err != nil {
+		return nil, fmt.Errorf("falha ao extrair HTML: %v", err)
+	}
 
+	// Parsear o HTML com goquery
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
 	if err != nil {
 		log.Println("Falha ao parsear HTML:", err)
 		return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
 	}
 
+	// Verificar se o elemento com a classe sh-dgr__grid-result existe
 	if doc.Find(".sh-dgr__grid-result").Length() > 0 {
 		log.Printf("A classe sh-dgr__grid-result foi encontrada: %s", startURL)
 	} else {
 		log.Printf("A classe sh-dgr__grid-result não foi encontrada: %s", startURL)
 	}
 
-	log.Println("Conteudo coletados:", htmlContent)
+	log.Println("Conteúdo coletado:", htmlContent)
 
 	return produtos, nil
 }
