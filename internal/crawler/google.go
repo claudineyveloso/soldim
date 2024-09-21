@@ -33,6 +33,10 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	ctx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
 	defer cancel()
 
+	// Definir um contexto com timeout
+	ctx, cancel = context.WithTimeout(ctx, 30*time.Second) // Timeout de 30 segundos
+	defer cancel()
+
 	// Criar o contexto padrão a partir do allocator
 	ctx, cancel = chromedp.NewContext(ctx)
 	defer cancel()
