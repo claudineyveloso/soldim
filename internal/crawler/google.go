@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -77,6 +78,21 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	} else {
 		log.Printf("A classe sh-dgr__grid-result NÃO foi encontrada: %s", startURL)
 	}
+
+	file, err := os.Create("index.html")
+	if err != nil {
+		log.Println("Erro ao criar arquivo:", err)
+		return nil, fmt.Errorf("falha ao criar arquivo: %v", err)
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(htmlContent)
+	if err != nil {
+		log.Println("Erro ao escrever HTML no arquivo:", err)
+		return nil, fmt.Errorf("falha ao escrever no arquivo: %v", err)
+	}
+
+	log.Println("HTML salvo em /tmp/heroku_page.html")
 
 	// log.Println("Conteúdo coletado:", htmlContent)
 
