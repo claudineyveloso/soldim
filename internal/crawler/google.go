@@ -25,78 +25,105 @@ type Produto struct {
 }
 
 func CrawlGoogle(query string) ([]Produto, error) {
-	// Configurar o User-Agent para simular um navegador real
+	// Configurações do Chrome (incluindo user agent)
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"),
-		chromedp.Flag("lang", "pt-BR"),
 	)
 
 	// Aplicar o contexto com as opções configuradas
 	ctx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
 	defer cancel()
 
-	// Definir um contexto com timeout
-	ctx, cancel = context.WithTimeout(ctx, 30*time.Second) // Timeout de 30 segundos
-	defer cancel()
-
 	// Criar o contexto padrão a partir do allocator
 	ctx, cancel = chromedp.NewContext(ctx)
 	defer cancel()
 
-	var produtos []Produto
+	// Definir um timeout de 60 segundos
+	ctx, cancel = context.WithTimeout(ctx, 60*time.Second)
+	defer cancel()
+
 	// Codificar a query string para ser usada na URL
-	encodedQuery := url.QueryEscape(query)
-	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
-	log.Printf("Iniciando visita: %s", startURL)
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", query)
 
-	// Navegar até a URL inicial
-	err := chromedp.Run(ctx, chromedp.Navigate(startURL))
-	if err != nil {
-		return nil, fmt.Errorf("falha ao iniciar a visita: %v", err)
-	}
-
-	// Aguardar um tempo para evitar problemas com rate limiting
-	time.Sleep(4 * time.Second)
-
-	// Extrair o HTML da página
+	// Navegar para a URL e fazer o scroll
 	var htmlContent string
-	err = chromedp.Run(ctx, chromedp.OuterHTML(`html`, &htmlContent)) // Extrai todo o HTML da página
+	err := chromedp.Run(ctx,
+		chromedp.Navigate(startURL),
+		// Simular o scroll até o fim da página para carregar todos os produtos
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			for i := 0; i < 20; i++ { // Ajustar conforme o número de produtos
+				// Executar o scroll down
+				err := chromedp.Run(ctx, chromedp.Evaluate(`window.scrollBy(0, document.body.scrollHeight);`, nil))
+				if err != nil {
+					return err
+				}
+				// Espera o carregamento adicional dos itens
+				time.Sleep(2 * time.Second)
+			}
+			return nil
+		}),
+		// Extração do HTML completo após o carregamento
+		chromedp.OuterHTML(`html`, &htmlContent),
+	)
 	if err != nil {
-		return nil, fmt.Errorf("falha ao extrair HTML: %v", err)
+		return nil, fmt.Errorf("falha ao carregar a página: %v", err)
 	}
 
-	// Parsear o HTML com goquery
+	// Parsear o HTML para buscar os produtos
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
 	if err != nil {
-		log.Println("Falha ao parsear HTML:", err)
 		return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
 	}
 
-	// Verificar se o elemento com a classe sh-dgr__grid-result existe
-	if doc.Find(".sh-dgr__grid-result").Length() > 0 {
-		log.Printf("A classe sh-dgr__grid-result foi encontrada: %s", startURL)
-	} else {
-		log.Printf("A classe sh-dgr__grid-result NÃO foi encontrada: %s", startURL)
+	// Coletar os produtos encontrados
+	var produtos []Produto
+	doc.Find(".sh-dgr__gr-auto.sh-dgr__grid-result").Each(func(i int, s *goquery.Selection) {
+		// Nome do produto
+		nome := s.Find(".Xjkr3b").Text()
+		// Preço do produto
+		// preco := s.Find(".a8Pemb").Text()
+		preco := 0.0
+		// URL da imagem
+		imgURL, _ := s.Find("img").Attr("src")
+		// Link do produto
+		link, _ := s.Find("a").Attr("href")
+
+		// Montar o produto e adicionar à lista
+		produto := Produto{
+			Description: nome,
+			Price:       preco,
+			ImageURL:    imgURL,
+			Link:        link,
+		}
+		produtos = append(produtos, produto)
+	})
+
+	// Exibir o número de produtos encontrados
+	log.Printf("Número total de produtos encontrados: %d", len(produtos))
+
+	// (Opcional) Salvar o HTML completo em um arquivo para inspeção
+	err = SaveHTMLToFile(htmlContent, "pagina_completa.html")
+	if err != nil {
+		log.Println("Erro ao salvar HTML:", err)
 	}
 
-	file, err := os.Create("index.html")
+	return produtos, nil
+}
+
+func SaveHTMLToFile(htmlContent, filename string) error {
+	file, err := os.Create(filename)
 	if err != nil {
-		log.Println("Erro ao criar arquivo:", err)
-		return nil, fmt.Errorf("falha ao criar arquivo: %v", err)
+		return fmt.Errorf("falha ao criar o arquivo: %v", err)
 	}
 	defer file.Close()
 
 	_, err = file.WriteString(htmlContent)
 	if err != nil {
-		log.Println("Erro ao escrever HTML no arquivo:", err)
-		return nil, fmt.Errorf("falha ao escrever no arquivo: %v", err)
+		return fmt.Errorf("falha ao escrever no arquivo: %v", err)
 	}
 
-	log.Println("HTML salvo em /tmp/heroku_page.html")
-
-	// log.Println("Conteúdo coletado:", htmlContent)
-
-	return produtos, nil
+	log.Printf("HTML salvo em %s", filename)
+	return nil
 }
 
 func CrawlGoogleAtual(query string) ([]Produto, error) {
