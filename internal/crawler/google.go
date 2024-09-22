@@ -27,6 +27,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Configurar o User-Agent para simular um navegador real
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"),
+		chromedp.Flag("lang", "pt-BR"),
 	)
 
 	// Aplicar o contexto com as opções configuradas
@@ -77,7 +78,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		log.Printf("A classe sh-dgr__grid-result não foi encontrada: %s", startURL)
 	}
 
-	log.Println("Conteúdo coletado:", htmlContent)
+	// log.Println("Conteúdo coletado:", htmlContent)
 
 	return produtos, nil
 }
