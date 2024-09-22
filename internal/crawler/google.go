@@ -13,6 +13,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/chromedp/chromedp"
+	"github.com/gocolly/colly"
 )
 
 type Produto struct {
@@ -25,105 +26,276 @@ type Produto struct {
 }
 
 func CrawlGoogle(query string) ([]Produto, error) {
-	// Configurações do Chrome (incluindo user agent)
-	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"),
+	encodedQuery := url.QueryEscape(query)
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
+	log.Printf("Iniciando visita: %s", startURL)
+
+	c := colly.NewCollector(
+		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"),
 	)
 
-	// Aplicar o contexto com as opções configuradas
-	ctx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
-	defer cancel()
-
-	// Criar o contexto padrão a partir do allocator
-	ctx, cancel = chromedp.NewContext(ctx)
-	defer cancel()
-
-	// Definir um timeout de 60 segundos
-	ctx, cancel = context.WithTimeout(ctx, 60*time.Second)
-	defer cancel()
-
-	// Codificar a query string para ser usada na URL
-	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", query)
-
-	// Navegar para a URL e fazer o scroll
-	var htmlContent string
-	err := chromedp.Run(ctx,
-		chromedp.Navigate(startURL),
-		// Simular o scroll até o fim da página para carregar todos os produtos
-		chromedp.ActionFunc(func(ctx context.Context) error {
-			for i := 0; i < 20; i++ { // Ajustar conforme o número de produtos
-				// Executar o scroll down
-				err := chromedp.Run(ctx, chromedp.Evaluate(`window.scrollBy(0, document.body.scrollHeight);`, nil))
-				if err != nil {
-					return err
-				}
-				// Espera o carregamento adicional dos itens
-				time.Sleep(2 * time.Second)
-			}
-			return nil
-		}),
-		// Extração do HTML completo após o carregamento
-		chromedp.OuterHTML(`html`, &htmlContent),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("falha ao carregar a página: %v", err)
-	}
-
-	// Parsear o HTML para buscar os produtos
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
-	if err != nil {
-		return nil, fmt.Errorf("falha ao parsear HTML: %v", err)
-	}
-
-	// Coletar os produtos encontrados
 	var produtos []Produto
-	doc.Find(".sh-dgr__gr-auto.sh-dgr__grid-result").Each(func(i int, s *goquery.Selection) {
-		// Nome do produto
-		nome := s.Find(".Xjkr3b").Text()
-		// Preço do produto
-		// preco := s.Find(".a8Pemb").Text()
-		preco := 0.0
-		// URL da imagem
-		imgURL, _ := s.Find("img").Attr("src")
-		// Link do produto
-		link, _ := s.Find("a").Attr("href")
 
-		// Montar o produto e adicionar à lista
+	// c.OnHTML("div.sh-dgr__grid-result", func(e *colly.HTMLElement) {
+	// 	description := e.ChildText(".tAxDx")
+	// 	price := formatarPreco(e.ChildText(".a8Pemb"))
+	// 	rawURL := e.ChildAttr("a", "href")
+	//    imageURL := e.ChildAttr(".ArOc1c img", "src")
+	// 	promotionText := strings.TrimSpace(e.ChildText(".fAcMNb span.Ib8pOd"))
+	//
+	// 	// Captura apenas o texto limpo do source
+	//
+	// 	source := e.ChildText(".aULzUe")
+	// 	if strings.Contains(source, "}") {
+	// 		// Extraindo apenas o texto após a última chave
+	// 		parts := strings.Split(source, "}")
+	// 		if len(parts) > 1 {
+	// 			source = strings.TrimSpace(parts[len(parts)-1]) // Pega o texto após a última chave
+	// 		}
+	// 	}
+	//
+	// 	// Processar a URL
+	// 	var link string
+	// 	if strings.HasPrefix(rawURL, "/shopping/product") {
+	// 		link = "https://www.google.com.br" + rawURL
+	// 	} else if strings.HasPrefix(rawURL, "/url?url=") {
+	// 		link = strings.TrimPrefix(rawURL, "/url?url=")
+	// 	} else {
+	// 		link = rawURL
+	// 	}
+	//
+	// 	promotion := promotionText == "PROMOÇÃO"
+	//
+	// 	produto := Produto{
+	// 		Description: strings.TrimSpace(description),
+	// 		Price:       price,
+	// 		Source:      source,
+	// 		Link:        link,
+	// 		ImageURL:    imageURL,
+	// 		Promotion:   promotion,
+	// 	}
+	//
+	// 	produtos = append(produtos, produto)
+	// 	log.Printf("Produto coletado: %+v\n", produto)
+	// })
+	//
+
+	c.OnHTML("div.sh-dgr__grid-result", func(e *colly.HTMLElement) {
+		description := e.ChildText(".tAxDx")
+		price := formatarPreco(e.ChildText(".a8Pemb"))
+		rawURL := e.ChildAttr("a", "href")
+		// Achar a URL da imagem
+		imageURL := e.ChildAttr("div.ArOc1c img", "src") // Ajuste aqui se necessário
+		if imageURL == "" {
+			log.Println("Imagem não encontrada para o produto.")
+		}
+
+		promotionText := strings.TrimSpace(e.ChildText(".fAcMNb span.Ib8pOd"))
+
+		// Coletar source
+		source := e.ChildText(".aULzUe")
+		if strings.Contains(source, "}") {
+			parts := strings.Split(source, "}")
+			if len(parts) > 1 {
+				source = strings.TrimSpace(parts[len(parts)-1])
+			}
+		}
+
+		// Processar a URL conforme a lógica solicitada
+		var link string
+		if strings.HasPrefix(rawURL, "/shopping/product") {
+			link = "https://www.google.com.br" + rawURL
+		} else if strings.HasPrefix(rawURL, "/url?url=") {
+			link = strings.TrimPrefix(rawURL, "/url?url=")
+		} else {
+			link = rawURL
+		}
+
+		// Verificar se o texto da promoção é "PROMOÇÃO"
+		promotion := promotionText == "PROMOÇÃO"
+
 		produto := Produto{
-			Description: nome,
-			Price:       preco,
-			ImageURL:    imgURL,
+			Description: strings.TrimSpace(description),
+			Price:       price,
+			Source:      strings.TrimSpace(source),
 			Link:        link,
+			ImageURL:    imageURL,
+			Promotion:   promotion,
 		}
 		produtos = append(produtos, produto)
+		log.Printf("Produto encontrado: %+v\n", produto)
 	})
 
-	// Exibir o número de produtos encontrados
-	log.Printf("Número total de produtos encontrados: %d", len(produtos))
+	c.OnHTML("a#pnnext", func(e *colly.HTMLElement) {
+		nextPageURL := e.Request.AbsoluteURL(e.Attr("href"))
+		log.Printf("Navegando para a próxima página: %s", nextPageURL)
+		err := c.Visit(nextPageURL)
+		if err != nil {
+			log.Printf("Erro ao visitar a próxima página: %v", err)
+		}
+	})
 
-	// (Opcional) Salvar o HTML completo em um arquivo para inspeção
-	err = SaveHTMLToFile(htmlContent, "pagina_completa.html")
+	c.OnError(func(r *colly.Response, err error) {
+		log.Printf("Erro: %v Status Code: %d", err, r.StatusCode)
+	})
+
+	err := c.Visit(startURL)
 	if err != nil {
-		log.Println("Erro ao salvar HTML:", err)
+		return nil, fmt.Errorf("falha ao visitar a página: %v", err)
 	}
+
+	c.Wait()
+	return produtos, nil
+}
+
+func CrawlGooglePPP(query string) ([]Produto, error) {
+	// Codificar a query string para ser usada na URL
+	encodedQuery := url.QueryEscape(query)
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
+	log.Printf("Iniciando visita: %s", startURL)
+
+	// Criar o coletor do Colly
+	c := colly.NewCollector(
+		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"),
+	)
+
+	// Slice para armazenar os produtos
+	var produtos []Produto
+
+	// Configurar o callback ao encontrar o container de produtos
+	c.OnHTML("div.sh-dgr__grid-result", func(e *colly.HTMLElement) {
+		description := e.ChildText(".tAxDx")
+		price := formatarPreco(e.ChildText(".a8Pemb"))
+		rawURL := e.ChildAttr("a", "href")
+		imageURL := e.ChildAttr(".ArOc1c img", "src")
+		promotionText := strings.TrimSpace(e.ChildText(".fAcMNb span.Ib8pOd"))
+
+		// Obter a fonte
+		source := e.ChildText(".aULzUe")
+
+		// Processar a URL conforme a lógica solicitada
+		var link string
+		if strings.HasPrefix(rawURL, "/shopping/product") {
+			link = "https://www.google.com.br" + rawURL
+		} else if strings.HasPrefix(rawURL, "/url?url=") {
+			link = strings.TrimPrefix(rawURL, "/url?url=")
+		} else {
+			link = rawURL
+		}
+
+		// Verificar se o texto da promoção é "PROMOÇÃO"
+		promotion := promotionText == "PROMOÇÃO"
+
+		produto := Produto{
+			Description: strings.TrimSpace(description),
+			Price:       price,
+			Source:      source,
+			Link:        link,
+			ImageURL:    imageURL,
+			Promotion:   promotion,
+		}
+
+		// Adicionar o produto ao slice de produtos
+		produtos = append(produtos, produto)
+
+		// Logar o produto coletado
+		log.Printf("Produto coletado: %+v\n", produto)
+	})
+
+	// Callback para verificar se há uma próxima página e continuar a navegação
+	c.OnHTML("a#pnnext", func(e *colly.HTMLElement) {
+		nextPageURL := e.Request.AbsoluteURL(e.Attr("href"))
+		log.Printf("Navegando para a próxima página: %s", nextPageURL)
+		err := c.Visit(nextPageURL)
+		if err != nil {
+			log.Printf("Erro ao visitar a próxima página: %v", err)
+		}
+	})
+
+	// Callback de erro
+	c.OnError(func(r *colly.Response, err error) {
+		log.Printf("Erro: %v Status Code: %d", err, r.StatusCode)
+	})
+
+	// Iniciar a coleta
+	err := c.Visit(startURL)
+	if err != nil {
+		return nil, fmt.Errorf("falha ao visitar a página: %v", err)
+	}
+
+	// Esperar até a coleta estar finalizada
+	c.Wait()
 
 	return produtos, nil
 }
 
-func SaveHTMLToFile(htmlContent, filename string) error {
-	file, err := os.Create(filename)
-	if err != nil {
-		return fmt.Errorf("falha ao criar o arquivo: %v", err)
-	}
-	defer file.Close()
+func CrawlGoogleSSSSS(query string) ([]Produto, error) {
+	// Codificar a query para ser usada na URL
+	encodedQuery := url.QueryEscape(query)
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
 
-	_, err = file.WriteString(htmlContent)
+	// Criar uma nova instância do Colly
+	c := colly.NewCollector(
+		// Configurar User-Agent para evitar bloqueios
+		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"),
+	)
+
+	// Slice para armazenar os produtos coletados
+	var produtos []Produto
+
+	// Tratar quando a página for visitada
+	c.OnHTML("div.sh-dgr__content", func(e *colly.HTMLElement) {
+		produto := Produto{}
+
+		// Coletar nome do produto
+		produto.Description = e.ChildText("h4 span")
+		// Coletar preço do produto (se existir)
+		produto.Price = 0.0 // e.ChildText("span.a8Pemb")
+
+		// Adicionar produto ao slice
+		produtos = append(produtos, produto)
+
+		// Logar produto coletado para verificação
+		log.Printf("Produto coletado: Nome: %s, Preço: %s", produto.Description, produto.Price)
+	})
+
+	// Tratar erro ao visitar a página
+	c.OnError(func(r *colly.Response, err error) {
+		log.Printf("Erro: %v Status Code: %d", err, r.StatusCode)
+	})
+
+	// Tratar quando a coleta for concluída
+	c.OnScraped(func(r *colly.Response) {
+		log.Println("Coleta finalizada:", r.Request.URL)
+	})
+
+	// Tratar HTML completo da página para salvar em arquivo
+	c.OnResponse(func(r *colly.Response) {
+		// Salvar HTML completo para depuração
+		file, err := os.Create("pagina_completa_colly.html")
+		if err != nil {
+			log.Printf("Erro ao criar arquivo: %v", err)
+		}
+		defer file.Close()
+
+		_, err = file.WriteString(string(r.Body))
+		if err != nil {
+			log.Printf("Erro ao escrever no arquivo: %v", err)
+		}
+
+		log.Println("HTML salvo em pagina_completa_colly.html")
+	})
+
+	// Iniciar a coleta visitando a página
+	err := c.Visit(startURL)
 	if err != nil {
-		return fmt.Errorf("falha ao escrever no arquivo: %v", err)
+		return nil, fmt.Errorf("falha ao visitar a página: %v", err)
 	}
 
-	log.Printf("HTML salvo em %s", filename)
-	return nil
+	// Esperar até a coleta estar finalizada
+	c.Wait()
+
+	return produtos, nil
 }
 
 func CrawlGoogleAtual(query string) ([]Produto, error) {
