@@ -75,7 +75,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	if doc.Find(".sh-dgr__grid-result").Length() > 0 {
 		log.Printf("A classe sh-dgr__grid-result foi encontrada: %s", startURL)
 	} else {
-		log.Printf("A classe sh-dgr__grid-result não foi encontrada: %s", startURL)
+		log.Printf("A classe sh-dgr__grid-result NÃO foi encontrada: %s", startURL)
 	}
 
 	// log.Println("Conteúdo coletado:", htmlContent)
