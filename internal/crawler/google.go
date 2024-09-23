@@ -69,11 +69,17 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		produto.Description = e.ChildText("div.gkQHve.RmEs5b.zypKDd.aKoISd.gG84n")
 		produto.Source = e.ChildText("span.WJMUdc.cyspcb")
 
+		c.OnHTML("img", func(h *colly.HTMLElement) {
+			imgSrc := h.Attr("src")
+			if imgSrc == "" {
+				log.Printf("O valor de imgSrc está vazio: %v", imgSrc)
+			} else {
+				log.Printf("Esse é o valor de imgSrc: %v", imgSrc)
+			}
+		})
+
 		e.ForEach("div.JK3kIe.fUZmuc.sjBi9c.uhHOwf.BYbUcd img", func(_ int, imgElement *colly.HTMLElement) {
 			imageSrc := imgElement.Attr("src")
-			if imageSrc != "" {
-				log.Println("URL da imagem encontrada", imageSrc)
-			}
 
 			if strings.HasPrefix(imageSrc, "data:image/") {
 				// A imagem está em base64
