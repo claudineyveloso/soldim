@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"net/url"
@@ -49,11 +50,50 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	c.OnHTML("div.Ez5pwe", func(e *colly.HTMLElement) {
 		produto := Produto{}
 
+		precoStr := e.ChildText("div.lmQWe.YQkzwf.pVBUqb")
+		precoStr = strings.ReplaceAll(precoStr, "R$", "") // Remover o símbolo da moeda, se necessário
+		precoStr = strings.ReplaceAll(precoStr, ".", "")  // Remover pontos, se o formato for R$ 1.234,56
+		precoStr = strings.ReplaceAll(precoStr, ",", ".")
+		preco, err := strconv.ParseFloat(precoStr, 64)
+		if err != nil {
+			log.Printf("Erro ao converter preço para float: %v", err)
+			produto.Price = 0.0 // Atribuir valor padrão em caso de erro
+		} else {
+			produto.Price = preco
+		}
 		// Coletar nome do produto
 		produto.Description = e.ChildText("div.gkQHve.RmEs5b.zypKDd.aKoISd.gG84n")
-		produto.Price = 0.0 // Simplesmente atribuindo um valor fixo aqui lmQWe YQkzwf pVBUqb
 		produto.Source = e.ChildText("span div.WJMUdc.cyspcb")
-		produto.ImageURL = e.ChildAttr("div.JK3kIe.fUZmuc.sjBi9c.uhHOwf.BYbUcd img", "src")
+
+		e.ForEach("div.JK3kIe img", func(_ int, imgElement *colly.HTMLElement) {
+			imageSrc := imgElement.Attr("src")
+
+			if strings.HasPrefix(imageSrc, "data:image/") {
+				// A imagem está em base64
+				log.Println("Imagem base64 encontrada:", imageSrc)
+
+				// Separar a metadata (data:image/webp;base64,) do código base64
+				data := strings.Split(imageSrc, ",")[1]
+
+				// Decodificar o base64
+				decodedImage, err := base64.StdEncoding.DecodeString(data)
+				if err != nil {
+					log.Println("Erro ao decodificar imagem:", err)
+				} else {
+					// Salvar o arquivo como imagem, por exemplo, como "imagem.webp"
+					err = os.WriteFile("imagem.webp", decodedImage, 0644)
+					if err != nil {
+						log.Println("Erro ao salvar imagem:", err)
+					} else {
+						log.Println("Imagem base64 salva com sucesso.")
+					}
+				}
+			} else {
+				// Caso seja uma URL normal, processar normalmente
+				log.Println("URL da imagem:", imageSrc)
+				produto.ImageURL = imageSrc
+			}
+		})
 
 		// Adicionar produto ao slice
 		produtos = append(produtos, produto)
