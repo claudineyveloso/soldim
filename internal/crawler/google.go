@@ -92,16 +92,14 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// 	log.Println("Conteúdo HTML coletado:")
 	// 	log.Println(htmlContent)
 	// })
+	//
 
-	c.OnHTML("div.sh-dgr__grid-result", func(e *colly.HTMLElement) {
+	c.OnHTML("html", func(e *colly.HTMLElement) {
 		// Verifica se o elemento existe
 		if e.DOM.Find("div.sh-dgr__grid-result").Length() > 0 {
-			// O elemento existe
-			log.Println("Elemento encontrado!")
-			// Você pode continuar a lógica para extrair os dados aqui
+			log.Println("Elemento div.sh-dgr__grid-result encontrado!")
 		} else {
-			// O elemento não existe
-			log.Println("Elemento não encontrado.")
+			log.Println("Elemento div.sh-dgr__grid-result não encontrado.")
 		}
 	})
 
