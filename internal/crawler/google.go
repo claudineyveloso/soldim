@@ -95,12 +95,17 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	//
 
 	c.OnHTML("html", func(e *colly.HTMLElement) {
+		time.Sleep(5 * time.Second)
 		// Verifica se o elemento existe
 		if e.DOM.Find("div.sh-dgr__grid-result").Length() > 0 {
 			log.Println("Elemento div.sh-dgr__grid-result encontrado!")
 		} else {
 			log.Println("Elemento div.sh-dgr__grid-result não encontrado.")
 		}
+	})
+
+	c.OnResponse(func(r *colly.Response) {
+		log.Printf("Status Code: %d", r.StatusCode)
 	})
 
 	c.OnHTML("div.sh-dgr__grid-result", func(e *colly.HTMLElement) {
