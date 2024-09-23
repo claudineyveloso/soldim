@@ -49,8 +49,11 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// Tratar quando a página for visitada
 	c.OnHTML("div.Ez5pwe", func(e *colly.HTMLElement) {
 		produto := Produto{}
-
-		precoStr := e.ChildText("span.lmQWe.YQkzwf.pVBUqb")
+		precoStr := e.ChildText("span.lmQWe")
+		if precoStr == "" {
+			precoStr = e.ChildText("span.lmQWe.YQkzwf.pVBUqb")
+		}
+		// precoStr := e.ChildText("span.lmQWe.YQkzwf.pVBUqb")
 		precoStr = strings.ReplaceAll(precoStr, "$", "")  // Remover o símbolo da moeda, se necessário
 		precoStr = strings.ReplaceAll(precoStr, "R$", "") // Remover o símbolo da moeda, se necessário
 		precoStr = strings.ReplaceAll(precoStr, ".", "")  // Remover pontos, se o formato for R$ 1.234,56
