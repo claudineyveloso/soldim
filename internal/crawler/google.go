@@ -26,15 +26,21 @@ type Produto struct {
 }
 
 func CrawlGoogle(query string) ([]Produto, error) {
-	// Codificar a query para ser usada na URL
 	encodedQuery := url.QueryEscape(query)
 	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
 
-	// Criar uma nova instância do Colly
+	// Criar uma nova instância do Colly com limitações
 	c := colly.NewCollector(
-		// Configurar User-Agent para evitar bloqueios
 		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"),
+		colly.MaxDepth(1), // Limitar profundidade para evitar loops
 	)
+
+	// Limitar a velocidade e paralelismo
+	c.Limit(&colly.LimitRule{
+		DomainGlob:  "*",
+		Parallelism: 1,               // Apenas uma requisição por vez
+		Delay:       2 * time.Second, // Delay entre requisições
+	})
 
 	// Slice para armazenar os produtos coletados
 	var produtos []Produto
@@ -45,8 +51,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 		// Coletar nome do produto
 		produto.Description = e.ChildText("h4 span")
-		// Coletar preço do produto (se existir)
-		produto.Price = 0.0 // e.ChildText("span.a8Pemb")
+		produto.Price = 0.0 // Simplesmente atribuindo um valor fixo aqui
 
 		// Adicionar produto ao slice
 		produtos = append(produtos, produto)
@@ -93,6 +98,75 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 	return produtos, nil
 }
+
+// func CrawlGoogle(query string) ([]Produto, error) {
+// 	// Codificar a query para ser usada na URL
+// 	encodedQuery := url.QueryEscape(query)
+// 	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
+//
+// 	// Criar uma nova instância do Colly
+// 	c := colly.NewCollector(
+// 		// Configurar User-Agent para evitar bloqueios
+// 		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"),
+// 	)
+//
+// 	// Slice para armazenar os produtos coletados
+// 	var produtos []Produto
+//
+// 	// Tratar quando a página for visitada
+// 	c.OnHTML("html", func(e *colly.HTMLElement) {
+// 		produto := Produto{}
+//
+// 		// Coletar nome do produto
+// 		produto.Description = e.ChildText("h4 span")
+// 		// Coletar preço do produto (se existir)
+// 		produto.Price = 0.0 // e.ChildText("span.a8Pemb")
+//
+// 		// Adicionar produto ao slice
+// 		produtos = append(produtos, produto)
+//
+// 		// Logar produto coletado para verificação
+// 		log.Printf("Produto coletado: Nome: %s, Preço: %f", produto.Description, produto.Price)
+// 	})
+//
+// 	// Tratar erro ao visitar a página
+// 	c.OnError(func(r *colly.Response, err error) {
+// 		log.Printf("Erro: %v Status Code: %d", err, r.StatusCode)
+// 	})
+//
+// 	// Tratar quando a coleta for concluída
+// 	c.OnScraped(func(r *colly.Response) {
+// 		log.Println("Coleta finalizada:", r.Request.URL)
+// 	})
+//
+// 	// Tratar HTML completo da página para salvar em arquivo
+// 	c.OnResponse(func(r *colly.Response) {
+// 		// Salvar HTML completo para depuração
+// 		file, err := os.Create("pagina_completa_colly.html")
+// 		if err != nil {
+// 			log.Printf("Erro ao criar arquivo: %v", err)
+// 		}
+// 		defer file.Close()
+//
+// 		_, err = file.WriteString(string(r.Body))
+// 		if err != nil {
+// 			log.Printf("Erro ao escrever no arquivo: %v", err)
+// 		}
+//
+// 		log.Println("HTML salvo em pagina_completa_colly.html")
+// 	})
+//
+// 	// Iniciar a coleta visitando a página
+// 	err := c.Visit(startURL)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("falha ao visitar a página: %v", err)
+// 	}
+//
+// 	// Esperar até a coleta estar finalizada
+// 	c.Wait()
+//
+// 	return produtos, nil
+// }
 
 func CrawlGoogleDDD(query string) ([]Produto, error) {
 	// Codificar a query para ser usada na URL
