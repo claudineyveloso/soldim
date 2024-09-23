@@ -50,7 +50,8 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	c.OnHTML("div.Ez5pwe", func(e *colly.HTMLElement) {
 		produto := Produto{}
 
-		precoStr := e.ChildText("div.lmQWe.YQkzwf.pVBUqb")
+		precoStr := e.ChildText("span.lmQWe.YQkzwf.pVBUqb")
+		precoStr = strings.ReplaceAll(precoStr, "$", "")  // Remover o símbolo da moeda, se necessário
 		precoStr = strings.ReplaceAll(precoStr, "R$", "") // Remover o símbolo da moeda, se necessário
 		precoStr = strings.ReplaceAll(precoStr, ".", "")  // Remover pontos, se o formato for R$ 1.234,56
 		precoStr = strings.ReplaceAll(precoStr, ",", ".")
@@ -63,9 +64,9 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		}
 		// Coletar nome do produto
 		produto.Description = e.ChildText("div.gkQHve.RmEs5b.zypKDd.aKoISd.gG84n")
-		produto.Source = e.ChildText("span div.WJMUdc.cyspcb")
+		produto.Source = e.ChildText("span.WJMUdc.cyspcb")
 
-		e.ForEach("div.JK3kIe img", func(_ int, imgElement *colly.HTMLElement) {
+		e.ForEach("div.JK3kIe.fUZmuc.sjBi9c.uhHOwf.BYbUcd img", func(_ int, imgElement *colly.HTMLElement) {
 			imageSrc := imgElement.Attr("src")
 
 			if strings.HasPrefix(imageSrc, "data:image/") {
