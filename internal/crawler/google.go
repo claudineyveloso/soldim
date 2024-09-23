@@ -79,6 +79,30 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	// 	log.Printf("Produto coletado: %+v\n", produto)
 	// })
 	//
+	c.OnHTML("div.sh-dgr__grid-result", func(e *colly.HTMLElement) {
+		// Verifica se o elemento existe
+		if e.DOM.Find("div.sh-dgr__grid-result").Length() > 0 {
+			// O elemento existe
+			log.Println("Elemento encontrado!")
+			// Você pode continuar a lógica para extrair os dados aqui
+		} else {
+			// O elemento não existe
+			log.Println("Elemento não encontrado.")
+		}
+	})
+
+	c.OnHTML("html", func(e *colly.HTMLElement) {
+		// Obtém o HTML completo da página
+		htmlContent, err := e.DOM.Html()
+		if err != nil {
+			log.Println("Erro ao obter HTML:", err)
+			return
+		}
+
+		// Imprime o conteúdo HTML no terminal
+		log.Println("Conteúdo HTML coletado:")
+		log.Println(htmlContent)
+	})
 
 	c.OnHTML("div.sh-dgr__grid-result", func(e *colly.HTMLElement) {
 		description := e.ChildText(".tAxDx")
