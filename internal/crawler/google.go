@@ -108,6 +108,22 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		log.Printf("Status Code: %d", r.StatusCode)
 	})
 
+	c.OnHTML("html", func(e *colly.HTMLElement) {
+		htmlContent, err := e.DOM.Html()
+		if err != nil {
+			log.Println("Erro ao obter HTML:", err)
+			return
+		}
+
+		// Limitar a saída para os primeiros 1000 caracteres
+		if len(htmlContent) > 1000 {
+			htmlContent = htmlContent[:1000] // Pega os primeiros 1000 caracteres
+		}
+
+		log.Println("Conteúdo HTML coletado (primeiros 1000 caracteres):")
+		log.Println(htmlContent)
+	})
+
 	c.OnHTML("div.sh-dgr__grid-result", func(e *colly.HTMLElement) {
 		description := e.ChildText(".tAxDx")
 		price := formatarPreco(e.ChildText(".a8Pemb"))
