@@ -46,18 +46,20 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	var produtos []Produto
 
 	// Tratar quando a página for visitada
-	c.OnHTML("html", func(e *colly.HTMLElement) {
+	c.OnHTML("div.Ez5pwe", func(e *colly.HTMLElement) {
 		produto := Produto{}
 
 		// Coletar nome do produto
-		produto.Description = e.ChildText("h4 span")
-		produto.Price = 0.0 // Simplesmente atribuindo um valor fixo aqui
+		produto.Description = e.ChildText("div.gkQHve div.RmEs5b div.zypKDd div.aKoISd div.gG84n")
+		produto.Price = 0.0 // Simplesmente atribuindo um valor fixo aqui lmQWe YQkzwf pVBUqb
+		produto.Source = e.ChildText("span div.WJMUdc div.cyspcb")
+		produto.ImageURL = e.ChildAttr("div.JK3kIe div.fUZmuc div.sjBi9c div.uhHOwf div.BYbUcd img", "src")
 
 		// Adicionar produto ao slice
 		produtos = append(produtos, produto)
 
 		// Logar produto coletado para verificação
-		log.Printf("Produto coletado: Nome: %s, Preço: %f", produto.Description, produto.Price)
+		log.Printf("Produto coletado: Nome: %s, Preço: %f, Fonte: %s, Imagem: %s", produto.Description, produto.Price, produto.Source, produto.ImageURL)
 	})
 
 	// Tratar erro ao visitar a página
