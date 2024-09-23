@@ -71,6 +71,9 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 		e.ForEach("div.JK3kIe.fUZmuc.sjBi9c.uhHOwf.BYbUcd img", func(_ int, imgElement *colly.HTMLElement) {
 			imageSrc := imgElement.Attr("src")
+			if imageSrc != "" {
+				log.Println("URL da imagem encontrada", imageSrc)
+			}
 
 			if strings.HasPrefix(imageSrc, "data:image/") {
 				// A imagem está em base64
