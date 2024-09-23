@@ -38,7 +38,7 @@ func GetBaseURL() string {
 
 	if env == "prod" {
 		// return "https://soldim-api-344942c665db.herokuapp.com"
-		return "http://3.80.249.138:8888"
+		return "http://54.237.168.87:8888"
 	}
 	return "http://localhost:8080"
 }
