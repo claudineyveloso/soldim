@@ -115,13 +115,17 @@ func CrawlGoogle(query string) ([]Produto, error) {
 			return
 		}
 
-		// Limitar a saída para os primeiros 1000 caracteres
-		if len(htmlContent) > 1000 {
-			htmlContent = htmlContent[:1000] // Pega os primeiros 1000 caracteres
-		}
+		// Dividir em linhas
+		lines := strings.Split(htmlContent, "\n")
 
-		log.Println("Conteúdo HTML coletado (primeiros 1000 caracteres):")
-		log.Println(htmlContent)
+		// Limitar a saída para as primeiras 1000 linhas
+		for i, line := range lines {
+			if i < 1000 {
+				log.Println(line)
+			} else {
+				break
+			}
+		}
 	})
 
 	c.OnHTML("div.sh-dgr__grid-result", func(e *colly.HTMLElement) {
