@@ -50,10 +50,10 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		produto := Produto{}
 
 		// Coletar nome do produto
-		produto.Description = e.ChildText("div.gkQHve div.RmEs5b div.zypKDd div.aKoISd div.gG84n")
+		produto.Description = e.ChildText("div.gkQHve.RmEs5b.zypKDd.aKoISd.gG84n")
 		produto.Price = 0.0 // Simplesmente atribuindo um valor fixo aqui lmQWe YQkzwf pVBUqb
-		produto.Source = e.ChildText("span div.WJMUdc div.cyspcb")
-		produto.ImageURL = e.ChildAttr("div.JK3kIe div.fUZmuc div.sjBi9c div.uhHOwf div.BYbUcd img", "src")
+		produto.Source = e.ChildText("span div.WJMUdc.cyspcb")
+		produto.ImageURL = e.ChildAttr("div.JK3kIe.fUZmuc.sjBi9c.uhHOwf.BYbUcd img", "src")
 
 		// Adicionar produto ao slice
 		produtos = append(produtos, produto)
