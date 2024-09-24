@@ -28,7 +28,7 @@ type Produto struct {
 	ImageURL    string  `json:"image_url"`   // 8 bytes (ponteiro)
 }
 
-func CrawlGoogleAAA(query string) ([]Produto, error) {
+func CrawlGoogle(query string) ([]Produto, error) {
 	const (
 		chromeDriverPath = "/usr/bin/chromedriver"
 		// chromeDriverPath = "bin/chromedriver" // Atualize com o caminho correto
