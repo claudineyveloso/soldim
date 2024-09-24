@@ -45,7 +45,8 @@ func CrawlGoogleAAA(query string) ([]Produto, error) {
 
 	// Definir capacidades do navegador
 	caps := selenium.Capabilities{
-		"browserName": "chrome",
+		//"browserName": "chrome",
+		"browserName": "firefox",
 		"chromeOptions": map[string]interface{}{
 			"args": []string{
 				"--headless",
