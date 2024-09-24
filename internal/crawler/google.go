@@ -28,6 +28,131 @@ type Produto struct {
 	ImageURL    string  `json:"image_url"`   // 8 bytes (ponteiro)
 }
 
+func CrawlGoogle(query string) ([]Produto, error) {
+	encodedQuery := url.QueryEscape(query)
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
+
+	// Criar uma nova instância do Colly com limitações
+	c := colly.NewCollector(
+		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"),
+		colly.MaxDepth(2), // Limitar profundidade para evitar loops
+	)
+
+	c.OnRequest(func(r *colly.Request) {
+		r.Headers.Set("Accept-Language", "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7")
+	})
+
+	// Limitar a velocidade e paralelismo
+	c.Limit(&colly.LimitRule{
+		DomainGlob:  "*",
+		Parallelism: 1,               // Apenas uma requisição por vez
+		Delay:       5 * time.Second, // Delay entre requisições
+	})
+
+	// Slice para armazenar os produtos coletados
+	var produtos []Produto
+
+	// Tratar quando a página for visitada
+	c.OnHTML("div.Ez5pwe", func(e *colly.HTMLElement) {
+		produto := Produto{}
+		precoStr := e.ChildText("span.lmQWe")
+		if precoStr == "" {
+			precoStr = e.ChildText("span.lmQWe.YQkzwf")
+		}
+		// precoStr := e.ChildText("span.lmQWe.YQkzwf.pVBUqb")
+		precoStr = strings.ReplaceAll(precoStr, "$", "")  // Remover o símbolo da moeda, se necessário
+		precoStr = strings.ReplaceAll(precoStr, "R$", "") // Remover o símbolo da moeda, se necessário
+		precoStr = strings.ReplaceAll(precoStr, ".", "")  // Remover pontos, se o formato for R$ 1.234,56
+		precoStr = strings.ReplaceAll(precoStr, ",", ".")
+		preco, err := strconv.ParseFloat(precoStr, 64)
+		if err != nil {
+			log.Printf("Erro ao converter preço para float: %v", err)
+			produto.Price = 0.0 // Atribuir valor padrão em caso de erro
+		} else {
+			produto.Price = preco
+		}
+		// Coletar nome do produto
+		produto.Description = e.ChildText("div.gkQHve")
+		// produto.Description = e.ChildText("div.gkQHve.SsM98d.RmEs5b")
+		produto.Source = e.ChildText("span.WJMUdc")
+
+		e.ForEach("div.JK3kIe img", func(_ int, imgElement *colly.HTMLElement) {
+			imageSrc := imgElement.Attr("src")
+
+			if strings.HasPrefix(imageSrc, "data:image/") {
+				// A imagem está em base64
+				log.Println("Imagem base64 encontrada:", imageSrc)
+
+				// Separar a metadata (data:image/webp;base64,) do código base64
+				data := strings.Split(imageSrc, ",")[1]
+
+				// Decodificar o base64
+				decodedImage, err := base64.StdEncoding.DecodeString(data)
+				if err != nil {
+					log.Println("Erro ao decodificar imagem:", err)
+				} else {
+					// Salvar o arquivo como imagem, por exemplo, como "imagem.webp"
+					err = os.WriteFile("imagem.webp", decodedImage, 0o644)
+					if err != nil {
+						log.Println("Erro ao salvar imagem:", err)
+					} else {
+						log.Println("Imagem base64 salva com sucesso.")
+					}
+				}
+			} else {
+				// Caso seja uma URL normal, processar normalmente
+				log.Println("URL da imagem:", imageSrc)
+				produto.ImageURL = imageSrc
+			}
+		})
+
+		// Adicionar produto ao slice
+		produtos = append(produtos, produto)
+
+		// Logar produto coletado para verificação
+		log.Printf("Produto coletado: Nome: %s, Preço: %f, Fonte: %s, Imagem: %s", produto.Description, produto.Price, produto.Source, produto.ImageURL)
+	})
+
+	// Tratar erro ao visitar a página
+	c.OnError(func(r *colly.Response, err error) {
+		log.Printf("Erro: %v Status Code: %d", err, r.StatusCode)
+	})
+
+	// Tratar quando a coleta for concluída
+	c.OnScraped(func(r *colly.Response) {
+		log.Println("Coleta finalizada:", r.Request.URL)
+	})
+
+	// Tratar HTML completo da página para salvar em arquivo
+	c.OnResponse(func(r *colly.Response) {
+		// Salvar HTML completo para depuração
+		file, err := os.Create("pagina_completa_colly.html")
+		if err != nil {
+			log.Printf("Erro ao criar arquivo: %v", err)
+		}
+		defer file.Close()
+
+		_, err = file.WriteString(string(r.Body))
+		if err != nil {
+			log.Printf("Erro ao escrever no arquivo: %v", err)
+			return
+		}
+
+		log.Println("HTML salvo em pagina_completa_colly.html")
+	})
+
+	// Iniciar a coleta visitando a página
+	err := c.Visit(startURL)
+	if err != nil {
+		return nil, fmt.Errorf("falha ao visitar a página: %v", err)
+	}
+
+	// Esperar até a coleta estar finalizada
+	c.Wait()
+
+	return produtos, nil
+}
+
 func CrawlGoogleCCC(query string) ([]Produto, error) {
 	const (
 		chromeDriverPath = "/usr/bin/chromedriver"
@@ -383,127 +508,6 @@ func CrawlGoogleSelenium(query string) ([]Produto, error) {
 		// Logar o produto coletado
 		log.Printf("Produto coletado: Nome: %s, Preço: %f, Fonte: %s, Imagem: %s", produto.Description, produto.Price, produto.Source, produto.ImageURL)
 	}
-
-	return produtos, nil
-}
-
-func CrawlGoogle(query string) ([]Produto, error) {
-	encodedQuery := url.QueryEscape(query)
-	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
-
-	// Criar uma nova instância do Colly com limitações
-	c := colly.NewCollector(
-		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"),
-		colly.MaxDepth(2), // Limitar profundidade para evitar loops
-	)
-
-	// Limitar a velocidade e paralelismo
-	c.Limit(&colly.LimitRule{
-		DomainGlob:  "*",
-		Parallelism: 1,               // Apenas uma requisição por vez
-		Delay:       5 * time.Second, // Delay entre requisições
-	})
-
-	// Slice para armazenar os produtos coletados
-	var produtos []Produto
-
-	// Tratar quando a página for visitada
-	c.OnHTML("div.Ez5pwe", func(e *colly.HTMLElement) {
-		produto := Produto{}
-		precoStr := e.ChildText("span.lmQWe")
-		if precoStr == "" {
-			precoStr = e.ChildText("span.lmQWe.YQkzwf")
-		}
-		// precoStr := e.ChildText("span.lmQWe.YQkzwf.pVBUqb")
-		precoStr = strings.ReplaceAll(precoStr, "$", "")  // Remover o símbolo da moeda, se necessário
-		precoStr = strings.ReplaceAll(precoStr, "R$", "") // Remover o símbolo da moeda, se necessário
-		precoStr = strings.ReplaceAll(precoStr, ".", "")  // Remover pontos, se o formato for R$ 1.234,56
-		precoStr = strings.ReplaceAll(precoStr, ",", ".")
-		preco, err := strconv.ParseFloat(precoStr, 64)
-		if err != nil {
-			log.Printf("Erro ao converter preço para float: %v", err)
-			produto.Price = 0.0 // Atribuir valor padrão em caso de erro
-		} else {
-			produto.Price = preco
-		}
-		// Coletar nome do produto
-		produto.Description = e.ChildText("div.gkQHve")
-		// produto.Description = e.ChildText("div.gkQHve.SsM98d.RmEs5b")
-		produto.Source = e.ChildText("span.WJMUdc")
-
-		e.ForEach("div.JK3kIe img", func(_ int, imgElement *colly.HTMLElement) {
-			imageSrc := imgElement.Attr("src")
-
-			if strings.HasPrefix(imageSrc, "data:image/") {
-				// A imagem está em base64
-				log.Println("Imagem base64 encontrada:", imageSrc)
-
-				// Separar a metadata (data:image/webp;base64,) do código base64
-				data := strings.Split(imageSrc, ",")[1]
-
-				// Decodificar o base64
-				decodedImage, err := base64.StdEncoding.DecodeString(data)
-				if err != nil {
-					log.Println("Erro ao decodificar imagem:", err)
-				} else {
-					// Salvar o arquivo como imagem, por exemplo, como "imagem.webp"
-					err = os.WriteFile("imagem.webp", decodedImage, 0o644)
-					if err != nil {
-						log.Println("Erro ao salvar imagem:", err)
-					} else {
-						log.Println("Imagem base64 salva com sucesso.")
-					}
-				}
-			} else {
-				// Caso seja uma URL normal, processar normalmente
-				log.Println("URL da imagem:", imageSrc)
-				produto.ImageURL = imageSrc
-			}
-		})
-
-		// Adicionar produto ao slice
-		produtos = append(produtos, produto)
-
-		// Logar produto coletado para verificação
-		log.Printf("Produto coletado: Nome: %s, Preço: %f, Fonte: %s, Imagem: %s", produto.Description, produto.Price, produto.Source, produto.ImageURL)
-	})
-
-	// Tratar erro ao visitar a página
-	c.OnError(func(r *colly.Response, err error) {
-		log.Printf("Erro: %v Status Code: %d", err, r.StatusCode)
-	})
-
-	// Tratar quando a coleta for concluída
-	c.OnScraped(func(r *colly.Response) {
-		log.Println("Coleta finalizada:", r.Request.URL)
-	})
-
-	// Tratar HTML completo da página para salvar em arquivo
-	c.OnResponse(func(r *colly.Response) {
-		// Salvar HTML completo para depuração
-		file, err := os.Create("pagina_completa_colly.html")
-		if err != nil {
-			log.Printf("Erro ao criar arquivo: %v", err)
-		}
-		defer file.Close()
-
-		_, err = file.WriteString(string(r.Body))
-		if err != nil {
-			log.Printf("Erro ao escrever no arquivo: %v", err)
-			return
-		}
-
-		log.Println("HTML salvo em pagina_completa_colly.html")
-	})
-
-	// Iniciar a coleta visitando a página
-	err := c.Visit(startURL)
-	if err != nil {
-		return nil, fmt.Errorf("falha ao visitar a página: %v", err)
-	}
-
-	// Esperar até a coleta estar finalizada
-	c.Wait()
 
 	return produtos, nil
 }
