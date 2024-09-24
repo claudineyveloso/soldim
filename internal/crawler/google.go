@@ -66,7 +66,8 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 	// Navegar até a URL inicial
 	if err := wd.Get(startURL); err != nil {
-		return nil, fmt.Errorf("falha ao iniciar a visita: %v", err)
+		log.Printf("Falha ao iniciar a visita: %v", err)
+		// return nil, log.Println("falha ao iniciar a visita: %v", err)
 	}
 
 	// Aguardar um tempo para evitar problemas com rate limiting
