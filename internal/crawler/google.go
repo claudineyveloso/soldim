@@ -30,8 +30,9 @@ type Produto struct {
 
 func CrawlGoogle(query string) ([]Produto, error) {
 	const (
-		chromeDriverPath = "bin/chromedriver" // Atualize com o caminho correto
-		port             = 8081
+		chromeDriverPath = "/usr/bin/chromedriver"
+		// chromeDriverPath = "bin/chromedriver" // Atualize com o caminho correto
+		port = 8081
 	)
 
 	// Iniciar o serviço do ChromeDriver
@@ -46,9 +47,15 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		"browserName": "chrome",
 		"chromeOptions": map[string]interface{}{
 			"args": []string{
-				"--headless", // Executar em modo headless
+				// "--headless", // Executar em modo headless
+				// "--no-sandbox",
+				// "--disable-dev-shm-usage",
+				"--headless",
 				"--no-sandbox",
 				"--disable-dev-shm-usage",
+				"--disable-gpu",
+				"--enable-logging",
+				"--v=1", // Nível de log mais verboso
 			},
 		},
 	}
