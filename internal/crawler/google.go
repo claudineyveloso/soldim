@@ -48,9 +48,6 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		"browserName": "chrome",
 		"chromeOptions": map[string]interface{}{
 			"args": []string{
-				// "--headless", // Executar em modo headless
-				// "--no-sandbox",
-				// "--disable-dev-shm-usage",
 				"--headless",
 				"--no-sandbox",
 				"--disable-dev-shm-usage",
@@ -59,6 +56,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 				"--v=1",
 				"--log-level=ALL",              // Mais detalhes sobre o log
 				"--remote-debugging-port=9222", // Para depuração
+				"--disable-software-rasterizer",
 			},
 		},
 	}
