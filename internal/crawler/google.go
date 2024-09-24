@@ -28,7 +28,7 @@ type Produto struct {
 	ImageURL    string  `json:"image_url"`   // 8 bytes (ponteiro)
 }
 
-func CrawlGoogle(query string) ([]Produto, error) {
+func CrawlGoogleCCC(query string) ([]Produto, error) {
 	const (
 		chromeDriverPath = "/usr/bin/chromedriver"
 		// chromeDriverPath = "bin/chromedriver" // Atualize com o caminho correto
@@ -387,7 +387,7 @@ func CrawlGoogleSelenium(query string) ([]Produto, error) {
 	return produtos, nil
 }
 
-func CrawlGoogleColly(query string) ([]Produto, error) {
+func CrawlGoogle(query string) ([]Produto, error) {
 	encodedQuery := url.QueryEscape(query)
 	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
 
