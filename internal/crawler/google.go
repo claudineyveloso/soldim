@@ -28,11 +28,11 @@ type Produto struct {
 	ImageURL    string  `json:"image_url"`   // 8 bytes (ponteiro)
 }
 
-func CrawlGoogle(query string) ([]Produto, error) {
+func CrawlGoogleAAA(query string) ([]Produto, error) {
 	const (
 		chromeDriverPath = "/usr/bin/chromedriver"
 		// chromeDriverPath = "bin/chromedriver" // Atualize com o caminho correto
-		port = 9515
+		port = 35731
 		// port = 8081
 	)
 
@@ -60,7 +60,6 @@ func CrawlGoogle(query string) ([]Produto, error) {
 			},
 		},
 	}
-
 	wd, err := selenium.NewRemote(caps, fmt.Sprintf("http://localhost:%d/wd/hub", port))
 	if err != nil {
 		log.Fatalf("Erro ao conectar ao WebDriver: %v", err)
