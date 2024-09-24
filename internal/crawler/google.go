@@ -55,7 +55,9 @@ func CrawlGoogle(query string) ([]Produto, error) {
 				"--disable-dev-shm-usage",
 				"--disable-gpu",
 				"--enable-logging",
-				"--v=1", // Nível de log mais verboso
+				"--v=1",
+				"--log-level=ALL",              // Mais detalhes sobre o log
+				"--remote-debugging-port=9222", // Para depuração
 			},
 		},
 	}
