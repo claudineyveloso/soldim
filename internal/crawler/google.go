@@ -32,7 +32,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	const (
 		chromeDriverPath = "/usr/bin/chromedriver"
 		// chromeDriverPath = "bin/chromedriver" // Atualize com o caminho correto
-		port = 35731
+		port = 9515
 		// port = 8081
 	)
 
