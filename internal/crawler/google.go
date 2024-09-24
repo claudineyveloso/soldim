@@ -31,16 +31,18 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
 
 	// Criar uma nova instância do Colly com limitações
-	c := colly.NewCollector(
-		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"),
-		colly.MaxDepth(1), // Limitar profundidade para evitar loops
-	)
+	// c := colly.NewCollector(
+	// 	colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"),
+	// 	colly.MaxDepth(1), // Limitar profundidade para evitar loops
+	// )
+	//
+	c := colly.NewCollector()
 
 	// Limitar a velocidade e paralelismo
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		Parallelism: 1,               // Apenas uma requisição por vez
-		Delay:       2 * time.Second, // Delay entre requisições
+		Delay:       5 * time.Second, // Delay entre requisições
 	})
 
 	// Slice para armazenar os produtos coletados
@@ -48,11 +50,6 @@ func CrawlGoogle(query string) ([]Produto, error) {
 
 	// Tratar quando a página for visitada
 	c.OnHTML("div.Ez5pwe", func(e *colly.HTMLElement) {
-		linkData := Produto{}
-		linkData.ImageURL = e.ChildAttr("img", "src")
-
-		log.Printf("Erro ao converter preço para float: %v", linkData.ImageURL)
-
 		produto := Produto{}
 		precoStr := e.ChildText("span.lmQWe")
 		if precoStr == "" {
