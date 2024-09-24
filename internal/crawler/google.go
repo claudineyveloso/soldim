@@ -31,12 +31,10 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
 
 	// Criar uma nova instância do Colly com limitações
-	// c := colly.NewCollector(
-	// 	colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"),
-	// 	colly.MaxDepth(1), // Limitar profundidade para evitar loops
-	// )
-	//
-	c := colly.NewCollector()
+	c := colly.NewCollector(
+		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"),
+		colly.MaxDepth(1), // Limitar profundidade para evitar loops
+	)
 
 	// Limitar a velocidade e paralelismo
 	c.Limit(&colly.LimitRule{
