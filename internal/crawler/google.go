@@ -30,8 +30,7 @@ type Produto struct {
 
 func CrawlGoogle(query string) ([]Produto, error) {
 	const (
-		chromeDriverPath = "/usr/bin/chromedriver-linux64"
-		// chromeDriverPath = "/usr/bin/chromedriver"
+		chromeDriverPath = "/usr/bin/chromedriver"
 		// chromeDriverPath = "bin/chromedriver" // Atualize com o caminho correto
 		port = 8081
 	)
