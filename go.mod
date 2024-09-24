@@ -15,6 +15,7 @@ require (
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/lib/pq v1.10.9
 	github.com/newrelic/go-agent/v3 v3.34.0
+	github.com/tebeka/selenium v0.9.9
 	github.com/xuri/excelize/v2 v2.8.1
 	golang.org/x/crypto v0.22.0
 	golang.org/x/time v0.5.0
@@ -25,6 +26,7 @@ require (
 	github.com/antchfx/htmlquery v1.3.2 // indirect
 	github.com/antchfx/xmlquery v1.4.1 // indirect
 	github.com/antchfx/xpath v1.3.1 // indirect
+	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/chromedp/cdproto v0.0.0-20240810084448-b931b754e476 // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/cockroachdb/apd v1.1.0 // indirect
