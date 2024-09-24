@@ -60,7 +60,8 @@ func CrawlGoogle(query string) ([]Produto, error) {
 			},
 		},
 	}
-	wd, err := selenium.NewRemote(caps, fmt.Sprintf("http://localhost:%d/wd/hub", port))
+	// wd, err := selenium.NewRemote(caps, fmt.Sprintf("http://localhost:%d/wd/hub", port))
+	wd, err := selenium.NewRemote(caps, "http://localhost:9515/wd/hub")
 	if err != nil {
 		log.Fatalf("Erro ao conectar ao WebDriver: %v", err)
 	}
