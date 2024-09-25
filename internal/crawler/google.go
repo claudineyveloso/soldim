@@ -126,12 +126,17 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	})
 
 	elementoEncontrado := false
-
+	outroElemento := false
 	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
 		link := e.Attr("href")
 		if link != "" {
 			fmt.Println("Link encontrado:", link) // Imprimir o link
 		}
+	})
+
+	c.OnHTML(".shntl", func(e *colly.HTMLElement) {
+		outroElemento = true
+		log.Println("outroElemento '.shntl' encontrado!")
 	})
 
 	c.OnHTML(".sh-dgr__grid-result", func(e *colly.HTMLElement) {
@@ -152,6 +157,9 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	c.OnScraped(func(_ *colly.Response) {
 		if !elementoEncontrado {
 			fmt.Println("Elemento '.sh-dgr__grid-result' não encontrado!")
+		}
+		if !outroElemento {
+			fmt.Println("Elemento '.shntl' não encontrado!")
 		}
 	})
 
