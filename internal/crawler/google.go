@@ -125,8 +125,9 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		Delay:       5 * time.Second, // Delay entre requisições
 	})
 
-	elementoEncontrado := false
-	outroElemento := false
+	// elementoEncontrado := false
+	// outroElemento := false
+	// eleKZmu8e := false
 	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
 		link := e.Attr("href")
 		if link != "" {
@@ -134,35 +135,54 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		}
 	})
 
-	c.OnHTML(".shntl", func(e *colly.HTMLElement) {
-		outroElemento = true
-		log.Println("outroElemento '.shntl' encontrado!")
-	})
-
+	// c.OnHTML(".GhTN2e", func(e *colly.HTMLElement) {
+	// 	outroElemento = true
+	// 	e.ForEach(".KZmu8e", func(_ int, el *colly.HTMLElement) {
+	// 		eleKZmu8e = true
+	// 		log.Println("Elemento KZmu8e encontrado!")
+	// 	})
+	// 	// descricao := e.ChildText("h3.sh-np__product-title")
+	// 	// log.Println("Descrição:", descricao)
+	// 	// log.Println("outroElemento '.acCJ4b' encontrado!")
+	// })
+	//
 	c.OnHTML(".sh-dgr__grid-result", func(e *colly.HTMLElement) {
-		elementoEncontrado = true
-		log.Println("Elemento '.sh-dgr__grid-result' encontrado!")
+		// elementoEncontrado = true
+
+		// Itera sobre os produtos dentro da classe principal
+		e.ForEach(".EI11Pd", func(_ int, el *colly.HTMLElement) {
+			// Captura a descrição do produto (verifique se o seletor '.tAxDx' está correto)
+			description := el.ChildText("h3.tAxDx")
+
+			// Exibe o nome do produto no terminal
+			fmt.Printf("Product Name: %s\n", description)
+		})
+
+		// log.Println("Elemento '.sh-dgr__grid-result' encontrado!")
 	})
 
-	c.OnHTML("table", func(e *colly.HTMLElement) {
-		log.Println("Tabela encontrada")
-	})
-
-	// Tratar erro ao visitar a página
-	c.OnError(func(_ *colly.Response, err error) {
-		log.Println("Erro ao coletar links:", err)
-	})
-
-	// Tratar quando a coleta for concluída
-	c.OnScraped(func(_ *colly.Response) {
-		if !elementoEncontrado {
-			fmt.Println("Elemento '.sh-dgr__grid-result' não encontrado!")
-		}
-		if !outroElemento {
-			fmt.Println("Elemento '.shntl' não encontrado!")
-		}
-	})
-
+	// c.OnHTML("table", func(e *colly.HTMLElement) {
+	// 	// log.Println("Tabela encontrada")
+	// })
+	//
+	// // Tratar erro ao visitar a página
+	// c.OnError(func(_ *colly.Response, err error) {
+	// 	// log.Println("Erro ao coletar links:", err)
+	// })
+	//
+	// // Tratar quando a coleta for concluída
+	// c.OnScraped(func(_ *colly.Response) {
+	// 	if !elementoEncontrado {
+	// 		fmt.Println("Elemento '.sh-dgr__grid-result' não encontrado!")
+	// 	}
+	// 	if !outroElemento {
+	// 		fmt.Println("Elemento '.acCJ4b' não encontrado!")
+	// 	}
+	// 	if !eleKZmu8e {
+	// 		fmt.Println("Elemento '.KZmu8e' não encontrado!")
+	// 	}
+	// })
+	//
 	// Iniciar a coleta visitando a página
 	err := c.Visit(startURL)
 	if err != nil {
