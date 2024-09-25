@@ -35,6 +35,118 @@ var links []string
 func CrawlGoogle(query string) ([]Produto, error) {
 	encodedQuery := url.QueryEscape(query)
 	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
+
+	// Criar uma nova instância do Colly
+	c := colly.NewCollector(
+		colly.AllowedDomains("www.google.com"),
+		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"),
+	)
+
+	// Slice para armazenar os links coletados
+	var produtos []Produto
+
+	// Selecionar os elementos que contêm os links
+	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
+		link := e.Attr("href")
+		if link != "" {
+			// links = append(links, link)
+			fmt.Println(link) // Imprimir o link no terminal
+		}
+	})
+
+	c.OnHTML("table", func(e *colly.HTMLElement) {
+		fmt.Println("Tabela encontrada") // Imprimir o link no terminal
+		e.ForEach("tr", func(_ int, row *colly.HTMLElement) {
+			// Iterar sobre as células da linha
+			row.ForEach("td", func(_ int, cell *colly.HTMLElement) {
+				fmt.Print(cell.Text + "\t") // Imprimir o texto da célula
+			})
+			fmt.Println() // Nova linha após cada linha da tabela
+		})
+	})
+
+	// Iniciar a coleta visitando a página
+	err := c.Visit(startURL)
+	if err != nil {
+		return nil, fmt.Errorf("falha ao visitar a página: %v", err)
+	}
+
+	// Esperar até a coleta estar finalizada
+	c.Wait()
+
+	return produtos, nil
+}
+
+func CrawlGoogleDev(query string) ([]Produto, error) {
+	encodedQuery := url.QueryEscape(query)
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
+	resp, err := http.Get(startURL)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	log.Printf("Iniciando visita: %s", startURL)
+
+	if resp.StatusCode != http.StatusOK {
+		panic(fmt.Sprintf("Status diferente de 200: %d", resp.StatusCode))
+	}
+
+	doc, err := html.Parse(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+	extractLinks(doc)
+	extractTable(doc)
+
+	file, err := os.Create("pagina_coletada.html")
+	if err != nil {
+		log.Fatalf("Erro ao criar arquivo: %v", err)
+	}
+	defer file.Close()
+
+	_, err = file.ReadFrom(resp.Body)
+	if err != nil {
+		log.Fatalf("Erro ao salvar HTML: %v", err)
+	}
+	log.Println("HTML coletado salvo em 'pagina_coletada.html'.")
+
+	resp, err = http.Get(startURL)
+	if err != nil {
+		log.Fatalf("Erro ao fazer requisição: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Parsear o HTML
+
+	var produtos []Produto
+	return produtos, nil
+}
+
+func extractLinks(node *html.Node) {
+	if node.Type == html.ElementNode && node.Data == "a" {
+		for _, attr := range node.Attr {
+			fmt.Println(attr.Key)
+		}
+	}
+
+	for c := node.FirstChild; c != nil; c = c.NextSibling {
+		extractLinks(c)
+	}
+}
+
+func extractTable(node *html.Node) {
+	if node.Type == html.ElementNode && node.Data == "table" {
+		fmt.Println("Existe uma tabela no html")
+	}
+	for child := node.FirstChild; child != nil; child = child.NextSibling {
+		extractTable(child)
+	}
+}
+
+func CrawlGoogleYYY(query string) ([]Produto, error) {
+	encodedQuery := url.QueryEscape(query)
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
 	resp, err := http.Get(startURL)
 	if err != nil {
 		panic(err)
@@ -52,13 +164,13 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		panic(err)
 	}
 
-	extractLinks(doc)
+	extractLinksss(doc)
 
 	var produtos []Produto
 	return produtos, nil
 }
 
-func extractLinks(node *html.Node) {
+func extractLinksss(node *html.Node) {
 	if node.Type == html.ElementNode && node.Data == "a" {
 		for _, attr := range node.Attr {
 			if attr.Key != "href" {
