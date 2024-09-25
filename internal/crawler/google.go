@@ -153,9 +153,20 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		e.ForEach(".EI11Pd", func(_ int, el *colly.HTMLElement) {
 			// Captura a descrição do produto (verifique se o seletor '.tAxDx' está correto)
 			description := el.ChildText("h3.tAxDx")
+			// price := formatarPreco(el.ChildText((".a8Pemb")))
+			spans := e.DOM.Find("span.a8Pemb")
+			price := spans.Eq(0).Text()
+			rawURL := el.ChildAttr("a", "href")
+			source := el.ChildText("aULzUe")
+			// imageURL := e.ChildAttr(".ArOc1c img", "src")
+			imageURL := e.ChildAttr(".ArOc1c img", "data-src")
 
 			// Exibe o nome do produto no terminal
 			fmt.Printf("Product Name: %s\n", description)
+			fmt.Printf("Product Price: %s\n", price)
+			fmt.Printf("Product Source: %s\n", source)
+			fmt.Printf("Product Image: %s\n", imageURL)
+			fmt.Printf("Product URL: %s\n", rawURL)
 		})
 
 		// log.Println("Elemento '.sh-dgr__grid-result' encontrado!")
