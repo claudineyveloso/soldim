@@ -15,7 +15,9 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/chromedp/chromedp"
-	"github.com/gocolly/colly"
+
+	// "github.com/gocolly/colly"
+	"github.com/gocolly/colly/v2"
 	"github.com/tebeka/selenium"
 	"github.com/tebeka/selenium/chrome"
 	"golang.org/x/net/html"
@@ -33,6 +35,62 @@ type Produto struct {
 var links []string
 
 func CrawlGoogle(query string) ([]Produto, error) {
+	encodedQuery := url.QueryEscape(query)
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
+
+	c := colly.NewCollector(
+		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"),
+		colly.MaxDepth(2), // Limitar profundidade para evitar loops
+
+	)
+
+	c.OnError(func(r *colly.Response, err error) {
+		fmt.Println("Request URL:", r.Request.URL, "failed with response:", r, "\nError:", err)
+	})
+
+	c.OnRequest(func(r *colly.Request) {
+		r.Headers.Set("Accept-Language", "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7")
+		r.Headers.Set("Accept-Language", "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7")
+	})
+
+	// Limitar a velocidade e paralelismo
+	c.Limit(&colly.LimitRule{
+		DomainGlob:  "*",
+		Parallelism: 1,               // Apenas uma requisição por vez
+		Delay:       5 * time.Second, // Delay entre requisições
+	})
+
+	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
+		link := e.Attr("href")
+		if link != "" {
+			fmt.Println("Link encontrado:", link) // Imprimir o link
+		}
+	})
+
+	c.OnHTML("table", func(e *colly.HTMLElement) {
+		log.Println("Tabela encontrada")
+	})
+
+	// Tratar erro ao visitar a página
+	c.OnError(func(_ *colly.Response, err error) {
+		log.Println("Erro ao coletar links:", err)
+	})
+
+	// Iniciar a coleta visitando a página
+	err := c.Visit(startURL)
+	if err != nil {
+		log.Fatalf("Erro ao visitar a página: %v", err)
+	}
+	log.Println("Visitando a url", startURL)
+
+	c.Wait()
+
+	var produtos []Produto
+	// Codificar a query string para ser usada na URL
+	return produtos, nil
+}
+
+func CrawlGoogle2222(query string) ([]Produto, error) {
 	encodedQuery := url.QueryEscape(query)
 	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
 
