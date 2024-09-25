@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"regexp"
@@ -17,6 +18,7 @@ import (
 	"github.com/gocolly/colly"
 	"github.com/tebeka/selenium"
 	"github.com/tebeka/selenium/chrome"
+	"golang.org/x/net/html"
 )
 
 type Produto struct {
@@ -28,7 +30,54 @@ type Produto struct {
 	ImageURL    string  `json:"image_url"`   // 8 bytes (ponteiro)
 }
 
+var links []string
+
 func CrawlGoogle(query string) ([]Produto, error) {
+	encodedQuery := url.QueryEscape(query)
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
+	resp, err := http.Get(startURL)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	log.Printf("Iniciando visita: %s", startURL)
+
+	if resp.StatusCode != http.StatusOK {
+		panic(fmt.Sprintf("Status diferente de 200: %d", resp.StatusCode))
+	}
+
+	doc, err := html.Parse(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	extractLinks(doc)
+
+	var produtos []Produto
+	return produtos, nil
+}
+
+func extractLinks(node *html.Node) {
+	if node.Type == html.ElementNode && node.Data == "a" {
+		for _, attr := range node.Attr {
+			if attr.Key != "href" {
+				continue
+			}
+			link, err := url.Parse(attr.Val)
+			if err != nil || link.Scheme == "" {
+				continue
+			}
+			fmt.Println(link.String())
+		}
+	}
+
+	for c := node.FirstChild; c != nil; c = c.NextSibling {
+		extractLinks(c)
+	}
+}
+
+func CrawlGoogleAtualFuncionando(query string) ([]Produto, error) {
 	encodedQuery := url.QueryEscape(query)
 	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
 
@@ -39,6 +88,7 @@ func CrawlGoogle(query string) ([]Produto, error) {
 	)
 
 	c.OnRequest(func(r *colly.Request) {
+		r.Headers.Set("Accept-Language", "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7")
 		r.Headers.Set("Accept-Language", "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7")
 	})
 
