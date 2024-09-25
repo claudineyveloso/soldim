@@ -35,6 +35,76 @@ type Produto struct {
 var links []string
 
 func CrawlGoogle(query string) ([]Produto, error) {
+	// Codificar a query string para ser usada na URL
+	encodedQuery := url.QueryEscape(query)
+	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
+
+	// Slice para armazenar os produtos coletados
+	var produtos []Produto
+
+	// Criar uma nova instância do Colly
+	c := colly.NewCollector(
+		colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"),
+		colly.MaxDepth(2), // Limitar profundidade para evitar loops
+	)
+
+	// Extrair detalhes dos produtos
+	c.OnHTML("div.sh-dgr__grid-result", func(e *colly.HTMLElement) {
+		description := e.ChildText(".tAxDx")
+		price := formatarPreco(e.ChildText(".a8Pemb"))
+		rawURL := e.ChildAttr("a", "href")
+		imageURL := e.ChildAttr(".ArOc1c img", "src")
+		promotionText := strings.TrimSpace(e.ChildText(".fAcMNb span.Ib8pOd"))
+
+		source := ""
+		e.ForEach(".E5ocAb", func(i int, s *colly.HTMLElement) {
+			source = strings.TrimSpace(s.Text)
+		})
+
+		var link string
+		if strings.HasPrefix(rawURL, "/shopping/product") {
+			link = "https://www.google.com.br" + rawURL
+		} else if strings.HasPrefix(rawURL, "/url?url=") {
+			link = strings.TrimPrefix(rawURL, "/url?url=")
+		} else {
+			link = rawURL
+		}
+
+		promotion := promotionText == "PROMOÇÃO"
+
+		produto := Produto{
+			Description: strings.TrimSpace(description),
+			Price:       price,
+			Source:      source,
+			Link:        link,
+			ImageURL:    imageURL,
+			Promotion:   promotion,
+		}
+
+		produtos = append(produtos, produto)
+		log.Printf("Produto encontrado: %+v\n", produto)
+	})
+
+	// Verificar e seguir para a próxima página
+	c.OnHTML("a.fl", func(e *colly.HTMLElement) {
+		nextPage := e.Request.AbsoluteURL(e.Attr("href"))
+		log.Println("Navegando para a próxima página:", nextPage)
+		e.Request.Visit(nextPage)
+	})
+
+	// Iniciar a coleta visitando a página
+	err := c.Visit(startURL)
+	if err != nil {
+		return nil, fmt.Errorf("falha ao visitar a página: %v", err)
+	}
+
+	// Esperar até a coleta estar finalizada
+	c.Wait()
+
+	return produtos, nil
+}
+
+func CrawlGoogle444(query string) ([]Produto, error) {
 	encodedQuery := url.QueryEscape(query)
 	startURL := fmt.Sprintf("https://www.google.com/search?q=%s&tbm=shop", encodedQuery)
 
