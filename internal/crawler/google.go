@@ -63,45 +63,30 @@ func CrawlGoogle(query string) ([]Produto, error) {
 		e.ForEach(".i0X6df", func(_ int, el *colly.HTMLElement) {
 			description := el.ChildText("h3.tAxDx")
 			spans := e.DOM.Find("span.a8Pemb")
-			priceStr := spans.Eq(0).Text()
+			price := formatarPreco(spans.Eq(0).Text())
 			source := e.DOM.Find(".aULzUe.IuHnof")
 			link := el.ChildAttr("a", "href")
 			imageURL := el.ChildAttr(".ArOc1c img", "src")
-			img, _ := el.DOM.Find(".ArOc1c img").Attr("src")
 			promotion := false
 
-			priceStr = strings.ReplaceAll(priceStr, "$", "")  // Remover o símbolo da moeda, se necessário
-			priceStr = strings.ReplaceAll(priceStr, "R$", "") // Remover o símbolo da moeda, se necessário
-			priceStr = strings.ReplaceAll(priceStr, ".", "")  // Remover pontos, se o formato for R$ 1.234,56
-			priceStr = strings.ReplaceAll(priceStr, ",", ".")
-			price, err := strconv.ParseFloat(priceStr, 64)
-			if err != nil {
-				log.Printf("Erro ao converter preço para float: %v", err)
-				price = 0.0 // Atribuir valor padrão em caso de erro
+			// // Exibe o nome do produto no terminal
+			// fmt.Printf("Product Name: %s\n", description)
+			// fmt.Printf("Product Price: %f\n", price)
+			// fmt.Printf("Product Source: %s\n", extrairSource(source.Eq(0).Text()))
+			// fmt.Printf("Product Image: %s\n", imageURL)
+			// fmt.Printf("Product URL: %s\n", link)
+			// fmt.Printf("Product Img: %s\n", img)
+			// fmt.Printf("Product Promotion: %v\n", promotion)
+			//
+			produto := Produto{
+				Description: strings.TrimSpace(description),
+				Price:       price,
+				Source:      extrairSource(source.Text()),
+				Link:        link,
+				ImageURL:    imageURL,
+				Promotion:   promotion,
 			}
-			// Exibe o nome do produto no terminal
-			fmt.Printf("Product Name: %s\n", description)
-			fmt.Printf("Product Price: %f\n", price)
-			fmt.Printf("Product Source: %s\n", source.Eq(0).Text())
-			fmt.Printf("Product Image: %s\n", imageURL)
-			fmt.Printf("Product URL: %s\n", link)
-			fmt.Printf("Product Img: %s\n", img)
-			fmt.Printf("Product Promotion: %v\n", promotion)
-
-			// produto := Produto{
-			// 	Description: strings.TrimSpace(description),
-			// 	Price:       price,
-			// 	Source:      source.Text(),
-			// 	Link:        link,
-			// 	ImageURL:    imageURL,
-			// 	Promotion:   promotion,
-			// }
-			// produtos = append(produtos, produto)
-			// log.Printf("Produto encontrado: %+v\n", produto)
-			log.Println("Iniciando a paginação:")
-			e.ForEach("a#pnnext", func(_ int, el *colly.HTMLElement) {
-				log.Println("Paginação")
-			})
+			produtos = append(produtos, produto)
 		})
 		// log.Println("Elemento '.sh-dgr__grid-result' encontrado!")
 	})
@@ -388,6 +373,51 @@ func CrawlGoogleAtual(query string) ([]Produto, error) {
 	}
 
 	return produtos, nil
+}
+
+func formatarPreco_OLD(valor string) float64 {
+	// Remover "R$" e espaços
+	valor = strings.TrimSpace(strings.Replace(valor, "R$", "", -1))
+
+	// Substituir vírgula por ponto
+	valor = strings.Replace(valor, ",", ".", -1)
+
+	// Remover qualquer caractere que não seja número ou ponto
+	re := regexp.MustCompile(`[^\d.]`)
+	valor = re.ReplaceAllString(valor, "")
+
+	// Verifica se o valor resultante é válido antes de tentar convertê-lo
+	if valor == "" {
+		log.Println("Valor vazio após formatação")
+		return 0.0
+	}
+
+	// Converter o valor formatado para float64
+	preco, err := strconv.ParseFloat(valor, 64)
+	if err != nil {
+		log.Printf("Erro ao converter preço '%s' para float: %v", valor, err)
+		return 0.0
+	}
+
+	return preco
+}
+
+func extrairSource(input string) string {
+	// Procurar pelo último fechamento de chave "}"
+	index := strings.LastIndex(input, "}")
+	if index == -1 {
+		// Se não houver "}", retorna a string original
+		return input
+	}
+
+	// Extrair o conteúdo após a última chave "}"
+	result := input[index+1:]
+
+	// Remover espaços extras e caracteres desnecessários
+	result = strings.TrimSpace(result)
+
+	// Retorna o valor limpo
+	return result
 }
 
 func formatarPreco(valor string) float64 {
