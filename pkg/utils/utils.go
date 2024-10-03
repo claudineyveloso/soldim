@@ -39,7 +39,7 @@ func GetBaseURL() string {
 	if env == "prod" {
 		// return "https://soldim-api-344942c665db.herokuapp.com"
 		// return "http://52.207.69.202:8888"
-		return "soldim-api.uaicloud.com.br"
+		return "https://soldim-api.uaicloud.com.br"
 	}
 	return "http://localhost:8080"
 }
