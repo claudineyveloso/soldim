@@ -26,7 +26,7 @@ func NewHandler(productStore types.ProductStore) *Handler {
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/create_product", h.handleCreateProduct).Methods(http.MethodPost)
-	router.HandleFunc("/go/get_products", h.handleGetProducts).Methods(http.MethodGet)
+	router.HandleFunc("/get_products", h.handleGetProducts).Methods(http.MethodGet)
 	router.HandleFunc("/get_products_empty_stock", h.handleGetProductsEmptyStock).Methods(http.MethodGet)
 	router.HandleFunc("/get_products_no_movements", h.handleGetProductsNoMovements).Methods(http.MethodGet)
 	router.HandleFunc("/get_product/{productID}", h.handleGetProduct).Methods(http.MethodGet)
