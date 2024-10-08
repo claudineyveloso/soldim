@@ -206,15 +206,18 @@ func (h *Handler) handleGetProduct(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) handleUpdateProduct(w http.ResponseWriter, r *http.Request) {
 	var product types.ProductPayload
+
 	if err := utils.ParseJSON(r, &product); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
+
 	if err := utils.Validate.Struct(product); err != nil {
 		errors := err.(validator.ValidationErrors)
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("payload inválido: %v", errors))
 		return
 	}
+
 	err := h.productStore.UpdateProduct(product)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
